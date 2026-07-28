@@ -1,0 +1,48 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.iml
+*.ipr
+*.iws
+.agents
+docs
+
+# Node / Mock API dependencies & logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment / Secret variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.prod.env
+.dev.env
+.stage.env
+
+# Flutter / App Build artifacts & temporary files
+**/build/
+**/.dart_tool/
+.pub-cache/
+.pub/
+
+# Flutter's official, type-safe generation tool generates raw .dart files directly inside your source code
+app/lib/src/generated/
+

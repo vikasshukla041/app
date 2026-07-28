@@ -1,0 +1,24 @@
+{
+  "name": "activotrade-backend",
+  "version": "1.0.0",
+  "description": "Mock REST API backend for ActivoTrade POC",
+  "main": "server.js",
+  "type": "module",
+  "author": "Sandesh k",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.14",
+    "@hono/swagger-ui": "^0.2.2",
+    "@hono/zod-openapi": "^0.14.9",
+    "@libsql/client": "^0.6.2",
+    "@stoplight/elements": "^8.5.2",
+    "drizzle-orm": "^0.31.4",
+    "firebase-admin": "^12.7.0",
+    "hono": "^4.12.30"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10"
+  }
+}
