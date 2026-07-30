@@ -1,5 +1,10 @@
 import 'package:equatable/equatable.dart';
 
+/// All possible states of the authentication flow.
+///
+/// `sealed` lets the compiler guarantee every state is handled.
+/// Equatable gives value-equality, so emitting an identical state
+/// does not trigger a redundant UI rebuild.
 sealed class AuthState extends Equatable {
   const AuthState();
 
@@ -15,18 +20,25 @@ class AuthLoading extends AuthState {
   const AuthLoading();
 }
 
-// State when login succeeds
 class AuthSuccess extends AuthState {
   const AuthSuccess();
 }
 
-// State when login failed
-class AuthFailure extends AuthState {
-  final String message;
-
-  const AuthFailure(this.message);
-
-  @override
-  List<Object?> get props => <Object?>[message];
+/// Reasons a login attempt can fail, decoupled from any user-facing text
+/// so the UI layer (which has a [BuildContext]) can localize the message.
+enum AuthFailureReason {
+  network,
+  credentials,
+  tooManyAttempts,
+  serverUnavailable,
+  generic,
 }
 
+class AuthFailure extends AuthState {
+  const AuthFailure(this.reason);
+
+  final AuthFailureReason reason;
+
+  @override
+  List<Object?> get props => <Object?>[reason];
+}

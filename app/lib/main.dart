@@ -1,15 +1,15 @@
-import 'package:activotrade_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import 'core/design_system/theme.dart';
 import 'features/auth/auth_screen.dart';
+import 'l10n/app_localizations.dart';
 
-// Entry point
 void main() {
   runApp(const ActivoTradeApp());
 }
 
-// root widget
+/// Composition root: theme, localization delegates and the first screen.
+/// Feature state is provided per-screen, not globally.
 class ActivoTradeApp extends StatelessWidget {
   const ActivoTradeApp({super.key});
 
@@ -19,15 +19,12 @@ class ActivoTradeApp extends StatelessWidget {
       onGenerateTitle: (BuildContext context) =>
           AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
-      title: 'ActivoTrade',
       theme: ActivoTradeTheme.lightTheme,
       darkTheme: ActivoTradeTheme.darkTheme,
-      themeMode:
-          ThemeMode.system, // Automatically follows OS Light/Dark setting
+      themeMode: ThemeMode.system,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: const AuthScreen(),
     );
   }
 }
-

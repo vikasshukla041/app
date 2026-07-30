@@ -1,27 +1,42 @@
 import 'package:flutter/material.dart';
 
-class LoginButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final bool isLoading;
+import '../../../l10n/app_localizations.dart';
 
+/// Submit button that disables itself and shows a spinner while loading,
+/// preventing duplicate login requests.
+class LoginButton extends StatelessWidget {
   const LoginButton({
     super.key,
     required this.onPressed,
-    this.isLoading = false,
+    required this.isLoading,
   });
+
+  final VoidCallback? onPressed;
+  final bool isLoading;
+
+  static const double _height = 48;
+  static const double _spinnerSize = 24;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? const CircularProgressIndicator()
-            : const Text('Sign In'),
+    final AppLocalizations l10n = AppLocalizations.of(context);
+    return Semantics(
+      label: l10n.signInButtonSemantics,
+      button: true,
+      child: SizedBox(
+        width: double.infinity,
+        height: _height,
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          child: isLoading
+              ? const SizedBox(
+                  width: _spinnerSize,
+                  height: _spinnerSize,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Text(l10n.signInButton),
+        ),
       ),
     );
   }
 }
-

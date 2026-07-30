@@ -1,0 +1,21 @@
+{
+  "@@locale": "en",
+  "appTitle": "ActivoTrade",
+  "welcomeBack": "Welcome back",
+  "loginSubtitle": "Log in to your investment account",
+  "usernameLabel": "Username or email",
+  "usernameFieldSemantics": "Username or email input field",
+  "passwordLabel": "Password",
+  "passwordFieldSemantics": "Password input field",
+  "signInButton": "Log In",
+  "signInButtonSemantics": "Log in button",
+  "useBiometrics": "Use Biometrics",
+  "useBiometricsSemantics": "Log in with biometrics button",
+  "dashboardTitle": "Dashboard",
+  "dashboardWelcome": "Welcome to ActivoTrade",
+  "errorNetwork": "Unable to connect to server.\nPlease check your network connection.",
+  "errorCredentials": "Invalid username or password.",
+  "errorTooManyAttempts": "Too many login attempts. Please try again later.",
+  "errorServerUnavailable": "Server is currently unavailable. Please try again later.",
+  "errorGeneric": "Something went wrong. Please try again later."
+}

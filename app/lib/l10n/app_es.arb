@@ -1,0 +1,21 @@
+{
+  "@@locale": "es",
+  "appTitle": "ActivoTrade",
+  "welcomeBack": "Bienvenido de nuevo",
+  "loginSubtitle": "Inicia sesión en tu cuenta de inversión",
+  "usernameLabel": "Usuario o correo electrónico",
+  "usernameFieldSemantics": "Campo de usuario o correo electrónico",
+  "passwordLabel": "Contraseña",
+  "passwordFieldSemantics": "Campo de contraseña",
+  "signInButton": "Iniciar sesión",
+  "signInButtonSemantics": "Botón de iniciar sesión",
+  "useBiometrics": "Usar biometría",
+  "useBiometricsSemantics": "Botón de inicio de sesión con biometría",
+  "dashboardTitle": "Panel",
+  "dashboardWelcome": "Bienvenido a ActivoTrade",
+  "errorNetwork": "No se pudo conectar con el servidor.\nComprueba tu conexión a internet.",
+  "errorCredentials": "Nombre de usuario o contraseña incorrectos.",
+  "errorTooManyAttempts": "Demasiados intentos de inicio de sesión. Inténtalo más tarde.",
+  "errorServerUnavailable": "El servidor no está disponible en este momento. Inténtalo más tarde.",
+  "errorGeneric": "Algo salió mal. Inténtalo de nuevo más tarde."
+}

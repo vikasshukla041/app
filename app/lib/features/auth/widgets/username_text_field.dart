@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 
-/// Collects the password. Input only — no logic, no API calls.
-class PasswordTextField extends StatelessWidget {
-  const PasswordTextField({
+/// Collects the username. Input only — no logic, no API calls.
+class UsernameTextField extends StatelessWidget {
+  const UsernameTextField({
     super.key,
     required this.controller,
     this.enabled = true,
@@ -14,26 +14,26 @@ class PasswordTextField extends StatelessWidget {
   final TextEditingController controller;
   final bool enabled;
 
-  /// Fired when the user presses the keyboard's "done" action, so the
-  /// form can submit without requiring a separate button tap.
+  /// Fired when the user presses the keyboard's "next"/"done" action.
   final ValueChanged<String>? onSubmitted;
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     return Semantics(
-      label: l10n.passwordFieldSemantics,
+      label: l10n.usernameFieldSemantics,
       textField: true,
       child: TextField(
         controller: controller,
         enabled: enabled,
-        obscureText: true,
-        textInputAction: TextInputAction.done,
-        autofillHints: const <String>[AutofillHints.password],
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.next,
+        autocorrect: false,
+        autofillHints: const <String>[AutofillHints.username],
         onSubmitted: onSubmitted,
         decoration: InputDecoration(
-          labelText: l10n.passwordLabel,
-          prefixIcon: const Icon(Icons.lock_outline),
+          labelText: l10n.usernameLabel,
+          prefixIcon: const Icon(Icons.person_outline),
         ),
       ),
     );
