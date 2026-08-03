@@ -28,5 +28,34 @@
   "biometricOptIn": "Enable biometric login",
   "biometricPromptReason": "Authenticate to sign in to ActivoTrade",
   "errorBiometricLockedOut": "Too many failed attempts. Use your password to sign in.",
-  "errorBiometricSessionExpired": "Your saved session is no longer valid. Please sign in with your password."
+  "errorBiometricSessionExpired": "Your saved session is no longer valid. Please sign in with your password.",
+  "dashboardWelcomeLabel": "Welcome back,",
+  "signOutTooltip": "Sign out",
+  "biometricOptInDialogTitle": "Enable Biometric Login?",
+  "biometricOptInDialogBody": "Would you like to enable Face ID / Touch ID to sign in faster on your next visit?",
+  "biometricOptInDialogSkip": "Skip for Now",
+  "biometricOptInDialogEnable": "Enable Biometrics",
+  "portfolioTotalValueLabel": "Total Portfolio Value",
+  "portfolioTotalGainLabel": "Total Gain",
+  "quickLinksHeader": "Account Navigation",
+  "quickLinkHoldingsTitle": "Holdings",
+  "quickLinkHoldingsSubtitle": "View active asset allocation & portfolio breakdown",
+  "quickLinkPositionsTitle": "Positions",
+  "quickLinkPositionsSubtitle": "Live equity & open market positions",
+  "quickLinkOrdersTitle": "Orders",
+  "quickLinkOrdersSubtitle": "Pending, executed, and cancelled trade orders",
+  "quickLinkReportsTitle": "Reports",
+  "quickLinkReportsSubtitle": "Account tax reports & activity summaries",
+  "quickLinkPnlTitle": "P&L Statement",
+  "quickLinkPnlSubtitle": "Realized & unrealized profit/loss breakdown",
+  "quickLinkSelectedMessage": "{title} selected",
+  "@quickLinkSelectedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardLoadError": "Couldn't load your portfolio.",
+  "retry": "Retry"
 }

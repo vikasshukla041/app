@@ -51,6 +51,9 @@ dependencies:
   # On-device biometric authentication (Face ID / Touch ID / fingerprint)
   local_auth: ^3.0.1
 
+  # Dependency injection (required by core/di/service_locator.dart)
+  get_it: ^8.0.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

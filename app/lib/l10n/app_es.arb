@@ -28,5 +28,34 @@
   "biometricOptIn": "Activar inicio de sesión biométrico",
   "biometricPromptReason": "Autentícate para iniciar sesión en ActivoTrade",
   "errorBiometricLockedOut": "Demasiados intentos fallidos. Usa tu contraseña para iniciar sesión.",
-  "errorBiometricSessionExpired": "Tu sesión guardada ya no es válida. Inicia sesión con tu contraseña."
+  "errorBiometricSessionExpired": "Tu sesión guardada ya no es válida. Inicia sesión con tu contraseña.",
+  "dashboardWelcomeLabel": "Bienvenido de nuevo,",
+  "signOutTooltip": "Cerrar sesión",
+  "biometricOptInDialogTitle": "¿Activar inicio de sesión biométrico?",
+  "biometricOptInDialogBody": "¿Deseas activar Face ID / Touch ID para iniciar sesión más rápido la próxima vez?",
+  "biometricOptInDialogSkip": "Ahora no",
+  "biometricOptInDialogEnable": "Activar biometría",
+  "portfolioTotalValueLabel": "Valor total de la cartera",
+  "portfolioTotalGainLabel": "Ganancia total",
+  "quickLinksHeader": "Navegación de la cuenta",
+  "quickLinkHoldingsTitle": "Activos",
+  "quickLinkHoldingsSubtitle": "Ver la asignación de activos y el desglose de la cartera",
+  "quickLinkPositionsTitle": "Posiciones",
+  "quickLinkPositionsSubtitle": "Posiciones de mercado abiertas en tiempo real",
+  "quickLinkOrdersTitle": "Órdenes",
+  "quickLinkOrdersSubtitle": "Órdenes pendientes, ejecutadas y canceladas",
+  "quickLinkReportsTitle": "Informes",
+  "quickLinkReportsSubtitle": "Informes fiscales y resúmenes de actividad de la cuenta",
+  "quickLinkPnlTitle": "Estado de resultados",
+  "quickLinkPnlSubtitle": "Desglose de ganancias y pérdidas realizadas y no realizadas",
+  "quickLinkSelectedMessage": "{title} seleccionado",
+  "@quickLinkSelectedMessage": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardLoadError": "No se pudo cargar tu cartera.",
+  "retry": "Reintentar"
 }

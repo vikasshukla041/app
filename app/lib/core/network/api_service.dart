@@ -1,24 +1,25 @@
 import 'package:dio/dio.dart';
 
-import '../config/app_config.dart';
+import '../auth/app_auth_cubit.dart';
 import '../constants/api_constant.dart';
+import '../config/app_config.dart';
 import '../storage/secure_storage_service.dart';
 import 'auth_interceptor.dart';
 
-/// Single gateway to the backend. No UI code, no navigation, no SnackBars.
-///
-/// When no [Dio] is injected, the default client is built with the
-/// [AuthInterceptor] so every request automatically carries the Bearer
-/// token. An injected [Dio] (tests) is used exactly as given.
+/// Handles HTTP requests to the backend API using Dio.
 class ApiService {
-  ApiService({Dio? dio, SecureStorageService? storageService})
-    : _dio = dio ?? _createDio(storageService);
+  ApiService({
+    Dio? dio,
+    SecureStorageService? storageService,
+    AppAuthCubit? appAuthCubit,
+  }) : _dio = dio ?? _createDio(storageService, appAuthCubit);
 
   final Dio _dio;
 
-  // Only the default client gets the interceptor; an injected Dio is
-  // the caller's responsibility (tests supply fully configured mocks).
-  static Dio _createDio(SecureStorageService? storageService) {
+  static Dio _createDio(
+    SecureStorageService? storageService,
+    AppAuthCubit? appAuthCubit,
+  ) {
     final Dio dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
@@ -26,11 +27,15 @@ class ApiService {
         receiveTimeout: AppConfig.receiveTimeout,
       ),
     );
-    dio.interceptors.add(AuthInterceptor(storageService: storageService));
+    dio.interceptors.add(
+      AuthInterceptor(
+        storageService: storageService,
+        appAuthCubit: appAuthCubit,
+      ),
+    );
     return dio;
   }
 
-  /// POST /api/auth/login — authenticates with username + password.
   Future<Response<dynamic>> login({
     required String username,
     required String password,
@@ -41,8 +46,17 @@ class ApiService {
     );
   }
 
-  /// GET /api/user/balance — requires the Bearer token (added by the
-  /// interceptor). Will power the dashboard.
+  /// Exchanges a refresh token for a new access token.
+  Future<Response<dynamic>> refreshToken({
+    required String refreshToken,
+  }) {
+    return _dio.post<dynamic>(
+      '/api/auth/refresh',
+      data: <String, dynamic>{'refreshToken': refreshToken},
+    );
+  }
+
   Future<Response<dynamic>> balance() =>
       _dio.get<dynamic>(ApiConstants.balance);
 }
+

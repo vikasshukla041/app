@@ -1,9 +1,11 @@
+import 'package:activotrade_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-import '../../../l10n/app_localizations.dart';
-
-/// Collects the password. Input only — no logic, no API calls.
+// reusable password input filed
 class PasswordTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool enabled;
+
   const PasswordTextField({
     super.key,
     required this.controller,
@@ -11,11 +13,6 @@ class PasswordTextField extends StatelessWidget {
     this.onSubmitted,
   });
 
-  final TextEditingController controller;
-  final bool enabled;
-
-  /// Fired when the user presses the keyboard's "done" action, so the
-  /// form can submit without requiring a separate button tap.
   final ValueChanged<String>? onSubmitted;
 
   @override
@@ -34,8 +31,10 @@ class PasswordTextField extends StatelessWidget {
         decoration: InputDecoration(
           labelText: l10n.passwordLabel,
           prefixIcon: const Icon(Icons.lock_outline),
+          // border: OutlineInputBorder(),
         ),
       ),
     );
   }
 }
+

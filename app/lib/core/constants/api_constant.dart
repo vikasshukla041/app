@@ -1,5 +1,5 @@
-/// Relative API paths only. The host and timeouts live in [AppConfig] so
-/// that endpoints stay identical across every environment.
+// Central place for every API related constant.
+
 class ApiConstants {
   ApiConstants._();
 
@@ -7,3 +7,4 @@ class ApiConstants {
   static const String balance = '/api/user/balance';
   static const String registerToken = '/api/user/register-token';
 }
+

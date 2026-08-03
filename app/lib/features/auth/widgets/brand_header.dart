@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 
-/// Company logo + name, shown top-left on the auth screen.
-///
-/// The logo is a themed placeholder until the real brand asset exists —
-/// swap the [Icon] for an Image.asset when design provides one.
 class BrandHeader extends StatelessWidget {
   const BrandHeader({super.key});
 
@@ -38,3 +34,4 @@ class BrandHeader extends StatelessWidget {
     );
   }
 }
+

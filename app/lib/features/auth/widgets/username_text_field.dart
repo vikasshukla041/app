@@ -1,8 +1,6 @@
+import 'package:activotrade_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-import '../../../l10n/app_localizations.dart';
-
-/// Collects the username. Input only — no logic, no API calls.
 class UsernameTextField extends StatelessWidget {
   const UsernameTextField({
     super.key,
@@ -15,6 +13,7 @@ class UsernameTextField extends StatelessWidget {
   final bool enabled;
 
   /// Fired when the user presses the keyboard's "next"/"done" action.
+
   final ValueChanged<String>? onSubmitted;
 
   @override
@@ -27,15 +26,16 @@ class UsernameTextField extends StatelessWidget {
         controller: controller,
         enabled: enabled,
         keyboardType: TextInputType.text,
-        textInputAction: TextInputAction.next,
         autocorrect: false,
         autofillHints: const <String>[AutofillHints.username],
         onSubmitted: onSubmitted,
         decoration: InputDecoration(
           labelText: l10n.usernameLabel,
           prefixIcon: const Icon(Icons.person_outline),
+          border: const OutlineInputBorder(),
         ),
       ),
     );
   }
 }
+

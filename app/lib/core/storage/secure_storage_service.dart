@@ -1,29 +1,27 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Wraps flutter_secure_storage (iOS Keychain / Android Keystore).
-///
-/// Only this class knows how and where credentials are stored; the rest of
-/// the app depends on these methods. Every key is written exactly once as a
-/// constant so save/read/delete can never disagree.
+/// Handles encrypted storage of access tokens, refresh tokens, and user credentials.
 class SecureStorageService {
   SecureStorageService({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage();
+      : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
-  static const String _tokenKey = 'auth_token';
+  static const String _accessTokenKey = 'access_token';
+  static const String _refreshTokenKey = 'refresh_token';
   static const String _userKey = 'auth_user';
   static const String _biometricEnabledKey = 'biometric_enabled';
 
-  Future<void> saveToken(String token) =>
-      _storage.write(key: _tokenKey, value: token);
+  Future<void> saveAccessToken(String token) =>
+      _storage.write(key: _accessTokenKey, value: token);
 
-  Future<String?> getToken() => _storage.read(key: _tokenKey);
+  Future<String?> getAccessToken() => _storage.read(key: _accessTokenKey);
 
-  Future<void> deleteToken() => _storage.delete(key: _tokenKey);
+  Future<void> saveRefreshToken(String token) =>
+      _storage.write(key: _refreshTokenKey, value: token);
 
-  /// The signed-in user's profile as JSON. Cached so a biometric unlock can
-  /// restore the session without a network round trip.
+  Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
+
   Future<void> saveUser(String userJson) =>
       _storage.write(key: _userKey, value: userJson);
 
@@ -35,11 +33,12 @@ class SecureStorageService {
   Future<bool> isBiometricEnabled() async =>
       await _storage.read(key: _biometricEnabledKey) == 'true';
 
-  /// Clears every credential. Used on logout and whenever a stored session
-  /// turns out to be unusable.
+  /// Clears stored session tokens on logout or session expiration.
   Future<void> clear() => Future.wait<void>(<Future<void>>[
-    _storage.delete(key: _tokenKey),
-    _storage.delete(key: _userKey),
-    _storage.delete(key: _biometricEnabledKey),
-  ]);
+        _storage.delete(key: _accessTokenKey),
+        _storage.delete(key: _refreshTokenKey),
+        _storage.delete(key: _userKey),
+        _storage.delete(key: _biometricEnabledKey),
+      ]);
 }
+
