@@ -21,7 +21,6 @@ class ActivoTradeApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ActivoTradeTheme.lightTheme,
       darkTheme: ActivoTradeTheme.darkTheme,
-      themeMode: ThemeMode.system,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: const AuthScreen(),

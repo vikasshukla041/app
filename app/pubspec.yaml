@@ -48,6 +48,9 @@ dependencies:
   # Secure token storage (iOS Keychain / Android Keystore)
   flutter_secure_storage: ^9.2.2
 
+  # On-device biometric authentication (Face ID / Touch ID / fingerprint)
+  local_auth: ^3.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

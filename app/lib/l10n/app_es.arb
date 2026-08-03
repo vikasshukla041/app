@@ -12,10 +12,21 @@
   "useBiometrics": "Usar biometría",
   "useBiometricsSemantics": "Botón de inicio de sesión con biometría",
   "dashboardTitle": "Panel",
-  "dashboardWelcome": "Bienvenido a ActivoTrade",
+  "dashboardWelcome": "Bienvenido de nuevo, {name}",
   "errorNetwork": "No se pudo conectar con el servidor.\nComprueba tu conexión a internet.",
   "errorCredentials": "Nombre de usuario o contraseña incorrectos.",
   "errorTooManyAttempts": "Demasiados intentos de inicio de sesión. Inténtalo más tarde.",
   "errorServerUnavailable": "El servidor no está disponible en este momento. Inténtalo más tarde.",
-  "errorGeneric": "Algo salió mal. Inténtalo de nuevo más tarde."
+  "errorGeneric": "Algo salió mal. Inténtalo de nuevo más tarde.",
+  "@dashboardWelcome": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "biometricOptIn": "Activar inicio de sesión biométrico",
+  "biometricPromptReason": "Autentícate para iniciar sesión en ActivoTrade",
+  "errorBiometricLockedOut": "Demasiados intentos fallidos. Usa tu contraseña para iniciar sesión.",
+  "errorBiometricSessionExpired": "Tu sesión guardada ya no es válida. Inicia sesión con tu contraseña."
 }

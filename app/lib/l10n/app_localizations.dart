@@ -173,8 +173,8 @@ abstract class AppLocalizations {
   /// No description provided for @dashboardWelcome.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to ActivoTrade'**
-  String get dashboardWelcome;
+  /// **'Welcome back, {name}'**
+  String dashboardWelcome(String name);
 
   /// No description provided for @errorNetwork.
   ///
@@ -205,6 +205,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again later.'**
   String get errorGeneric;
+
+  /// No description provided for @biometricOptIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable biometric login'**
+  String get biometricOptIn;
+
+  /// No description provided for @biometricPromptReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Authenticate to sign in to ActivoTrade'**
+  String get biometricPromptReason;
+
+  /// No description provided for @errorBiometricLockedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many failed attempts. Use your password to sign in.'**
+  String get errorBiometricLockedOut;
+
+  /// No description provided for @errorBiometricSessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved session is no longer valid. Please sign in with your password.'**
+  String get errorBiometricSessionExpired;
 }
 
 class _AppLocalizationsDelegate

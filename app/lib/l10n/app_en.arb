@@ -12,10 +12,21 @@
   "useBiometrics": "Use Biometrics",
   "useBiometricsSemantics": "Log in with biometrics button",
   "dashboardTitle": "Dashboard",
-  "dashboardWelcome": "Welcome to ActivoTrade",
+  "dashboardWelcome": "Welcome back, {name}",
   "errorNetwork": "Unable to connect to server.\nPlease check your network connection.",
   "errorCredentials": "Invalid username or password.",
   "errorTooManyAttempts": "Too many login attempts. Please try again later.",
   "errorServerUnavailable": "Server is currently unavailable. Please try again later.",
-  "errorGeneric": "Something went wrong. Please try again later."
+  "errorGeneric": "Something went wrong. Please try again later.",
+  "@dashboardWelcome": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "biometricOptIn": "Enable biometric login",
+  "biometricPromptReason": "Authenticate to sign in to ActivoTrade",
+  "errorBiometricLockedOut": "Too many failed attempts. Use your password to sign in.",
+  "errorBiometricSessionExpired": "Your saved session is no longer valid. Please sign in with your password."
 }

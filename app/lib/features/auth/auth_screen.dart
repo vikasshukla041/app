@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../core/design_system/theme.dart';
+import '../../core/design_system/widgets/app_snack_bar.dart';
 import '../../l10n/app_localizations.dart';
 import '../dashboard/dashboard_screen.dart';
 import 'auth_cubit.dart';
 import 'auth_state.dart';
+import 'models/user.dart';
 import 'widgets/brand_header.dart';
 import 'widgets/login_form.dart';
 
@@ -19,7 +20,9 @@ class AuthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AuthCubit>(
-      create: (_) => AuthCubit(),
+      // Availability decides what the form offers, so it is resolved as
+      // soon as the screen exists.
+      create: (_) => AuthCubit()..checkBiometricAvailability(),
       child: Scaffold(
         body: SafeArea(
           child: Center(
@@ -28,19 +31,7 @@ class AuthScreen extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: _maxContentWidth),
                 child: BlocConsumer<AuthCubit, AuthState>(
-                  listener: (BuildContext context, AuthState state) {
-                    if (state is AuthSuccess) {
-                      // Replace, not push: the back gesture must never
-                      // return an authenticated user to the login form.
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const DashboardScreen(),
-                        ),
-                      );
-                    } else if (state is AuthFailure) {
-                      _showFailureSnackBar(context, state.reason);
-                    }
-                  },
+                  listener: _onStateChanged,
                   builder: (BuildContext context, AuthState state) {
                     final AppLocalizations l10n = AppLocalizations.of(context);
                     final TextTheme text = Theme.of(context).textTheme;
@@ -74,55 +65,50 @@ class AuthScreen extends StatelessWidget {
     );
   }
 
-  /// Shows a severity-styled snackbar using Material 3 color tokens:
-  /// user-fixable problems (network, server down) get warning colors,
-  /// account problems (bad credentials, lockout) get error colors.
-  void _showFailureSnackBar(BuildContext context, AuthFailureReason reason) {
+  void _onStateChanged(BuildContext context, AuthState state) {
+    switch (state) {
+      case AuthSuccess(:final User user):
+        // Replace, not push: the back gesture must never return an
+        // authenticated user to the login form.
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute<void>(
+            builder: (_) => DashboardScreen(user: user),
+          ),
+        );
+      case AuthFailure(:final AuthFailureReason reason):
+        AppSnackBar.show(
+          context,
+          _failureMessage(context, reason),
+          _failureSeverity(reason),
+        );
+      case AuthInitial() || AuthLoading():
+        break;
+    }
+  }
+
+  String _failureMessage(BuildContext context, AuthFailureReason reason) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final ColorScheme colors = Theme.of(context).colorScheme;
-    final AppSemanticColors semantic =
-        Theme.of(context).extension<AppSemanticColors>()!;
-
-    final bool isWarning = switch (reason) {
-      AuthFailureReason.network || AuthFailureReason.serverUnavailable => true,
-      _ => false,
-    };
-
-    final Color background =
-        isWarning ? semantic.warningContainer : colors.errorContainer;
-    final Color foreground =
-        isWarning ? semantic.onWarningContainer : colors.onErrorContainer;
-
-    final String message = switch (reason) {
+    return switch (reason) {
       AuthFailureReason.network => l10n.errorNetwork,
       AuthFailureReason.credentials => l10n.errorCredentials,
       AuthFailureReason.tooManyAttempts => l10n.errorTooManyAttempts,
       AuthFailureReason.serverUnavailable => l10n.errorServerUnavailable,
+      AuthFailureReason.biometricLockedOut => l10n.errorBiometricLockedOut,
+      AuthFailureReason.biometricSessionExpired =>
+        l10n.errorBiometricSessionExpired,
       AuthFailureReason.generic => l10n.errorGeneric,
     };
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: background,
-        content: Row(
-          children: <Widget>[
-            Icon(
-              isWarning ? Icons.warning_amber_rounded : Icons.error_outline,
-              color: foreground,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: foreground),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
+
+  /// Connectivity problems are recoverable by the user; account problems
+  /// are not, so they carry error rather than warning colours.
+  AppSnackBarSeverity _failureSeverity(AuthFailureReason reason) =>
+      switch (reason) {
+        AuthFailureReason.network ||
+        AuthFailureReason.serverUnavailable ||
+        AuthFailureReason.biometricLockedOut ||
+        AuthFailureReason.biometricSessionExpired =>
+          AppSnackBarSeverity.warning,
+        _ => AppSnackBarSeverity.error,
+      };
 }

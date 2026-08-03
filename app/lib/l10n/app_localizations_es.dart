@@ -46,7 +46,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dashboardTitle => 'Panel';
 
   @override
-  String get dashboardWelcome => 'Bienvenido a ActivoTrade';
+  String dashboardWelcome(String name) {
+    return 'Bienvenido de nuevo, $name';
+  }
 
   @override
   String get errorNetwork =>
@@ -65,4 +67,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorGeneric => 'Algo salió mal. Inténtalo de nuevo más tarde.';
+
+  @override
+  String get biometricOptIn => 'Activar inicio de sesión biométrico';
+
+  @override
+  String get biometricPromptReason =>
+      'Autentícate para iniciar sesión en ActivoTrade';
+
+  @override
+  String get errorBiometricLockedOut =>
+      'Demasiados intentos fallidos. Usa tu contraseña para iniciar sesión.';
+
+  @override
+  String get errorBiometricSessionExpired =>
+      'Tu sesión guardada ya no es válida. Inicia sesión con tu contraseña.';
 }

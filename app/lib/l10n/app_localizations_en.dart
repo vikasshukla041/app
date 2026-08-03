@@ -45,7 +45,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dashboardTitle => 'Dashboard';
 
   @override
-  String get dashboardWelcome => 'Welcome to ActivoTrade';
+  String dashboardWelcome(String name) {
+    return 'Welcome back, $name';
+  }
 
   @override
   String get errorNetwork =>
@@ -64,4 +66,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorGeneric => 'Something went wrong. Please try again later.';
+
+  @override
+  String get biometricOptIn => 'Enable biometric login';
+
+  @override
+  String get biometricPromptReason => 'Authenticate to sign in to ActivoTrade';
+
+  @override
+  String get errorBiometricLockedOut =>
+      'Too many failed attempts. Use your password to sign in.';
+
+  @override
+  String get errorBiometricSessionExpired =>
+      'Your saved session is no longer valid. Please sign in with your password.';
 }

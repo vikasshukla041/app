@@ -14,7 +14,6 @@ class LoginButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
 
-  static const double _height = 48;
   static const double _spinnerSize = 24;
 
   @override
@@ -25,7 +24,6 @@ class LoginButton extends StatelessWidget {
       button: true,
       child: SizedBox(
         width: double.infinity,
-        height: _height,
         child: ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           child: isLoading

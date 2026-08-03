@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../config/app_config.dart';
 import '../constants/api_constant.dart';
 import '../storage/secure_storage_service.dart';
 import 'auth_interceptor.dart';
@@ -20,9 +21,9 @@ class ApiService {
   static Dio _createDio(SecureStorageService? storageService) {
     final Dio dio = Dio(
       BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: ApiConstants.connectTimeout,
-        receiveTimeout: ApiConstants.receiveTimeout,
+        baseUrl: AppConfig.baseUrl,
+        connectTimeout: AppConfig.connectTimeout,
+        receiveTimeout: AppConfig.receiveTimeout,
       ),
     );
     dio.interceptors.add(AuthInterceptor(storageService: storageService));
@@ -42,5 +43,6 @@ class ApiService {
 
   /// GET /api/user/balance — requires the Bearer token (added by the
   /// interceptor). Will power the dashboard.
-  Future<Response<dynamic>> balance() => _dio.get<dynamic>(ApiConstants.balance);
+  Future<Response<dynamic>> balance() =>
+      _dio.get<dynamic>(ApiConstants.balance);
 }

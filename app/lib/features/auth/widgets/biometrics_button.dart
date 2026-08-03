@@ -7,14 +7,9 @@ import '../../../l10n/app_localizations.dart';
 /// Receives its behavior from the parent like [LoginButton] does; a null
 /// [onPressed] renders it disabled (biometrics not available yet).
 class BiometricsButton extends StatelessWidget {
-  const BiometricsButton({
-    super.key,
-    required this.onPressed,
-  });
+  const BiometricsButton({super.key, required this.onPressed});
 
   final VoidCallback? onPressed;
-
-  static const double _height = 48;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +19,6 @@ class BiometricsButton extends StatelessWidget {
       button: true,
       child: SizedBox(
         width: double.infinity,
-        height: _height,
         child: OutlinedButton.icon(
           onPressed: onPressed,
           icon: const Icon(Icons.fingerprint),

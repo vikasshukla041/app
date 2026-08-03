@@ -9,6 +9,9 @@ class ActivoTradeTheme {
 
   static const Color _seedColor = Color(0xFF2B7FFF);
 
+  /// Comfortably above the 48dp Material minimum touch target.
+  static const double _minButtonHeight = 50;
+
   static ThemeData get lightTheme => _build(Brightness.light);
   static ThemeData get darkTheme => _build(Brightness.dark);
 
@@ -23,6 +26,19 @@ class ActivoTradeTheme {
       ),
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(),
+      ),
+      // Standard action-button height app-wide, so individual widgets never
+      // hardcode one. Width is left unconstrained (Size.width = 0) because
+      // full-width is a per-usage layout choice, not a global rule.
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(0, _minButtonHeight),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, _minButtonHeight),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
