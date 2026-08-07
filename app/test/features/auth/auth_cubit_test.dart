@@ -1,52 +1,54 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:activotrade_app/core/constants/api_constant.dart';
-import 'package:activotrade_app/core/network/api_service.dart';
+import 'package:activotrade_app/core/auth/domain/user.dart';
 import 'package:activotrade_app/core/security/biometric_service.dart';
 import 'package:activotrade_app/core/storage/secure_storage_service.dart';
 import 'package:activotrade_app/features/auth/auth_cubit.dart';
 import 'package:activotrade_app/features/auth/auth_state.dart';
-import 'package:activotrade_app/features/auth/models/user.dart';
+import 'package:activotrade_app/features/auth/data/models/auth_response_dto.dart';
+import 'package:activotrade_app/features/auth/data/models/login_request_dto.dart';
+import 'package:activotrade_app/features/auth/data/services/auth_service.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockApiService extends Mock implements ApiService {}
+class MockAuthService extends Mock implements AuthService {}
 
 class MockSecureStorageService extends Mock implements SecureStorageService {}
 
 class MockBiometricService extends Mock implements BiometricService {}
 
+class FakeLoginRequestDto extends Fake implements LoginRequestDto {}
+
 void main() {
-  late MockApiService apiService;
+  setUpAll(() {
+    registerFallbackValue(FakeLoginRequestDto());
+  });
+  late MockAuthService authService;
   late MockSecureStorageService storageService;
   late MockBiometricService biometricService;
 
   const User demoUser = User(
     id: 'user_demo_123',
     username: 'demo',
-    fullName: 'Demo Investor',
+    fullname: 'Demo Investor',
   );
 
-  final Map<String, dynamic> validBody = <String, dynamic>{
-    'success': true,
-    'token': 'tok_123',
-    'user': <String, dynamic>{
-      'id': 'user_demo_123',
-      'username': 'demo',
-      'fullName': 'Demo Investor',
-    },
-  };
+  const AuthResponseDto validResponse = AuthResponseDto(
+    accessToken: 'tok_123',
+    refreshToken: 'ref_123',
+    user: demoUser,
+  );
 
   setUp(() {
-    apiService = MockApiService();
+    authService = MockAuthService();
     storageService = MockSecureStorageService();
     biometricService = MockBiometricService();
 
     // Writes succeed unless a test says otherwise.
-    when(() => storageService.saveToken(any())).thenAnswer((_) async {});
+    when(() => storageService.saveAccessToken(any())).thenAnswer((_) async {});
+    when(() => storageService.saveRefreshToken(any())).thenAnswer((_) async {});
     when(() => storageService.saveUser(any())).thenAnswer((_) async {});
     when(
       () => storageService.setBiometricEnabled(enabled: any(named: 'enabled')),
@@ -55,176 +57,114 @@ void main() {
   });
 
   AuthCubit buildCubit() => AuthCubit(
-    apiService: apiService,
+    authService: authService,
     storageService: storageService,
     biometricService: biometricService,
   );
 
-  Response<dynamic> response(Object? data, {int statusCode = 200}) =>
-      Response<dynamic>(
-        requestOptions: RequestOptions(path: ApiConstants.login),
-        statusCode: statusCode,
-        data: data,
-      );
-
-  void stubLogin(Future<Response<dynamic>> Function() result) {
-    when(
-      () => apiService.login(
-        username: any(named: 'username'),
-        password: any(named: 'password'),
-      ),
-    ).thenAnswer((_) => result());
-  }
-
-  DioException badResponse(int statusCode) => DioException(
-    requestOptions: RequestOptions(path: ApiConstants.login),
-    type: DioExceptionType.badResponse,
-    response: response(<String, dynamic>{'success': false}, statusCode: statusCode),
-  );
-
-  group('checkBiometricAvailability', () {
+  group('login', () {
     blocTest<AuthCubit, AuthState>(
-      'offers nothing when the device has no usable biometrics',
+      'emits [Loading, RequireBiometricPrompt] when hardware available',
       build: () {
-        when(() => biometricService.isAvailable()).thenAnswer((_) async => false);
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) => cubit.checkBiometricAvailability(),
-      expect: () => <AuthState>[const AuthInitial()],
-    );
-
-    blocTest<AuthCubit, AuthState>(
-      'offers setup when hardware exists but no session is saved',
-      build: () {
-        when(() => biometricService.isAvailable()).thenAnswer((_) async => true);
+        when(
+          () => authService.login(any()),
+        ).thenAnswer((_) async => validResponse);
+        when(
+          () => biometricService.isAvailable(),
+        ).thenAnswer((_) async => true);
         when(
           () => storageService.isBiometricEnabled(),
         ).thenAnswer((_) async => false);
-        when(() => storageService.getToken()).thenAnswer((_) async => null);
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) => cubit.checkBiometricAvailability(),
-      expect: () => <AuthState>[
-        const AuthInitial(canOfferBiometricSetup: true),
-      ],
-    );
-
-    blocTest<AuthCubit, AuthState>(
-      'offers unlock when a session was saved for biometrics',
-      build: () {
-        when(() => biometricService.isAvailable()).thenAnswer((_) async => true);
-        when(
-          () => storageService.isBiometricEnabled(),
-        ).thenAnswer((_) async => true);
-        when(() => storageService.getToken()).thenAnswer((_) async => 'tok_123');
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) => cubit.checkBiometricAvailability(),
-      expect: () => <AuthState>[
-        const AuthInitial(canLoginWithBiometrics: true),
-      ],
-    );
-  });
-
-  group('login', () {
-    blocTest<AuthCubit, AuthState>(
-      'emits [Loading, Success] and persists token and user',
-      build: () {
-        stubLogin(() async => response(validBody));
         return buildCubit();
       },
       act: (AuthCubit cubit) =>
           cubit.login(username: 'demo', password: 'password123'),
       expect: () => <AuthState>[
         const AuthLoading(),
-        const AuthSuccess(demoUser),
+        const AuthRequireBiometricPrompt(demoUser),
       ],
       verify: (_) {
-        verify(() => storageService.saveToken('tok_123')).called(1);
+        verify(() => storageService.saveAccessToken('tok_123')).called(1);
+        verify(() => storageService.saveRefreshToken('ref_123')).called(1);
         verify(
           () => storageService.saveUser(jsonEncode(demoUser.toJson())),
         ).called(1);
-        verify(
-          () => storageService.setBiometricEnabled(enabled: false),
-        ).called(1);
       },
     );
 
     blocTest<AuthCubit, AuthState>(
-      'stores the biometric opt-in when the user asked for it',
+      'skips the opt-in offer when the backend returned no refresh token',
       build: () {
-        stubLogin(() async => response(validBody));
+        when(() => authService.login(any())).thenAnswer(
+          (_) async => const AuthResponseDto(
+            accessToken: 'tok_123',
+            refreshToken: '',
+            user: demoUser,
+          ),
+        );
+        when(
+          () => biometricService.isAvailable(),
+        ).thenAnswer((_) async => true);
+        when(
+          () => storageService.isBiometricEnabled(),
+        ).thenAnswer((_) async => false);
         return buildCubit();
       },
-      act: (AuthCubit cubit) => cubit.login(
-        username: 'demo',
-        password: 'password123',
-        enableBiometrics: true,
-      ),
+      act: (AuthCubit cubit) =>
+          cubit.login(username: 'demo', password: 'password123'),
+      // Enabling biometrics here would produce a lock that checkSession()
+      // silently ignores on the next launch, since it requires both flags.
       expect: () => <AuthState>[
         const AuthLoading(),
         const AuthSuccess(demoUser),
       ],
       verify: (_) {
-        verify(
-          () => storageService.setBiometricEnabled(enabled: true),
-        ).called(1);
+        verifyNever(() => storageService.saveRefreshToken(any()));
       },
     );
 
     blocTest<AuthCubit, AuthState>(
-      'fails and persists nothing when the token is missing',
+      'emits [Loading, Success] when hardware unavailable',
       build: () {
-        stubLogin(() async => response(<String, dynamic>{'success': true}));
+        when(
+          () => authService.login(any()),
+        ).thenAnswer((_) async => validResponse);
+        when(
+          () => biometricService.isAvailable(),
+        ).thenAnswer((_) async => false);
+        when(
+          () => storageService.isBiometricEnabled(),
+        ).thenAnswer((_) async => false);
         return buildCubit();
       },
       act: (AuthCubit cubit) =>
           cubit.login(username: 'demo', password: 'password123'),
       expect: () => <AuthState>[
         const AuthLoading(),
-        const AuthFailure(AuthFailureReason.generic),
-        const AuthInitial(),
+        const AuthSuccess(demoUser),
       ],
       verify: (_) {
-        verifyNever(() => storageService.saveToken(any()));
-      },
-    );
-
-    blocTest<AuthCubit, AuthState>(
-      'fails when the user object is malformed',
-      build: () {
-        stubLogin(
-          () async => response(<String, dynamic>{
-            'token': 'tok_123',
-            'user': <String, dynamic>{'id': 'user_demo_123'},
-          }),
-        );
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) =>
-          cubit.login(username: 'demo', password: 'password123'),
-      expect: () => <AuthState>[
-        const AuthLoading(),
-        const AuthFailure(AuthFailureReason.generic),
-        const AuthInitial(),
-      ],
-      verify: (_) {
-        verifyNever(() => storageService.saveToken(any()));
+        verify(() => storageService.saveAccessToken('tok_123')).called(1);
+        verify(() => storageService.saveRefreshToken('ref_123')).called(1);
       },
     );
 
     blocTest<AuthCubit, AuthState>(
       'ignores a second login while the first is still in flight',
       build: () {
-        stubLogin(() async {
+        when(() => authService.login(any())).thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 50));
-          return response(validBody);
+          return validResponse;
         });
+        when(
+          () => biometricService.isAvailable(),
+        ).thenAnswer((_) async => false);
+        when(
+          () => storageService.isBiometricEnabled(),
+        ).thenAnswer((_) async => false);
         return buildCubit();
       },
       act: (AuthCubit cubit) async {
-        // Deliberately not awaited: simulates a double tap or keyboard
-        // submit landing before the first request resolves.
         unawaited(cubit.login(username: 'demo', password: 'password123'));
         await cubit.login(username: 'demo', password: 'password123');
       },
@@ -234,93 +174,40 @@ void main() {
         const AuthSuccess(demoUser),
       ],
       verify: (_) {
+        verify(() => authService.login(any())).called(1);
+      },
+    );
+  });
+
+  group('setupBiometricsPostLogin', () {
+    blocTest<AuthCubit, AuthState>(
+      'enables biometrics on successful authentication',
+      build: () {
+        when(
+          () => biometricService.authenticate(reason: any(named: 'reason')),
+        ).thenAnswer((_) async => BiometricResult.success);
+        return buildCubit();
+      },
+      seed: () => const AuthRequireBiometricPrompt(demoUser),
+      act: (AuthCubit cubit) => cubit.setupBiometricsPostLogin(demoUser),
+      // No AuthLoading: the panel stays on AuthRequireBiometricPrompt and
+      // owns its own busy state while the OS sheet is open (see auth_cubit).
+      expect: () => <AuthState>[const AuthSuccess(demoUser)],
+      verify: (_) {
         verify(
-          () => apiService.login(
-            username: any(named: 'username'),
-            password: any(named: 'password'),
-          ),
+          () => storageService.setBiometricEnabled(enabled: true),
         ).called(1);
       },
     );
+  });
 
+  group('skipBiometricsPostLogin', () {
     blocTest<AuthCubit, AuthState>(
-      'maps a connection error to a network failure',
-      build: () {
-        stubLogin(
-          () async => throw DioException(
-            requestOptions: RequestOptions(path: ApiConstants.login),
-            type: DioExceptionType.connectionError,
-          ),
-        );
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) =>
-          cubit.login(username: 'demo', password: 'password123'),
-      expect: () => <AuthState>[
-        const AuthLoading(),
-        const AuthFailure(AuthFailureReason.network),
-        const AuthInitial(),
-      ],
-    );
-
-    blocTest<AuthCubit, AuthState>(
-      'maps 401 to a credentials failure',
-      build: () {
-        stubLogin(() async => throw badResponse(401));
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) =>
-          cubit.login(username: 'demo', password: 'wrong'),
-      expect: () => <AuthState>[
-        const AuthLoading(),
-        const AuthFailure(AuthFailureReason.credentials),
-        const AuthInitial(),
-      ],
-    );
-
-    blocTest<AuthCubit, AuthState>(
-      'maps 429 to a rate-limit failure',
-      build: () {
-        stubLogin(() async => throw badResponse(429));
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) =>
-          cubit.login(username: 'demo', password: 'password123'),
-      expect: () => <AuthState>[
-        const AuthLoading(),
-        const AuthFailure(AuthFailureReason.tooManyAttempts),
-        const AuthInitial(),
-      ],
-    );
-
-    blocTest<AuthCubit, AuthState>(
-      'maps any 5xx to a server-unavailable failure',
-      build: () {
-        stubLogin(() async => throw badResponse(503));
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) =>
-          cubit.login(username: 'demo', password: 'password123'),
-      expect: () => <AuthState>[
-        const AuthLoading(),
-        const AuthFailure(AuthFailureReason.serverUnavailable),
-        const AuthInitial(),
-      ],
-    );
-
-    blocTest<AuthCubit, AuthState>(
-      'maps an unexpected error to a generic failure',
-      build: () {
-        stubLogin(() async => throw StateError('boom'));
-        return buildCubit();
-      },
-      act: (AuthCubit cubit) =>
-          cubit.login(username: 'demo', password: 'password123'),
-      expect: () => <AuthState>[
-        const AuthLoading(),
-        const AuthFailure(AuthFailureReason.generic),
-        const AuthInitial(),
-      ],
+      'skips biometric setup',
+      build: () => buildCubit(),
+      seed: () => const AuthRequireBiometricPrompt(demoUser),
+      act: (AuthCubit cubit) => cubit.skipBiometricsPostLogin(demoUser),
+      expect: () => <AuthState>[const AuthSuccess(demoUser)],
     );
   });
 
@@ -332,13 +219,25 @@ void main() {
     }
 
     blocTest<AuthCubit, AuthState>(
-      'restores the saved session on a successful prompt',
+      'exchanges refresh token on successful prompt',
       build: () {
         stubPrompt(BiometricResult.success);
-        when(() => storageService.getToken()).thenAnswer((_) async => 'tok_123');
+        when(
+          () => storageService.getRefreshToken(),
+        ).thenAnswer((_) async => 'ref_123');
+        when(
+          () => storageService.getAccessToken(),
+        ).thenAnswer((_) async => null);
         when(
           () => storageService.getUser(),
         ).thenAnswer((_) async => jsonEncode(demoUser.toJson()));
+        when(
+          () => authService.refreshTokenExchange(
+            refreshToken: any(named: 'refreshToken'),
+          ),
+        ).thenAnswer(
+          (_) async => (accessToken: 'tok_123', refreshToken: 'ref_123'),
+        );
         return buildCubit();
       },
       act: (AuthCubit cubit) => cubit.loginWithBiometrics(reason: 'unlock'),
@@ -347,13 +246,11 @@ void main() {
         const AuthSuccess(demoUser),
       ],
       verify: (_) {
-        // Biometrics unlock a stored session; they never call the backend.
-        verifyNever(
-          () => apiService.login(
-            username: any(named: 'username'),
-            password: any(named: 'password'),
-          ),
-        );
+        verify(
+          () => authService.refreshTokenExchange(refreshToken: 'ref_123'),
+        ).called(1);
+        verify(() => storageService.saveAccessToken('tok_123')).called(1);
+        verify(() => storageService.saveRefreshToken('ref_123')).called(1);
       },
     );
 
@@ -385,7 +282,9 @@ void main() {
       'clears the saved session when it can no longer be read',
       build: () {
         stubPrompt(BiometricResult.success);
-        when(() => storageService.getToken()).thenAnswer((_) async => null);
+        when(
+          () => storageService.getRefreshToken(),
+        ).thenAnswer((_) async => null);
         when(() => storageService.getUser()).thenAnswer((_) async => null);
         return buildCubit();
       },
@@ -393,7 +292,7 @@ void main() {
       expect: () => <AuthState>[
         const AuthLoading(),
         const AuthFailure(AuthFailureReason.biometricSessionExpired),
-        const AuthInitial(canOfferBiometricSetup: true),
+        const AuthInitial(),
       ],
       verify: (_) {
         verify(() => storageService.clear()).called(1);

@@ -12,14 +12,21 @@ class AuthResponseDto {
     final String accessToken =
         json['accessToken'] as String? ?? json['token'] as String? ?? '';
     final String refreshToken = json['refreshToken'] as String? ?? '';
-    final Map<String, dynamic> userMap =
-        json['user'] is Map<String, dynamic>
-            ? json['user'] as Map<String, dynamic>
-            : <String, dynamic>{};
+    final User? user = User.fromJson(json['user']);
+
+    // The login contract guarantees both tokens. A missing refresh token used
+    // to degrade silently — no biometric offer, and a session that dies at the
+    // first access-token expiry with no way back. Fail here instead.
+    if (accessToken.isEmpty || refreshToken.isEmpty || user == null) {
+      throw const FormatException(
+        'Authentication response is missing a token pair or a valid user',
+      );
+    }
+
     return AuthResponseDto(
       accessToken: accessToken,
       refreshToken: refreshToken,
-      user: User.fromJson(userMap),
+      user: user,
     );
   }
 
@@ -29,4 +36,3 @@ class AuthResponseDto {
 
   User toDomain() => user;
 }
-

@@ -10,35 +10,46 @@ import 'domain/user.dart';
 /// Manages global application authentication session state.
 class AppAuthCubit extends Cubit<AppAuthState> {
   AppAuthCubit({SecureStorageService? storageService})
-      : _storageService = storageService ?? SecureStorageService(),
-        super(const AppAuthInitial());
+    : _storageService = storageService ?? SecureStorageService(),
+      super(const AppAuthInitial());
 
   final SecureStorageService _storageService;
 
   /// Checks if a valid session exists in secure storage (e.g., on app launch).
-  /// If biometric login is enabled, requires biometric unlock on startup.
+  ///
+  /// A biometric-enabled session emits [AppAuthLocked] rather than
+  /// [AppUnauthenticated]: the credentials are still valid, so the user should
+  /// be asked to unlock, not to sign in again.
   Future<void> checkSession() async {
     try {
-      final bool biometricEnabled =
-          await _storageService.isBiometricEnabled();
+      final bool biometricEnabled = await _storageService.isBiometricEnabled();
       final String? refreshToken = await _storageService.getRefreshToken();
+      final String? token = await _storageService.getAccessToken();
+      final String? userRaw = await _storageService.getUser();
 
-      // If biometric login is enabled, force user to pass biometric unlock on AuthScreen
-      if (biometricEnabled && refreshToken != null && refreshToken.isNotEmpty) {
+      final bool hasSession =
+          token != null && token.isNotEmpty && userRaw != null;
+
+      if (!hasSession) {
         emit(const AppUnauthenticated());
         return;
       }
 
-      final String? token = await _storageService.getAccessToken();
-      final String? userRaw = await _storageService.getUser();
+      final User? user = User.fromJson(jsonDecode(userRaw));
 
-      if (token != null && token.isNotEmpty && userRaw != null) {
-        final Map<String, dynamic> json =
-            jsonDecode(userRaw) as Map<String, dynamic>;
-        final User user = User.fromJson(json);
-        emit(AppAuthenticated(user));
+      // A stored blob we can no longer parse is not a session.
+      if (user == null) {
+        emit(const AppUnauthenticated());
         return;
       }
+
+      if (biometricEnabled && refreshToken != null && refreshToken.isNotEmpty) {
+        emit(AppAuthLocked(user));
+        return;
+      }
+
+      emit(AppAuthenticated(user));
+      return;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error restoring session: $e');
@@ -58,4 +69,3 @@ class AppAuthCubit extends Cubit<AppAuthState> {
     emit(const AppUnauthenticated());
   }
 }
-

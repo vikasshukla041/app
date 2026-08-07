@@ -37,4 +37,3 @@ class PasswordTextField extends StatelessWidget {
     );
   }
 }
-

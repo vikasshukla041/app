@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
 
 import '../auth/app_auth_cubit.dart';
-import '../constants/api_constant.dart';
+import '../auth/token_refresher.dart';
 import '../config/app_config.dart';
+import '../constants/api_constant.dart';
 import '../storage/secure_storage_service.dart';
 import 'auth_interceptor.dart';
 
@@ -12,13 +13,22 @@ class ApiService {
     Dio? dio,
     SecureStorageService? storageService,
     AppAuthCubit? appAuthCubit,
-  }) : _dio = dio ?? _createDio(storageService, appAuthCubit);
+    TokenRefresher Function()? tokenRefresherProvider,
+  }) : _dio =
+           dio ??
+           _createDio(storageService, appAuthCubit, tokenRefresherProvider);
 
   final Dio _dio;
+
+  /// Marker for [AuthInterceptor]: a request carrying this extra is exempt
+  /// from header injection and from 401 retry. Without it, a 401 from the
+  /// refresh endpoint would trigger a refresh of the refresh call itself.
+  static const String refreshRequestFlag = 'is_refresh_request';
 
   static Dio _createDio(
     SecureStorageService? storageService,
     AppAuthCubit? appAuthCubit,
+    TokenRefresher Function()? tokenRefresherProvider,
   ) {
     final Dio dio = Dio(
       BaseOptions(
@@ -31,6 +41,7 @@ class ApiService {
       AuthInterceptor(
         storageService: storageService,
         appAuthCubit: appAuthCubit,
+        tokenRefresherProvider: tokenRefresherProvider,
       ),
     );
     return dio;
@@ -46,17 +57,28 @@ class ApiService {
     );
   }
 
-  /// Exchanges a refresh token for a new access token.
-  Future<Response<dynamic>> refreshToken({
-    required String refreshToken,
-  }) {
+  /// Exchanges a refresh token for a new token pair.
+  ///
+  /// Tagged with [refreshRequestFlag] so [AuthInterceptor] neither attaches
+  /// the expired access token nor tries to refresh in reaction to this call
+  /// failing.
+  Future<Response<dynamic>> refreshToken({required String refreshToken}) {
     return _dio.post<dynamic>(
-      '/api/auth/refresh',
+      ApiConstants.refresh,
       data: <String, dynamic>{'refreshToken': refreshToken},
+      options: Options(extra: <String, dynamic>{refreshRequestFlag: true}),
     );
   }
 
   Future<Response<dynamic>> balance() =>
       _dio.get<dynamic>(ApiConstants.balance);
-}
 
+  /// Registers this device for push notifications.
+  ///
+  /// Bearer token is attached by [AuthInterceptor]; this endpoint requires it.
+  Future<Response<dynamic>> registerDevice({
+    required Map<String, dynamic> payload,
+  }) {
+    return _dio.post<dynamic>(ApiConstants.registerDevice, data: payload);
+  }
+}

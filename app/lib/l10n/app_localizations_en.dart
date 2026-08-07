@@ -80,4 +80,84 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorBiometricSessionExpired =>
       'Your saved session is no longer valid. Please sign in with your password.';
+
+  @override
+  String get dashboardWelcomeLabel => 'Welcome back,';
+
+  @override
+  String get signOutTooltip => 'Sign out';
+
+  @override
+  String get biometricOptInDialogTitle => 'Enable Biometric Login?';
+
+  @override
+  String get biometricOptInDialogBody =>
+      'Would you like to enable Face ID / Touch ID to sign in faster on your next visit?';
+
+  @override
+  String get biometricOptInDialogSkip => 'Skip for Now';
+
+  @override
+  String get biometricOptInDialogEnable => 'Enable Biometrics';
+
+  @override
+  String get portfolioTotalValueLabel => 'Total Portfolio Value';
+
+  @override
+  String get portfolioTotalGainLabel => 'Total Gain';
+
+  @override
+  String get quickLinksHeader => 'Account Navigation';
+
+  @override
+  String get quickLinkHoldingsTitle => 'Holdings';
+
+  @override
+  String get quickLinkHoldingsSubtitle =>
+      'View active asset allocation & portfolio breakdown';
+
+  @override
+  String get quickLinkPositionsTitle => 'Positions';
+
+  @override
+  String get quickLinkPositionsSubtitle =>
+      'Live equity & open market positions';
+
+  @override
+  String get quickLinkOrdersTitle => 'Orders';
+
+  @override
+  String get quickLinkOrdersSubtitle =>
+      'Pending, executed, and cancelled trade orders';
+
+  @override
+  String get quickLinkReportsTitle => 'Reports';
+
+  @override
+  String get quickLinkReportsSubtitle =>
+      'Account tax reports & activity summaries';
+
+  @override
+  String get quickLinkPnlTitle => 'P&L Statement';
+
+  @override
+  String get quickLinkPnlSubtitle =>
+      'Realized & unrealized profit/loss breakdown';
+
+  @override
+  String quickLinkSelectedMessage(String title) {
+    return '$title selected';
+  }
+
+  @override
+  String get dashboardLoadError => 'Couldn\'t load your portfolio.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get signOutSemantics => 'Sign out button';
+
+  @override
+  String get signOutAndUseAnotherAccount => 'Sign out and use another account';
 }

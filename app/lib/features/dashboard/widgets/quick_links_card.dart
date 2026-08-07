@@ -12,8 +12,9 @@ class QuickLinksCard extends StatelessWidget {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final TextTheme textTheme = Theme.of(context).textTheme;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final List<Color> accents =
-        Theme.of(context).extension<AppCategoryColors>()!.accents;
+    final List<Color> accents = Theme.of(
+      context,
+    ).extension<AppCategoryColors>()!.accents;
 
     final List<_QuickMenuItem> menuItems = <_QuickMenuItem>[
       _QuickMenuItem(

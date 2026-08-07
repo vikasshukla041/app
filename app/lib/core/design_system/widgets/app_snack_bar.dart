@@ -55,4 +55,3 @@ abstract final class AppSnackBar {
       );
   }
 }
-

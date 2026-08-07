@@ -18,16 +18,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loginSubtitle => 'Inicia sesión en tu cuenta de inversión';
 
   @override
-  String get usernameLabel => 'Usuario o correo electrónico';
+  String get usernameLabel => 'Nombre de usuario o correo electrónico';
 
   @override
-  String get usernameFieldSemantics => 'Campo de usuario o correo electrónico';
+  String get usernameFieldSemantics =>
+      'Campo de entrada de nombre de usuario o correo electrónico';
 
   @override
   String get passwordLabel => 'Contraseña';
 
   @override
-  String get passwordFieldSemantics => 'Campo de contraseña';
+  String get passwordFieldSemantics => 'Campo de entrada de contraseña';
 
   @override
   String get signInButton => 'Iniciar sesión';
@@ -40,10 +41,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get useBiometricsSemantics =>
-      'Botón de inicio de sesión con biometría';
+      'Botón para iniciar sesión con biometría';
 
   @override
-  String get dashboardTitle => 'Panel';
+  String get dashboardTitle => 'Panel de control';
 
   @override
   String dashboardWelcome(String name) {
@@ -52,24 +53,25 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorNetwork =>
-      'No se pudo conectar con el servidor.\nComprueba tu conexión a internet.';
+      'No se puede conectar al servidor.\nPor favor, verifica tu conexión a Internet.';
 
   @override
-  String get errorCredentials => 'Nombre de usuario o contraseña incorrectos.';
+  String get errorCredentials => 'Nombre de usuario o contraseña no válidos.';
 
   @override
   String get errorTooManyAttempts =>
-      'Demasiados intentos de inicio de sesión. Inténtalo más tarde.';
+      'Demasiados intentos de inicio de sesión. Por favor, inténtalo de nuevo más tarde.';
 
   @override
   String get errorServerUnavailable =>
-      'El servidor no está disponible en este momento. Inténtalo más tarde.';
+      'El servidor no está disponible actualmente. Por favor, inténtalo de nuevo más tarde.';
 
   @override
-  String get errorGeneric => 'Algo salió mal. Inténtalo de nuevo más tarde.';
+  String get errorGeneric =>
+      'Algo salió mal. Por favor, inténtalo de nuevo más tarde.';
 
   @override
-  String get biometricOptIn => 'Activar inicio de sesión biométrico';
+  String get biometricOptIn => 'Habilitar inicio de sesión biométrico';
 
   @override
   String get biometricPromptReason =>
@@ -81,5 +83,86 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorBiometricSessionExpired =>
-      'Tu sesión guardada ya no es válida. Inicia sesión con tu contraseña.';
+      'Tu sesión guardada ya no es válida. Por favor, inicia sesión con tu contraseña.';
+
+  @override
+  String get dashboardWelcomeLabel => 'Bienvenido de nuevo,';
+
+  @override
+  String get signOutTooltip => 'Cerrar sesión';
+
+  @override
+  String get biometricOptInDialogTitle =>
+      '¿Habilitar inicio de sesión biométrico?';
+
+  @override
+  String get biometricOptInDialogBody =>
+      '¿Deseas habilitar Face ID / Touch ID para iniciar sesión más rápido en tu próxima visita?';
+
+  @override
+  String get biometricOptInDialogSkip => 'Omitir por ahora';
+
+  @override
+  String get biometricOptInDialogEnable => 'Habilitar biometría';
+
+  @override
+  String get portfolioTotalValueLabel => 'Valor total de la cartera';
+
+  @override
+  String get portfolioTotalGainLabel => 'Ganancia total';
+
+  @override
+  String get quickLinksHeader => 'Navegación de la cuenta';
+
+  @override
+  String get quickLinkHoldingsTitle => 'Participaciones';
+
+  @override
+  String get quickLinkHoldingsSubtitle =>
+      'Ver asignación de activos y desglose de la cartera';
+
+  @override
+  String get quickLinkPositionsTitle => 'Posiciones';
+
+  @override
+  String get quickLinkPositionsSubtitle =>
+      'Posiciones abiertas y de renta variable en tiempo real';
+
+  @override
+  String get quickLinkOrdersTitle => 'Órdenes';
+
+  @override
+  String get quickLinkOrdersSubtitle =>
+      'Órdenes de compra y venta pendientes, ejecutadas y canceladas';
+
+  @override
+  String get quickLinkReportsTitle => 'Informes';
+
+  @override
+  String get quickLinkReportsSubtitle =>
+      'Informes fiscales de la cuenta y resúmenes de actividad';
+
+  @override
+  String get quickLinkPnlTitle => 'Estado de pérdidas y ganancias';
+
+  @override
+  String get quickLinkPnlSubtitle =>
+      'Desglose de ganancias y pérdidas realizadas y no realizadas';
+
+  @override
+  String quickLinkSelectedMessage(String title) {
+    return '$title seleccionado';
+  }
+
+  @override
+  String get dashboardLoadError => 'No se pudo cargar tu cartera.';
+
+  @override
+  String get retry => 'Reintentar';
+
+  @override
+  String get signOutSemantics => 'Botón de cerrar sesión';
+
+  @override
+  String get signOutAndUseAnotherAccount => 'Cerrar sesión y usar otra cuenta';
 }

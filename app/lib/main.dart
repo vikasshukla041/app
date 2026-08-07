@@ -7,6 +7,7 @@ import 'core/design_system/theme.dart';
 import 'core/di/service_locator.dart';
 import 'features/auth/auth_cubit.dart';
 import 'features/auth/auth_screen.dart';
+import 'features/auth/locked_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'l10n/app_localizations.dart';
 
@@ -27,9 +28,7 @@ class ActivoTradeApp extends StatelessWidget {
         BlocProvider<AppAuthCubit>(
           create: (_) => getIt<AppAuthCubit>()..checkSession(),
         ),
-        BlocProvider<AuthCubit>(
-          create: (_) => getIt<AuthCubit>()..checkBiometricAvailability(),
-        ),
+        BlocProvider<AuthCubit>(create: (_) => getIt<AuthCubit>()),
       ],
       child: MaterialApp(
         onGenerateTitle: (BuildContext context) =>
@@ -37,15 +36,19 @@ class ActivoTradeApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ActivoTradeTheme.lightTheme,
         darkTheme: ActivoTradeTheme.darkTheme,
-        themeMode: ThemeMode.system,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: BlocBuilder<AppAuthCubit, AppAuthState>(
           builder: (context, state) {
-            if (state is AppAuthenticated) {
-              return const DashboardScreen();
-            }
-            return const AuthScreen();
+            return switch (state) {
+              AppAuthenticated() => const DashboardScreen(),
+              AppAuthLocked(:final user) => LockedScreen(user: user),
+              // checkSession() reads secure storage asynchronously. Mapping
+              // the pre-answer state to AuthScreen flashes the login form on
+              // every launch before the lock screen replaces it.
+              AppAuthInitial() => const _SplashScreen(),
+              AppUnauthenticated() => const AuthScreen(),
+            };
           },
         ),
       ),
@@ -53,3 +56,12 @@ class ActivoTradeApp extends StatelessWidget {
   }
 }
 
+/// Neutral holding screen shown while the saved session is being restored.
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
+}

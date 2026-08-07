@@ -229,6 +229,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your saved session is no longer valid. Please sign in with your password.'**
   String get errorBiometricSessionExpired;
+
+  /// No description provided for @dashboardWelcomeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back,'**
+  String get dashboardWelcomeLabel;
+
+  /// No description provided for @signOutTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOutTooltip;
+
+  /// No description provided for @biometricOptInDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Biometric Login?'**
+  String get biometricOptInDialogTitle;
+
+  /// No description provided for @biometricOptInDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Would you like to enable Face ID / Touch ID to sign in faster on your next visit?'**
+  String get biometricOptInDialogBody;
+
+  /// No description provided for @biometricOptInDialogSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for Now'**
+  String get biometricOptInDialogSkip;
+
+  /// No description provided for @biometricOptInDialogEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Biometrics'**
+  String get biometricOptInDialogEnable;
+
+  /// No description provided for @portfolioTotalValueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Portfolio Value'**
+  String get portfolioTotalValueLabel;
+
+  /// No description provided for @portfolioTotalGainLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Gain'**
+  String get portfolioTotalGainLabel;
+
+  /// No description provided for @quickLinksHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Navigation'**
+  String get quickLinksHeader;
+
+  /// No description provided for @quickLinkHoldingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings'**
+  String get quickLinkHoldingsTitle;
+
+  /// No description provided for @quickLinkHoldingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View active asset allocation & portfolio breakdown'**
+  String get quickLinkHoldingsSubtitle;
+
+  /// No description provided for @quickLinkPositionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Positions'**
+  String get quickLinkPositionsTitle;
+
+  /// No description provided for @quickLinkPositionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Live equity & open market positions'**
+  String get quickLinkPositionsSubtitle;
+
+  /// No description provided for @quickLinkOrdersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get quickLinkOrdersTitle;
+
+  /// No description provided for @quickLinkOrdersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending, executed, and cancelled trade orders'**
+  String get quickLinkOrdersSubtitle;
+
+  /// No description provided for @quickLinkReportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get quickLinkReportsTitle;
+
+  /// No description provided for @quickLinkReportsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account tax reports & activity summaries'**
+  String get quickLinkReportsSubtitle;
+
+  /// No description provided for @quickLinkPnlTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'P&L Statement'**
+  String get quickLinkPnlTitle;
+
+  /// No description provided for @quickLinkPnlSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Realized & unrealized profit/loss breakdown'**
+  String get quickLinkPnlSubtitle;
+
+  /// No description provided for @quickLinkSelectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} selected'**
+  String quickLinkSelectedMessage(String title);
+
+  /// No description provided for @dashboardLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your portfolio.'**
+  String get dashboardLoadError;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @signOutSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out button'**
+  String get signOutSemantics;
+
+  /// No description provided for @signOutAndUseAnotherAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out and use another account'**
+  String get signOutAndUseAnotherAccount;
 }
 
 class _AppLocalizationsDelegate

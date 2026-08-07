@@ -21,7 +21,9 @@ void main() {
       BiometricType.fingerprint,
     ],
   }) {
-    when(() => localAuth.isDeviceSupported()).thenAnswer((_) async => supported);
+    when(
+      () => localAuth.isDeviceSupported(),
+    ).thenAnswer((_) async => supported);
     when(() => localAuth.canCheckBiometrics).thenAnswer((_) async => canCheck);
     when(
       () => localAuth.getAvailableBiometrics(),
@@ -54,9 +56,7 @@ void main() {
         () => localAuth.authenticate(
           localizedReason: any(named: 'localizedReason'),
           biometricOnly: any(named: 'biometricOnly'),
-          persistAcrossBackgrounding: any(
-            named: 'persistAcrossBackgrounding',
-          ),
+          persistAcrossBackgrounding: any(named: 'persistAcrossBackgrounding'),
         ),
       ).thenAnswer((_) => result());
     }

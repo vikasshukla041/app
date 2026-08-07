@@ -1,12 +1,12 @@
 import 'package:get_it/get_it.dart';
 
+import '../../features/auth/auth_cubit.dart';
+import '../../features/auth/data/services/auth_service.dart';
+import '../../features/dashboard/dashboard_cubit.dart';
 import '../auth/app_auth_cubit.dart';
 import '../network/api_service.dart';
 import '../security/biometric_service.dart';
 import '../storage/secure_storage_service.dart';
-import '../../features/auth/auth_cubit.dart';
-import '../../features/auth/data/services/auth_service.dart';
-import '../../features/dashboard/dashboard_cubit.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -16,9 +16,7 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<SecureStorageService>(
     () => SecureStorageService(),
   );
-  getIt.registerLazySingleton<BiometricService>(
-    () => BiometricService(),
-  );
+  getIt.registerLazySingleton<BiometricService>(() => BiometricService());
 
   // Global Auth State
   getIt.registerLazySingleton<AppAuthCubit>(
@@ -29,6 +27,9 @@ void setupServiceLocator() {
     () => ApiService(
       storageService: getIt<SecureStorageService>(),
       appAuthCubit: getIt<AppAuthCubit>(),
+      // Provider, not instance: AuthService needs ApiService, which is what
+      // is being registered here. Resolving lazily breaks the cycle.
+      tokenRefresherProvider: () => getIt<AuthService>(),
     ),
   );
 
@@ -46,8 +47,8 @@ void setupServiceLocator() {
       appAuthCubit: getIt<AppAuthCubit>(),
     ),
   );
+
   getIt.registerFactory<DashboardCubit>(
     () => DashboardCubit(apiService: getIt<ApiService>()),
   );
 }
-

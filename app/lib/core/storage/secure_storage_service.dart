@@ -3,7 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Handles encrypted storage of access tokens, refresh tokens, and user credentials.
 class SecureStorageService {
   SecureStorageService({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _storage;
 
@@ -34,11 +34,18 @@ class SecureStorageService {
       await _storage.read(key: _biometricEnabledKey) == 'true';
 
   /// Clears stored session tokens on logout or session expiration.
-  Future<void> clear() => Future.wait<void>(<Future<void>>[
-        _storage.delete(key: _accessTokenKey),
-        _storage.delete(key: _refreshTokenKey),
-        _storage.delete(key: _userKey),
-        _storage.delete(key: _biometricEnabledKey),
-      ]);
+  ///
+  /// Deleted sequentially rather than with Future.wait: one failing delete
+  /// there abandons the rest, which could leave credentials behind — or the
+  /// biometric flag set with no tokens to unlock.
+  Future<void> clear() async {
+    for (final String key in const <String>[
+      _accessTokenKey,
+      _refreshTokenKey,
+      _userKey,
+      _biometricEnabledKey,
+    ]) {
+      await _storage.delete(key: key);
+    }
+  }
 }
-

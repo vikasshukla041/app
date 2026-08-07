@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import 'models/portfolio_summary.dart';
 
-/// States for loading the dashboard's portfolio balance.
+/// State for loading the dashboard's portfolio balance.
 sealed class DashboardState extends Equatable {
   const DashboardState();
 

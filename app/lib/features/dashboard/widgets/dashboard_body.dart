@@ -6,7 +6,7 @@ import '../models/portfolio_summary.dart';
 import 'portfolio_summary_card.dart';
 import 'quick_links_card.dart';
 
-/// Welcome header + portfolio cards, once a balance has loaded successfully.
+///Welcome header + ortfolio cards, once a balance has loaded
 class DashboardBody extends StatelessWidget {
   const DashboardBody({
     super.key,
@@ -21,8 +21,8 @@ class DashboardBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final NumberFormat currency = NumberFormat.simpleCurrency(
-      name: summary.currency,
+    final NumberFormat currencyFormat = NumberFormat.simpleCurrency(
+      locale: Localizations.localeOf(context).toString(),
     );
     final NumberFormat percent = NumberFormat.decimalPercentPattern(
       decimalDigits: 2,
@@ -34,6 +34,7 @@ class DashboardBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          // User Welcome Header with Full Name
           Text(
             l10n.dashboardWelcomeLabel,
             style: textTheme.bodyLarge?.copyWith(
@@ -48,15 +49,20 @@ class DashboardBody extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+
+          // Portfolio Summary Card (Total Amount, Green Returns & Gain)
           PortfolioSummaryCard(
-            totalBalance: currency.format(summary.netPortfolioValue),
+            totalBalance: currencyFormat.format(summary.netPortfolioValue),
             dailyReturnPercentage:
                 '$sign${percent.format(summary.dailyReturnPercentage / 100)}',
             dailyReturnAmount:
-                '$sign${currency.format(summary.dailyReturnAmount)}',
-            totalGain: '$sign${currency.format(summary.dailyReturnAmount)}',
+                '$sign${currencyFormat.format(summary.dailyReturnAmount)}',
+            totalGain:
+                '$sign${currencyFormat.format(summary.dailyReturnAmount)}',
           ),
           const SizedBox(height: 20),
+
+          // Quick Action Links Card (Holdings, Positions, Orders, Reports, P&L)
           const QuickLinksCard(),
         ],
       ),

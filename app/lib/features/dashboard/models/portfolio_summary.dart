@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// Immutable snapshot of the balance data returned by GET /api/user/balance.
+/// immutable snapshot of the balance data returned by api
 class PortfolioSummary extends Equatable {
   const PortfolioSummary({
     required this.currency,
@@ -14,8 +14,7 @@ class PortfolioSummary extends Equatable {
   final double dailyReturnAmount;
   final double dailyReturnPercentage;
 
-  /// Network responses are untrusted input; narrow with pattern matching
-  /// and return null on anything malformed rather than throwing.
+  /// network response untrusted input; narrow with pattern matching to ensure correct types
   static PortfolioSummary? fromJson(Object? json) {
     if (json case {
       'currency': final String currency,
@@ -35,9 +34,9 @@ class PortfolioSummary extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-        currency,
-        netPortfolioValue,
-        dailyReturnAmount,
-        dailyReturnPercentage,
-      ];
+    currency,
+    netPortfolioValue,
+    dailyReturnAmount,
+    dailyReturnPercentage,
+  ];
 }

@@ -141,4 +141,3 @@ class AppCategoryColors extends ThemeExtension<AppCategoryColors> {
     );
   }
 }
-

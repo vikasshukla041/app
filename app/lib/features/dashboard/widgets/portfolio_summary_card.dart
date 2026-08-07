@@ -5,13 +5,16 @@ import '../../../l10n/app_localizations.dart';
 
 /// Card component displaying the total portfolio balance, daily returns in green,
 /// and total unrealized gain.
+/// Every figure arrives pre-formatted: the caller owns locale and currency,
+/// so this widget never bakes in a default that would render identically in
+/// every language.
 class PortfolioSummaryCard extends StatelessWidget {
   const PortfolioSummaryCard({
     super.key,
-    this.totalBalance = '€124,580.50',
-    this.dailyReturnPercentage = '+1.48%',
-    this.dailyReturnAmount = '+€1,845.20',
-    this.totalGain = '+€14,850.20',
+    required this.totalBalance,
+    required this.dailyReturnPercentage,
+    required this.dailyReturnAmount,
+    required this.totalGain,
   });
 
   final String totalBalance;
@@ -24,8 +27,9 @@ class PortfolioSummaryCard extends StatelessWidget {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final TextTheme textTheme = Theme.of(context).textTheme;
     final ColorScheme colorScheme = Theme.of(context).colorScheme;
-    final Color positiveGreen =
-        Theme.of(context).extension<AppSemanticColors>()!.positive;
+    final Color positiveGreen = Theme.of(
+      context,
+    ).extension<AppSemanticColors>()!.positive;
 
     return Card(
       elevation: 2,
@@ -64,11 +68,7 @@ class PortfolioSummaryCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Icon(
-                        Icons.trending_up,
-                        size: 16,
-                        color: positiveGreen,
-                      ),
+                      Icon(Icons.trending_up, size: 16, color: positiveGreen),
                       const SizedBox(width: 4),
                       Text(
                         '$dailyReturnPercentage ($dailyReturnAmount)',
@@ -107,4 +107,3 @@ class PortfolioSummaryCard extends StatelessWidget {
     );
   }
 }
-

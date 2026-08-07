@@ -57,5 +57,8 @@
     }
   },
   "dashboardLoadError": "Couldn't load your portfolio.",
-  "retry": "Retry"
+  "retry": "Retry",
+  "signOutSemantics": "Sign out button",
+  "signOutAndUseAnotherAccount": "Sign out and use another account"
 }
+
