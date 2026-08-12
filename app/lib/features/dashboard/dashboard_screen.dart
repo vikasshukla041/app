@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/app_auth_state.dart';
@@ -66,7 +67,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const PortfolioSummaryCard(),
+                const _PlaceholderSummaryCard(),
                 const SizedBox(height: 20),
                 const QuickLinksCard(),
               ],
@@ -74,6 +75,38 @@ class DashboardScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+/// Sample figures shown until GET /api/user/balance is wired up.
+///
+/// Formatted through NumberFormat against the active locale rather than
+/// hardcoded, so the placeholder exercises the same currency and grouping
+/// rules the real data will — a euro string would look identical in every
+/// language and hide the bug until launch.
+class _PlaceholderSummaryCard extends StatelessWidget {
+  const _PlaceholderSummaryCard();
+
+  static const double _totalBalance = 124580.50;
+  static const double _dailyReturnAmount = 1845.20;
+  static const double _dailyReturnPercentage = 1.48;
+  static const double _totalGain = 14850.20;
+
+  @override
+  Widget build(BuildContext context) {
+    final String locale = Localizations.localeOf(context).toString();
+    final NumberFormat currency = NumberFormat.simpleCurrency(locale: locale);
+    final NumberFormat percent = NumberFormat.decimalPercentPattern(
+      locale: locale,
+      decimalDigits: 2,
+    );
+
+    return PortfolioSummaryCard(
+      totalBalance: currency.format(_totalBalance),
+      dailyReturnPercentage: '+${percent.format(_dailyReturnPercentage / 100)}',
+      dailyReturnAmount: '+${currency.format(_dailyReturnAmount)}',
+      totalGain: '+${currency.format(_totalGain)}',
     );
   }
 }

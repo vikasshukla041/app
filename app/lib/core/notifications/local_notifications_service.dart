@@ -67,7 +67,7 @@ class LocalNotificationsService {
 
   void _log(String message) {
     if (kDebugMode) {
-      debugPrint('[LocalNotificationService] $message');
+      debugPrint('[LocalNotificationsService] $message');
     }
   }
 }

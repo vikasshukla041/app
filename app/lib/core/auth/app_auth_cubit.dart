@@ -40,12 +40,25 @@ class AppAuthCubit extends Cubit<AppAuthState> {
         return;
       }
 
-      if (biometricEnabled && refreshToken != null && refreshToken.isNotEmpty) {
+      // Neither branch below can survive without a refresh token: the access
+      // token dies within the hour and AuthInterceptor would have nothing to
+      // refresh with, dropping the user mid-session instead of at launch.
+      if (refreshToken == null || refreshToken.isEmpty) {
+        emit(const AppUnauthenticated());
+        return;
+      }
+
+      // Biometrics on: the credentials are still good, so ask for an unlock
+      // rather than a fresh sign-in.
+      if (biometricEnabled) {
         emit(AppAuthLocked(user));
         return;
       }
 
-      emit(const AppUnauthenticated());
+      // Biometrics off but the session is intact. Signing this user out would
+      // discard tokens that are still valid and make them retype their
+      // password on every launch.
+      emit(AppAuthenticated(user));
       return;
     } catch (e) {
       if (kDebugMode) {

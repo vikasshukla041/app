@@ -38,7 +38,10 @@ class NotificationCubit extends Cubit<NotificationState> {
 
   /// Asks for permission, then registers the token with the backend.
   Future<void> subscribe() async {
-    if (state is NotificationRequesting) {
+    // Re-entry guard, plus the same closed check every other emit here makes:
+    // the dialog is barrier-dismissible, so the widget can disappear between
+    // the button press and this line.
+    if (isClosed || state is NotificationRequesting) {
       return;
     }
 
@@ -144,9 +147,12 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
+  /// Only reached in tests — this cubit is an app-lifetime singleton in
+  /// production. The cancel is awaited rather than discarded so a test that
+  /// closes the cubit cannot leak a live subscription into the next one.
   @override
-  Future<void> close() {
-    _tokenRefreshSubscription?.cancel();
+  Future<void> close() async {
+    await _tokenRefreshSubscription?.cancel();
     return super.close();
   }
 }

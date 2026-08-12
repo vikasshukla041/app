@@ -17,13 +17,18 @@ import '../notification_state.dart';
 class NotificationPermissionDialog extends StatelessWidget {
   const NotificationPermissionDialog({super.key});
 
+  /// `.value`, not `create`: the cubit is an app-lifetime singleton holding the
+  /// FCM token-rotation subscription. `create` hands it ownership, so popping
+  /// the dialog closes it — the next bell tap would emit on a closed cubit and
+  /// rotation would be dead for the rest of the process.
   static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
-      builder: (BuildContext dialogContext) => BlocProvider<NotificationCubit>(
-        create: (_) => getIt<NotificationCubit>(),
-        child: const NotificationPermissionDialog(),
-      ),
+      builder: (BuildContext dialogContext) =>
+          BlocProvider<NotificationCubit>.value(
+            value: getIt<NotificationCubit>(),
+            child: const NotificationPermissionDialog(),
+          ),
     );
   }
 
@@ -42,7 +47,7 @@ class NotificationPermissionDialog extends StatelessWidget {
         switch (state) {
           case NotificationRegistered():
             Navigator.of(context).pop();
-            AppSnackBar.warning(context, l10n.notificationEnabledMessage);
+            AppSnackBar.success(context, l10n.notificationEnabledMessage);
 
           case NotificationDenied():
             Navigator.of(context).pop();

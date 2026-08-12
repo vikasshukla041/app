@@ -6,12 +6,15 @@ import '../../../l10n/app_localizations.dart';
 /// Card component displaying the total portfolio balance, daily returns in green,
 /// and total unrealized gain.
 class PortfolioSummaryCard extends StatelessWidget {
+  /// Every figure is required and pre-formatted by the caller. Defaults here
+  /// would be hardcoded currency strings, which render as euros with English
+  /// grouping under every locale — a bug invisible until launch.
   const PortfolioSummaryCard({
     super.key,
-    this.totalBalance = '€124,580.50',
-    this.dailyReturnPercentage = '+1.48%',
-    this.dailyReturnAmount = '+€1,845.20',
-    this.totalGain = '+€14,850.20',
+    required this.totalBalance,
+    required this.dailyReturnPercentage,
+    required this.dailyReturnAmount,
+    required this.totalGain,
   });
 
   final String totalBalance;
