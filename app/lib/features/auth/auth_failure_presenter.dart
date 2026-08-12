@@ -4,12 +4,6 @@ import '../../core/design_system/widgets/app_snack_bar.dart';
 import '../../l10n/app_localizations.dart';
 import 'auth_state.dart';
 
-/// Maps [AuthFailureReason] to localized text and snackbar severity.
-///
-/// A Cubit has no BuildContext, so it emits a reason and the UI localizes it.
-/// Both AuthScreen and LockedScreen need that mapping, and duplicating it let
-/// the same reason render as a warning on one screen and an error on the
-/// other — so it lives here once.
 extension AuthFailurePresenter on AuthFailureReason {
   String message(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
@@ -26,8 +20,6 @@ extension AuthFailurePresenter on AuthFailureReason {
     };
   }
 
-  /// Connectivity problems are warnings — the user can retry. Account
-  /// problems are errors, because retrying unchanged will fail again.
   AppSnackBarSeverity get severity => switch (this) {
     AuthFailureReason.network ||
     AuthFailureReason.serverUnavailable ||
@@ -38,14 +30,6 @@ extension AuthFailurePresenter on AuthFailureReason {
     AuthFailureReason.generic => AppSnackBarSeverity.error,
   };
 
-  void show(BuildContext context) {
-    final String text = message(context);
-
-    switch (severity) {
-      case AppSnackBarSeverity.warning:
-        AppSnackBar.warning(context, text);
-      case AppSnackBarSeverity.error:
-        AppSnackBar.error(context, text);
-    }
-  }
+  void show(BuildContext context) =>
+      AppSnackBar.show(context, message(context), severity);
 }

@@ -10,10 +10,6 @@ sealed class AuthState extends Equatable {
   List<Object?> get props => <Object?>[];
 }
 
-/// Resting state: the credentials form is idle and awaiting input.
-///
-/// Carries no biometric flags — unlocking a saved session is LockedScreen's
-/// job, driven by AppAuthLocked, so this screen never needs to know.
 class AuthInitial extends AuthState {
   const AuthInitial();
 }

@@ -49,11 +49,15 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   const AppSemanticColors({
     required this.warningContainer,
     required this.onWarningContainer,
+    required this.successContainer,
+    required this.onSuccessContainer,
     required this.positive,
   });
 
   final Color warningContainer;
   final Color onWarningContainer;
+  final Color successContainer;
+  final Color onSuccessContainer;
 
   /// M3 has no "success" role; used for positive financial figures (gains).
   final Color positive;
@@ -61,12 +65,16 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   static const AppSemanticColors light = AppSemanticColors(
     warningContainer: Color(0xFFFFEFC9),
     onWarningContainer: Color(0xFF564500),
+    successContainer: Color(0xFFD1FAE5),
+    onSuccessContainer: Color(0xFF064E3B),
     positive: Color(0xFF10B981),
   );
 
   static const AppSemanticColors dark = AppSemanticColors(
     warningContainer: Color(0xFF564500),
     onWarningContainer: Color(0xFFFFEFC9),
+    successContainer: Color(0xFFD1FAE5),
+    onSuccessContainer: Color(0xFF064E3B),
     positive: Color(0xFF34D399),
   );
 
@@ -74,12 +82,16 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   AppSemanticColors copyWith({
     Color? warningContainer,
     Color? onWarningContainer,
+    Color? successContainer,
+    Color? onSuccessContainer,
     Color? positive,
   }) {
     return AppSemanticColors(
       warningContainer: warningContainer ?? this.warningContainer,
       onWarningContainer: onWarningContainer ?? this.onWarningContainer,
       positive: positive ?? this.positive,
+      successContainer: successContainer ?? this.successContainer,
+      onSuccessContainer: onSuccessContainer ?? this.onSuccessContainer,
     );
   }
 
@@ -97,6 +109,16 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
       onWarningContainer: Color.lerp(
         onWarningContainer,
         other.onWarningContainer,
+        t,
+      )!,
+      successContainer: Color.lerp(
+        successContainer,
+        other.successContainer,
+        t,
+      )!,
+      onSuccessContainer: Color.lerp(
+        onSuccessContainer,
+        other.onSuccessContainer,
         t,
       )!,
       positive: Color.lerp(positive, other.positive, t)!,

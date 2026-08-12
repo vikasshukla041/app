@@ -6,7 +6,5 @@ class ApiConstants {
   static const String login = '/api/auth/login';
   static const String refresh = '/api/auth/refresh';
   static const String balance = '/api/user/balance';
-
-  /// Replaced `/api/user/register-token`, which the backend removed.
   static const String registerDevice = '/api/user/register-device';
 }

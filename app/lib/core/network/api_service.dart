@@ -8,6 +8,16 @@ import '../storage/secure_storage_service.dart';
 import 'auth_interceptor.dart';
 
 /// Handles HTTP requests to the backend API using Dio.
+// @override
+// void onError(DioException err, ErrorInterceptorHandler handler) {
+//   // Handle errors globally, e.g., log them or show a user-friendly message.
+//   if (err.response?.statusCode == 401) {
+//     // Handle unauthorized error, e.g., redirect to login.
+//     appAuthCubit?.logOut();
+//   }
+//   handler.next(err); // Continue with the error handling
+// }
+
 class ApiService {
   ApiService({
     Dio? dio,
@@ -20,9 +30,7 @@ class ApiService {
 
   final Dio _dio;
 
-  /// Marker for [AuthInterceptor]: a request carrying this extra is exempt
-  /// from header injection and from 401 retry. Without it, a 401 from the
-  /// refresh endpoint would trigger a refresh of the refresh call itself.
+  ///
   static const String refreshRequestFlag = 'is_refresh_request';
 
   static Dio _createDio(
@@ -59,9 +67,7 @@ class ApiService {
 
   /// Exchanges a refresh token for a new token pair.
   ///
-  /// Tagged with [refreshRequestFlag] so [AuthInterceptor] neither attaches
-  /// the expired access token nor tries to refresh in reaction to this call
-  /// failing.
+  /// tagged with refreshRequestFlag so AuthInterceptor neither attch teh exppired access token
   Future<Response<dynamic>> refreshToken({required String refreshToken}) {
     return _dio.post<dynamic>(
       ApiConstants.refresh,
@@ -73,9 +79,12 @@ class ApiService {
   Future<Response<dynamic>> balance() =>
       _dio.get<dynamic>(ApiConstants.balance);
 
+  /// Registers an FCM/APNs push notification device token for the user.
   /// Registers this device for push notifications.
   ///
   /// Bearer token is attached by [AuthInterceptor]; this endpoint requires it.
+  /// The payload is built by RegisterDeviceDto so the shape lives with the
+  /// feature that owns it, not in the shared network layer.
   Future<Response<dynamic>> registerDevice({
     required Map<String, dynamic> payload,
   }) {

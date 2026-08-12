@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -5,15 +9,32 @@ import 'core/auth/app_auth_cubit.dart';
 import 'core/auth/app_auth_state.dart';
 import 'core/design_system/theme.dart';
 import 'core/di/service_locator.dart';
+import 'core/notifications/foreground_push_handler.dart';
 import 'features/auth/auth_cubit.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/auth/locked_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
 import 'l10n/app_localizations.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialised once here rather than lazily inside a service: Firebase is a
+  // process-wide dependency, and starting it mid-flow hides a missing
+  // google-services.json behind whatever feature happened to trigger it.
+  // A failure is logged and the app still runs — only push is unavailable.
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    if (kDebugMode) {
+      debugPrint('Firebase init failed; push notifications unavailable: $e');
+    }
+  }
+
   setupServiceLocator();
+  // Started push notification here so, can land on any screen
+  unawaited(getIt<ForegroundPushHandler>().start());
+
   runApp(const ActivoTradeApp());
 }
 
@@ -43,9 +64,7 @@ class ActivoTradeApp extends StatelessWidget {
             return switch (state) {
               AppAuthenticated() => const DashboardScreen(),
               AppAuthLocked(:final user) => LockedScreen(user: user),
-              // checkSession() reads secure storage asynchronously. Mapping
-              // the pre-answer state to AuthScreen flashes the login form on
-              // every launch before the lock screen replaces it.
+              //
               AppAuthInitial() => const _SplashScreen(),
               AppUnauthenticated() => const AuthScreen(),
             };
@@ -56,7 +75,7 @@ class ActivoTradeApp extends StatelessWidget {
   }
 }
 
-/// Neutral holding screen shown while the saved session is being restored.
+// neutral holding screen shown while saved session is being restored.
 class _SplashScreen extends StatelessWidget {
   const _SplashScreen();
 

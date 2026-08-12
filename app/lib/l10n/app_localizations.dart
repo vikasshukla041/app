@@ -373,6 +373,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out and use another account'**
   String get signOutAndUseAnotherAccount;
+
+  /// No description provided for @notificationBellTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationBellTooltip;
+
+  /// No description provided for @notificationBellSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications button'**
+  String get notificationBellSemantics;
+
+  /// No description provided for @notificationDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Push Notifications?'**
+  String get notificationDialogTitle;
+
+  /// No description provided for @notificationDialogBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Get instant alerts for market moves, order executions and account security notices.'**
+  String get notificationDialogBody;
+
+  /// No description provided for @notificationDialogEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Notifications'**
+  String get notificationDialogEnable;
+
+  /// No description provided for @notificationDialogSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Now'**
+  String get notificationDialogSkip;
+
+  /// No description provided for @notificationEnabledMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Push notifications are on.'**
+  String get notificationEnabledMessage;
+
+  /// No description provided for @notificationDeniedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications stay off. You can enable them any time from the bell.'**
+  String get notificationDeniedMessage;
+
+  /// No description provided for @errorNotificationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This device cannot receive push notifications.'**
+  String get errorNotificationUnavailable;
+
+  /// No description provided for @errorNotificationNoToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get a notification token from this device.'**
+  String get errorNotificationNoToken;
+
+  /// No description provided for @errorNotificationRegistrationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not register this device. Please try again.'**
+  String get errorNotificationRegistrationFailed;
 }
 
 class _AppLocalizationsDelegate

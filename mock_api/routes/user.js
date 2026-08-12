@@ -8,8 +8,16 @@ import { CommonErrorSchema, SimpleSuccessSchema } from './schemas.js';
 const userRouter = new OpenAPIHono();
 
 // Schemas
-const RegisterTokenRequestSchema = z.object({
+//
+// deviceId/platform/deviceName are accepted and logged but not persisted: the
+// mock's user_tokens table only has an fcm_token column, and adding columns
+// would force a drizzle-kit push against the committed sqlite.db, costing the
+// "clone and npm start" property this mock exists for.
+const RegisterDeviceRequestSchema = z.object({
   fcmToken: z.string().openapi({ example: 'fcm_registration_token_123456789' }),
+  deviceId: z.string().openapi({ example: 'a1b2c3d4e5f60718' }),
+  platform: z.enum(['android', 'ios']).openapi({ example: 'android' }),
+  deviceName: z.string().openapi({ example: 'Google Pixel 8' }),
 });
 
 const PositionItemSchema = z.object({
@@ -40,15 +48,15 @@ const BalanceResponseSchema = z.object({
 });
 
 // Routes Specifications
-const registerTokenRoute = createRoute({
+const registerDeviceRoute = createRoute({
   method: 'post',
-  path: '/register-token', // Mounted under /api/user in server.js
+  path: '/register-device', // Mounted under /api/user in server.js
   security: [{ BearerAuth: [] }],
   request: {
     body: {
       content: {
         'application/json': {
-          schema: RegisterTokenRequestSchema,
+          schema: RegisterDeviceRequestSchema,
         },
       },
     },
@@ -56,7 +64,7 @@ const registerTokenRoute = createRoute({
   responses: {
     200: {
       content: { 'application/json': { schema: SimpleSuccessSchema } },
-      description: 'FCM token successfully registered to user account',
+      description: 'Device successfully registered to user account',
     },
     401: {
       content: { 'application/json': { schema: CommonErrorSchema } },
@@ -86,13 +94,14 @@ const balanceRoute = createRoute({
 });
 
 // Handlers
-userRouter.openapi(registerTokenRoute, async (c) => {
+userRouter.openapi(registerDeviceRoute, async (c) => {
   const userId = extractUserId(c.req.header('Authorization'));
   if (!userId) {
     return c.json({ success: false, message: 'Unauthorized access' }, 401);
   }
 
-  const { fcmToken } = c.req.valid('json');
+  const { fcmToken, deviceId, platform, deviceName } = c.req.valid('json');
+  console.log(`Device registered for "${userId}": ${platform} / ${deviceName} (device ${deviceId})`);
 
   const existing = await db.query.userTokens.findFirst({
     where: eq(schema.userTokens.fcmToken, fcmToken),
@@ -101,6 +110,8 @@ userRouter.openapi(registerTokenRoute, async (c) => {
   if (!existing) {
     await db.insert(schema.userTokens).values({ userId, fcmToken });
   } else if (existing.userId !== userId) {
+    // The handset changed hands: move the token rather than insert a duplicate,
+    // or the previous owner keeps receiving this account's alerts.
     await db.update(schema.userTokens)
       .set({ userId })
       .where(eq(schema.userTokens.id, existing.id));
@@ -108,7 +119,7 @@ userRouter.openapi(registerTokenRoute, async (c) => {
 
   return c.json({
     success: true,
-    message: 'FCM Token registered successfully'
+    message: 'Device registered successfully'
   }, 200);
 });
 

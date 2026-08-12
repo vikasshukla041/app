@@ -16,10 +16,6 @@ class AppAuthCubit extends Cubit<AppAuthState> {
   final SecureStorageService _storageService;
 
   /// Checks if a valid session exists in secure storage (e.g., on app launch).
-  ///
-  /// A biometric-enabled session emits [AppAuthLocked] rather than
-  /// [AppUnauthenticated]: the credentials are still valid, so the user should
-  /// be asked to unlock, not to sign in again.
   Future<void> checkSession() async {
     try {
       final bool biometricEnabled = await _storageService.isBiometricEnabled();
@@ -30,6 +26,7 @@ class AppAuthCubit extends Cubit<AppAuthState> {
       final bool hasSession =
           token != null && token.isNotEmpty && userRaw != null;
 
+      // If biometric login is enabled, force user to pass biometric unlock on AuthScreen
       if (!hasSession) {
         emit(const AppUnauthenticated());
         return;
@@ -37,7 +34,7 @@ class AppAuthCubit extends Cubit<AppAuthState> {
 
       final User? user = User.fromJson(jsonDecode(userRaw));
 
-      // A stored blob we can no longer parse is not a session.
+      // A stored blob we can no loger parse is not a session
       if (user == null) {
         emit(const AppUnauthenticated());
         return;
@@ -48,7 +45,7 @@ class AppAuthCubit extends Cubit<AppAuthState> {
         return;
       }
 
-      emit(AppAuthenticated(user));
+      emit(const AppUnauthenticated());
       return;
     } catch (e) {
       if (kDebugMode) {

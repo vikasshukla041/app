@@ -160,4 +160,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOutAndUseAnotherAccount => 'Sign out and use another account';
+
+  @override
+  String get notificationBellTooltip => 'Notifications';
+
+  @override
+  String get notificationBellSemantics => 'Enable notifications button';
+
+  @override
+  String get notificationDialogTitle => 'Enable Push Notifications?';
+
+  @override
+  String get notificationDialogBody =>
+      'Get instant alerts for market moves, order executions and account security notices.';
+
+  @override
+  String get notificationDialogEnable => 'Enable Notifications';
+
+  @override
+  String get notificationDialogSkip => 'Not Now';
+
+  @override
+  String get notificationEnabledMessage => 'Push notifications are on.';
+
+  @override
+  String get notificationDeniedMessage =>
+      'Notifications stay off. You can enable them any time from the bell.';
+
+  @override
+  String get errorNotificationUnavailable =>
+      'This device cannot receive push notifications.';
+
+  @override
+  String get errorNotificationNoToken =>
+      'Could not get a notification token from this device.';
+
+  @override
+  String get errorNotificationRegistrationFailed =>
+      'Could not register this device. Please try again.';
 }

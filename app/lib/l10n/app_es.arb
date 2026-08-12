@@ -8,57 +8,53 @@
   "passwordLabel": "Contraseña",
   "passwordFieldSemantics": "Campo de entrada de contraseña",
   "signInButton": "Iniciar sesión",
-  "signInButtonSemantics": "Botón de iniciar sesión",
+  "signInButtonSemantics": "Botón de inicio de sesión",
   "useBiometrics": "Usar biometría",
   "useBiometricsSemantics": "Botón para iniciar sesión con biometría",
-  "dashboardTitle": "Panel de control",
+  "dashboardTitle": "Panel",
   "dashboardWelcome": "Bienvenido de nuevo, {name}",
-  "errorNetwork": "No se puede conectar al servidor.\nPor favor, verifica tu conexión a Internet.",
-  "errorCredentials": "Nombre de usuario o contraseña no válidos.",
-  "errorTooManyAttempts": "Demasiados intentos de inicio de sesión. Por favor, inténtalo de nuevo más tarde.",
-  "errorServerUnavailable": "El servidor no está disponible actualmente. Por favor, inténtalo de nuevo más tarde.",
-  "errorGeneric": "Algo salió mal. Por favor, inténtalo de nuevo más tarde.",
-  "@dashboardWelcome": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "biometricOptIn": "Habilitar inicio de sesión biométrico",
+  "errorNetwork": "No se pudo conectar con el servidor.\nPor favor, verifica tu conexión de red.",
+  "errorCredentials": "Nombre de usuario o contraseña incorrectos.",
+  "errorTooManyAttempts": "Demasiados intentos de inicio de sesión. Inténtalo más tarde.",
+  "errorServerUnavailable": "El servidor no está disponible en este momento. Inténtalo más tarde.",
+  "errorGeneric": "Algo salió mal. Inténtalo más tarde.",
+  "biometricOptIn": "Activar inicio de sesión biométrico",
   "biometricPromptReason": "Autentícate para iniciar sesión en ActivoTrade",
   "errorBiometricLockedOut": "Demasiados intentos fallidos. Usa tu contraseña para iniciar sesión.",
-  "errorBiometricSessionExpired": "Tu sesión guardada ya no es válida. Por favor, inicia sesión con tu contraseña.",
+  "errorBiometricSessionExpired": "Tu sesión guardada ya no es válida. Inicia sesión con tu contraseña.",
   "dashboardWelcomeLabel": "Bienvenido de nuevo,",
   "signOutTooltip": "Cerrar sesión",
-  "biometricOptInDialogTitle": "¿Habilitar inicio de sesión biométrico?",
-  "biometricOptInDialogBody": "¿Deseas habilitar Face ID / Touch ID para iniciar sesión más rápido en tu próxima visita?",
+  "biometricOptInDialogTitle": "¿Activar inicio de sesión biométrico?",
+  "biometricOptInDialogBody": "¿Te gustaría activar Face ID / Touch ID para iniciar sesión más rápido en tu próxima visita?",
   "biometricOptInDialogSkip": "Omitir por ahora",
-  "biometricOptInDialogEnable": "Habilitar biometría",
+  "biometricOptInDialogEnable": "Activar biometría",
   "portfolioTotalValueLabel": "Valor total de la cartera",
   "portfolioTotalGainLabel": "Ganancia total",
   "quickLinksHeader": "Navegación de la cuenta",
   "quickLinkHoldingsTitle": "Participaciones",
   "quickLinkHoldingsSubtitle": "Ver asignación de activos y desglose de la cartera",
   "quickLinkPositionsTitle": "Posiciones",
-  "quickLinkPositionsSubtitle": "Posiciones abiertas y de renta variable en tiempo real",
+  "quickLinkPositionsSubtitle": "Posiciones abiertas y acciones en tiempo real",
   "quickLinkOrdersTitle": "Órdenes",
-  "quickLinkOrdersSubtitle": "Órdenes de compra y venta pendientes, ejecutadas y canceladas",
+  "quickLinkOrdersSubtitle": "Órdenes pendientes, ejecutadas y canceladas",
   "quickLinkReportsTitle": "Informes",
-  "quickLinkReportsSubtitle": "Informes fiscales de la cuenta y resúmenes de actividad",
-  "quickLinkPnlTitle": "Estado de pérdidas y ganancias",
+  "quickLinkReportsSubtitle": "Informes fiscales y resúmenes de actividad de la cuenta",
+  "quickLinkPnlTitle": "Estado de Pérdidas y Ganancias",
   "quickLinkPnlSubtitle": "Desglose de ganancias y pérdidas realizadas y no realizadas",
   "quickLinkSelectedMessage": "{title} seleccionado",
-  "@quickLinkSelectedMessage": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "dashboardLoadError": "No se pudo cargar tu cartera.",
   "retry": "Reintentar",
-  "signOutSemantics": "Botón de cerrar sesión",
-  "signOutAndUseAnotherAccount": "Cerrar sesión y usar otra cuenta"
+  "signOutSemantics": "Botón para cerrar sesión",
+  "signOutAndUseAnotherAccount": "Cerrar sesión y usar otra cuenta",
+  "notificationBellTooltip": "Notificaciones",
+  "notificationBellSemantics": "Botón para activar notificaciones",
+  "notificationDialogTitle": "¿Activar notificaciones push?",
+  "notificationDialogBody": "Recibe alertas instantáneas sobre movimientos del mercado, ejecuciones de órdenes y avisos de seguridad de la cuenta.",
+  "notificationDialogEnable": "Activar notificaciones",
+  "notificationDialogSkip": "Ahora no",
+  "notificationEnabledMessage": "Las notificaciones push están activadas.",
+  "notificationDeniedMessage": "Las notificaciones siguen desactivadas. Puedes activarlas cuando quieras desde la campana.",
+  "errorNotificationUnavailable": "Este dispositivo no puede recibir notificaciones push.",
+  "errorNotificationNoToken": "No se pudo obtener un token de notificación de este dispositivo.",
+  "errorNotificationRegistrationFailed": "No se pudo registrar este dispositivo. Inténtalo de nuevo."
 }
-

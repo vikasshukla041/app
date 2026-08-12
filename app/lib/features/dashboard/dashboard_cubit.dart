@@ -5,7 +5,7 @@ import '../../core/network/api_service.dart';
 import 'dashboard_state.dart';
 import 'models/portfolio_summary.dart';
 
-/// Owns fetching the portfolio balance shown on the dashboard.
+/// owns fetching teh portfolio balance shown on the dashboard.
 class DashboardCubit extends Cubit<DashboardState> {
   DashboardCubit({ApiService? apiService})
     : _apiService = apiService ?? ApiService(),

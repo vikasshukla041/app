@@ -117,11 +117,20 @@ app/
   `AuthFailure(AuthFailureReason.x)`; the screen maps the reason to a localized
   string in an exhaustive `switch`. Adding a reason therefore requires the enum,
   both `.arb` files, and that switch — the compiler enforces the third.
-- **Snackbars:** `AppSnackBar.warning/.error`. Connectivity problems are
-  warnings (the user can retry); account problems are errors.
-- **Semantic colours:** Material 3 has an error role but no warning role, so
-  `AppSemanticColors` (a `ThemeExtension`) defines a warning container/on-container
-  token pair. Never hardcode amber.
+- **Snackbars:** `AppSnackBar.success/.warning/.error`, or `.show(context,
+  message, severity)` when the severity was computed elsewhere. Connectivity
+  problems are warnings (the user can retry); account problems are errors.
+  Presenters map a failure reason to a severity and pass it to `.show`, so
+  adding a severity never breaks them.
+- **Semantic colours:** Material 3 has an error role but no warning or success
+  role, so `AppSemanticColors` (a `ThemeExtension`) defines warning and success
+  container/on-container pairs plus `positive` for gains. Never hardcode amber
+  or green.
+- **Cubit lifetimes:** feature cubits are `registerFactory` — one per screen or
+  dialog. `NotificationCubit` is the exception: it owns the FCM token-rotation
+  subscription, which must outlive the dialog, so it is a `registerLazySingleton`
+  and the dialog provides it with `BlocProvider.value` (not `create`, which
+  would close it on pop).
 - **Localization:** edit `.arb` files only, then `flutter gen-l10n`. Never
   hand-edit `app_localizations*.dart`. English is the template; both files must
   hold identical keys.
@@ -166,12 +175,15 @@ they are ready.
 
 | Method | Path | Notes |
 |---|---|---|
-| POST | `/api/auth/login` | `{username, password}` → `{success, token, user}`; 401 on bad credentials |
+| POST | `/api/auth/login` | `{username, password}` → `{success, accessToken, refreshToken, user}`; 401 on bad credentials |
+| POST | `/api/auth/refresh` | `{refreshToken}` → a **new pair**; carries no `user` field |
 | GET | `/api/user/balance` | Bearer required |
-| POST | `/api/user/register-token` | FCM registration |
-| POST | `/api/notify/send` | Push trigger |
+| POST | `/api/user/register-device` | `{fcmToken, deviceId, platform, deviceName}`. Replaced `/api/user/register-token`, which now 404s |
+| POST | `/api/notify/send` | `{username, title, body}` — push trigger |
 
-Token format is an opaque string, not a real JWT — never parse it client-side.
+Tokens are HMAC-SHA256 JWTs: access lives 1 hour, refresh 30 days, and **both
+rotate on every refresh** — persisting only the new access token breaks the
+next refresh. Treat them as opaque anyway: never parse one client-side.
 
 ## Current state
 

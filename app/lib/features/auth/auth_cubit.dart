@@ -14,6 +14,7 @@ import 'data/models/login_request_dto.dart';
 import 'data/services/auth_service.dart';
 
 /// Owns the login business logic for the Auth feature.
+/// class declaration & constructor
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit({
     AuthService? authService,
@@ -30,20 +31,13 @@ class AuthCubit extends Cubit<AuthState> {
   final BiometricService _biometricService;
   final AppAuthCubit? appAuthCubit;
 
-  /// Clears any leftover state so a new sign-in can start.
-  ///
-  /// This cubit lives above MaterialApp, so it survives sign-out. Without
-  /// this, an abandoned biometric prompt leaves it on AuthLoading and the
-  /// re-entry guard in [login] then silently swallows every later attempt.
   void reset() => emit(const AuthInitial());
 
-  /// Password login using AuthService and DTO payload.
+  /// Password login() using AuthService and DTO payload.
   Future<void> login({
     required String username,
     required String password,
   }) async {
-    // See [reset]: an abandoned biometric prompt can strand this on
-    // AuthLoading, so re-entry must be a no-op rather than firing twice.
     if (state is AuthLoading) {
       return;
     }
@@ -59,6 +53,8 @@ class AuthCubit extends Cubit<AuthState> {
       final AuthResponseDto responseDto = await _authService.login(requestDto);
       final User user = responseDto.toDomain();
 
+      // Local Storage Saving
+      // Access Token to Secure Storage
       await _storageService.saveAccessToken(responseDto.accessToken);
 
       final bool refreshSaved = responseDto.refreshToken.isNotEmpty;
@@ -67,16 +63,15 @@ class AuthCubit extends Cubit<AuthState> {
       }
       await _storageService.saveUser(jsonEncode(user.toJson()));
 
+      // Check if biometric hardware is available and not yet enabled for post-login prompt
       final bool hardwareAvailable = await _biometricService.isAvailable();
       final bool biometricAlreadyEnabled = await _storageService
           .isBiometricEnabled();
 
-      // refreshSaved gates the offer: unlocking needs a refresh token, so
-      // enabling biometrics without one yields a lock that silently does
-      // nothing on the next launch.
       if (hardwareAvailable && !biometricAlreadyEnabled && refreshSaved) {
         emit(AuthRequireBiometricPrompt(user));
       } else {
+        // dashboard entry
         appAuthCubit?.logIn(user);
         emit(AuthSuccess(user));
       }
@@ -89,15 +84,10 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  /// Double-tap guard: unlike the [AuthLoading] checks elsewhere, state alone can't detect re-entry here since it stays [AuthRequireBiometricPrompt] for the whole call.
+  /// Double-tap guard.
   bool _biometricSetupInFlight = false;
 
-  /// Called when user approves post-login biometric prompt.
-  ///
-  /// Stays on [AuthRequireBiometricPrompt] while the OS sheet is open so the
-  /// screen keeps showing the panel; the panel owns its own busy state. The
-  /// password login already succeeded, so the user reaches the app either way
-  /// — a failed scan only means biometrics were not enrolled.
+  // Biometric Setup, setupBiometricsPostLogin() - when fingerprint
   Future<void> setupBiometricsPostLogin(User user) async {
     if (state is! AuthRequireBiometricPrompt || _biometricSetupInFlight) {
       return;
@@ -137,17 +127,12 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Subsequent launch: unlocks secure storage refresh token and exchanges it with backend.
   Future<void> loginWithBiometrics({required String reason}) async {
-    // See [reset]: guards against firing again while already mid-unlock.
     if (state is AuthLoading) {
       return;
     }
 
     emit(const AuthLoading());
 
-    // Unlike [setupBiometricsPostLogin], this has no timeout: there is no
-    // already-succeeded login to fall back to, so an abandoned OS sheet must
-    // keep waiting rather than guess an outcome. [reset] recovers the state
-    // if the user backs out to [AuthScreen].
     final BiometricResult result = await _biometricService.authenticate(
       reason: reason,
     );
@@ -168,6 +153,7 @@ class AuthCubit extends Cubit<AuthState> {
         break;
     }
 
+    //session check: rt & user-details fetch Secure Storage .
     final String? refreshToken = await _storageService.getRefreshToken();
     final User? user = _decodeUser(await _storageService.getUser());
 
@@ -180,8 +166,9 @@ class AuthCubit extends Cubit<AuthState> {
     }
 
     try {
-      // Exchange refresh token with backend for fresh access token. The
-      // response carries no user — we already have one, decoded above.
+      // Exchange refresh token with backend using local storage for fresh access token
+      // The response carries no user - we already have one
+
       final ({String accessToken, String refreshToken}) exchanged =
           await _authService.refreshTokenExchange(refreshToken: refreshToken);
 
@@ -193,34 +180,25 @@ class AuthCubit extends Cubit<AuthState> {
       _log('Token exchange failed during biometric login', stackTrace);
 
       final AuthFailureReason reason = _mapDioError(e);
-
-      // Only a server-issued rejection proves the refresh token is dead. A
-      // timeout or dropped connection says nothing about it, and destroying a
-      // 30-day session because the user walked into a tunnel is wrong.
       if (reason == AuthFailureReason.credentials) {
+        // final AuthFailureReason reason = _mapDioError(e);
         await _abandonSession();
       }
       _emitFailure(reason);
     } catch (e, stackTrace) {
       _log('Biometric login error', stackTrace);
-      // An unrecognised failure leaves the session in an unknown state, so
-      // keep it: the user can retry, and a genuinely dead token will be
-      // rejected with a 401 on the next attempt.
+      // await _abandonSession();
+      //An unrecognised failure leaves the session in an unknown state.
       _emitFailure(AuthFailureReason.generic);
     }
   }
 
-  /// Drops a session that can no longer be unlocked.
-  ///
-  /// Clearing storage alone leaves AppAuthCubit on AppAuthLocked, so the app
-  /// keeps rendering LockedScreen over credentials that no longer exist and
-  /// every retry fails the same way. The clear() is still needed on top of
-  /// logOut() because appAuthCubit is optional.
   Future<void> _abandonSession() async {
     await _storageService.clear();
     await appAuthCubit?.logOut();
   }
 
+  // snackBar show
   void _emitFailure(AuthFailureReason reason) {
     emit(AuthFailure(reason));
     emit(const AuthInitial());
@@ -247,6 +225,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  //network errors enums
   AuthFailureReason _mapDioError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionError:

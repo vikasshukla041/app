@@ -34,7 +34,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signInButton => 'Iniciar sesión';
 
   @override
-  String get signInButtonSemantics => 'Botón de iniciar sesión';
+  String get signInButtonSemantics => 'Botón de inicio de sesión';
 
   @override
   String get useBiometrics => 'Usar biometría';
@@ -44,7 +44,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Botón para iniciar sesión con biometría';
 
   @override
-  String get dashboardTitle => 'Panel de control';
+  String get dashboardTitle => 'Panel';
 
   @override
   String dashboardWelcome(String name) {
@@ -53,25 +53,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorNetwork =>
-      'No se puede conectar al servidor.\nPor favor, verifica tu conexión a Internet.';
+      'No se pudo conectar con el servidor.\nPor favor, verifica tu conexión de red.';
 
   @override
-  String get errorCredentials => 'Nombre de usuario o contraseña no válidos.';
+  String get errorCredentials => 'Nombre de usuario o contraseña incorrectos.';
 
   @override
   String get errorTooManyAttempts =>
-      'Demasiados intentos de inicio de sesión. Por favor, inténtalo de nuevo más tarde.';
+      'Demasiados intentos de inicio de sesión. Inténtalo más tarde.';
 
   @override
   String get errorServerUnavailable =>
-      'El servidor no está disponible actualmente. Por favor, inténtalo de nuevo más tarde.';
+      'El servidor no está disponible en este momento. Inténtalo más tarde.';
 
   @override
-  String get errorGeneric =>
-      'Algo salió mal. Por favor, inténtalo de nuevo más tarde.';
+  String get errorGeneric => 'Algo salió mal. Inténtalo más tarde.';
 
   @override
-  String get biometricOptIn => 'Habilitar inicio de sesión biométrico';
+  String get biometricOptIn => 'Activar inicio de sesión biométrico';
 
   @override
   String get biometricPromptReason =>
@@ -83,7 +82,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorBiometricSessionExpired =>
-      'Tu sesión guardada ya no es válida. Por favor, inicia sesión con tu contraseña.';
+      'Tu sesión guardada ya no es válida. Inicia sesión con tu contraseña.';
 
   @override
   String get dashboardWelcomeLabel => 'Bienvenido de nuevo,';
@@ -93,17 +92,17 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get biometricOptInDialogTitle =>
-      '¿Habilitar inicio de sesión biométrico?';
+      '¿Activar inicio de sesión biométrico?';
 
   @override
   String get biometricOptInDialogBody =>
-      '¿Deseas habilitar Face ID / Touch ID para iniciar sesión más rápido en tu próxima visita?';
+      '¿Te gustaría activar Face ID / Touch ID para iniciar sesión más rápido en tu próxima visita?';
 
   @override
   String get biometricOptInDialogSkip => 'Omitir por ahora';
 
   @override
-  String get biometricOptInDialogEnable => 'Habilitar biometría';
+  String get biometricOptInDialogEnable => 'Activar biometría';
 
   @override
   String get portfolioTotalValueLabel => 'Valor total de la cartera';
@@ -126,24 +125,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get quickLinkPositionsSubtitle =>
-      'Posiciones abiertas y de renta variable en tiempo real';
+      'Posiciones abiertas y acciones en tiempo real';
 
   @override
   String get quickLinkOrdersTitle => 'Órdenes';
 
   @override
   String get quickLinkOrdersSubtitle =>
-      'Órdenes de compra y venta pendientes, ejecutadas y canceladas';
+      'Órdenes pendientes, ejecutadas y canceladas';
 
   @override
   String get quickLinkReportsTitle => 'Informes';
 
   @override
   String get quickLinkReportsSubtitle =>
-      'Informes fiscales de la cuenta y resúmenes de actividad';
+      'Informes fiscales y resúmenes de actividad de la cuenta';
 
   @override
-  String get quickLinkPnlTitle => 'Estado de pérdidas y ganancias';
+  String get quickLinkPnlTitle => 'Estado de Pérdidas y Ganancias';
 
   @override
   String get quickLinkPnlSubtitle =>
@@ -161,8 +160,47 @@ class AppLocalizationsEs extends AppLocalizations {
   String get retry => 'Reintentar';
 
   @override
-  String get signOutSemantics => 'Botón de cerrar sesión';
+  String get signOutSemantics => 'Botón para cerrar sesión';
 
   @override
   String get signOutAndUseAnotherAccount => 'Cerrar sesión y usar otra cuenta';
+
+  @override
+  String get notificationBellTooltip => 'Notificaciones';
+
+  @override
+  String get notificationBellSemantics => 'Botón para activar notificaciones';
+
+  @override
+  String get notificationDialogTitle => '¿Activar notificaciones push?';
+
+  @override
+  String get notificationDialogBody =>
+      'Recibe alertas instantáneas sobre movimientos del mercado, ejecuciones de órdenes y avisos de seguridad de la cuenta.';
+
+  @override
+  String get notificationDialogEnable => 'Activar notificaciones';
+
+  @override
+  String get notificationDialogSkip => 'Ahora no';
+
+  @override
+  String get notificationEnabledMessage =>
+      'Las notificaciones push están activadas.';
+
+  @override
+  String get notificationDeniedMessage =>
+      'Las notificaciones siguen desactivadas. Puedes activarlas cuando quieras desde la campana.';
+
+  @override
+  String get errorNotificationUnavailable =>
+      'Este dispositivo no puede recibir notificaciones push.';
+
+  @override
+  String get errorNotificationNoToken =>
+      'No se pudo obtener un token de notificación de este dispositivo.';
+
+  @override
+  String get errorNotificationRegistrationFailed =>
+      'No se pudo registrar este dispositivo. Inténtalo de nuevo.';
 }

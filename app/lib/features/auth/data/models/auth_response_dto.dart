@@ -9,17 +9,16 @@ class AuthResponseDto {
   });
 
   factory AuthResponseDto.fromJson(Map<String, dynamic> json) {
-    final String accessToken =
-        json['accessToken'] as String? ?? json['token'] as String? ?? '';
+    final String accessToken = json['accessToken'] as String? ?? '';
     final String refreshToken = json['refreshToken'] as String? ?? '';
     final User? user = User.fromJson(json['user']);
 
     // The login contract guarantees both tokens. A missing refresh token used
-    // to degrade silently — no biometric offer, and a session that dies at the
+    // to degrade silently - No Biometric Offer, and a session that dies at the
     // first access-token expiry with no way back. Fail here instead.
     if (accessToken.isEmpty || refreshToken.isEmpty || user == null) {
       throw const FormatException(
-        'Authentication response is missing a token pair or a valid user',
+        'Authentication response is missing a token or a valid user',
       );
     }
 

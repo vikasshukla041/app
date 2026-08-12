@@ -9,8 +9,8 @@ import 'username_text_field.dart';
 
 /// Assembles the login inputs and forwards user intent to [AuthCubit].
 ///
-/// Credentials only. Unlocking a saved session is LockedScreen's job, so no
-/// biometric entry point belongs here.
+/// Credetials only. Unlocking a saved session is LockScreen's job so,
+/// No biometric entry point belong here.
 class LoginForm extends StatefulWidget {
   const LoginForm({super.key});
 
@@ -50,13 +50,17 @@ class _LoginFormState extends State<LoginForm> {
                 controller: _usernameController,
                 enabled: !isLoading,
               ),
+
               const SizedBox(height: 16),
+
               PasswordTextField(
                 controller: _passwordController,
                 enabled: !isLoading,
                 onSubmitted: (_) => _onLoginPressed(),
               ),
+
               const SizedBox(height: 24),
+
               LoginButton(onPressed: _onLoginPressed, isLoading: isLoading),
             ],
           ),

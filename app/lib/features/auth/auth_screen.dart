@@ -81,8 +81,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _onStateChanged(BuildContext context, AuthState state) {
     switch (state) {
-      // Unlocking a saved session belongs to LockedScreen; this screen is only
-      // ever shown when there is nothing to unlock.
+      // unlocking a saved session belongs to LockedScreen this screen is only
+      // ever shown when there is nothing to unlock
       case AuthInitial():
         break;
 

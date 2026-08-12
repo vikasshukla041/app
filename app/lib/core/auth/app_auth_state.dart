@@ -25,10 +25,7 @@ class AppAuthenticated extends AppAuthState {
   List<Object?> get props => <Object?>[user];
 }
 
-/// A saved session exists but is locked behind a biometric unlock.
-///
-/// Distinct from [AppUnauthenticated]: the credentials are still valid, so the
-/// UI must offer an unlock — not a password form.
+// A saved session exists but is locked behind a biometric unlock.
 class AppAuthLocked extends AppAuthState {
   const AppAuthLocked(this.user);
 

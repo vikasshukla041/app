@@ -55,9 +55,11 @@ class AuthInterceptor extends Interceptor {
     }
 
     final String? token = await _storageService.getAccessToken();
+
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
     }
+
     handler.next(options);
   }
 
@@ -92,14 +94,17 @@ class AuthInterceptor extends Interceptor {
     if (err.response?.statusCode != 401) {
       return false;
     }
+
     // Never refresh in reaction to the refresh call itself failing.
     if (err.requestOptions.extra[ApiService.refreshRequestFlag] == true) {
       return false;
     }
+
     // One attempt per request; a replay that 401s again is a real rejection.
     if (err.requestOptions.extra[_retriedFlag] == true) {
       return false;
     }
+
     return true;
   }
 
@@ -107,6 +112,7 @@ class AuthInterceptor extends Interceptor {
   /// result. Returns the new access token, or null if the session is dead.
   Future<String?> _refreshOnce() {
     final Completer<String?>? inFlight = _refreshInFlight;
+
     if (inFlight != null) {
       return inFlight.future;
     }
@@ -129,11 +135,13 @@ class AuthInterceptor extends Interceptor {
 
   Future<String?> _performRefresh() async {
     final TokenRefresher? refresher = tokenRefresherProvider?.call();
+
     if (refresher == null) {
       return null;
     }
 
     final String? refreshToken = await _storageService.getRefreshToken();
+
     if (refreshToken == null || refreshToken.isEmpty) {
       return null;
     }

@@ -8,11 +8,7 @@ class User extends Equatable {
     required this.fullname,
   });
 
-  /// Network responses are untrusted input, so this narrows the payload and
-  /// returns null rather than fabricating a User from missing fields.
-  ///
-  /// [id] and [username] identify the account and must be present. [fullName]
-  /// is display-only, so it falls back to the username.
+  /// network responses making narrows teh payload and return null rather thn a user misue missing field
   static User? fromJson(Object? json) {
     if (json case {
       'id': final String id,

@@ -59,6 +59,17 @@
   "dashboardLoadError": "Couldn't load your portfolio.",
   "retry": "Retry",
   "signOutSemantics": "Sign out button",
-  "signOutAndUseAnotherAccount": "Sign out and use another account"
+  "signOutAndUseAnotherAccount": "Sign out and use another account",
+  "notificationBellTooltip": "Notifications",
+  "notificationBellSemantics": "Enable notifications button",
+  "notificationDialogTitle": "Enable Push Notifications?",
+  "notificationDialogBody": "Get instant alerts for market moves, order executions and account security notices.",
+  "notificationDialogEnable": "Enable Notifications",
+  "notificationDialogSkip": "Not Now",
+  "notificationEnabledMessage": "Push notifications are on.",
+  "notificationDeniedMessage": "Notifications stay off. You can enable them any time from the bell.",
+  "errorNotificationUnavailable": "This device cannot receive push notifications.",
+  "errorNotificationNoToken": "Could not get a notification token from this device.",
+  "errorNotificationRegistrationFailed": "Could not register this device. Please try again."
 }
 
