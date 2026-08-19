@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 
@@ -10,11 +9,19 @@ class DeviceInfoService {
 
   Future<String> deviceName() async {
     try {
-      if (Platform.isAndroid) {
+      // Use defaultTargetPlatform since dart:io does not exist on web.
+      if (kIsWeb) {
+        // A browser has no device model, so use the browser and OS name instead.
+        final WebBrowserInfo info = await _plugin.webBrowserInfo;
+        final String browser = info.browserName.name;
+        final String os = info.platform ?? '';
+        return os.isEmpty ? browser : '$browser on $os';
+      }
+      if (defaultTargetPlatform == TargetPlatform.android) {
         final AndroidDeviceInfo info = await _plugin.androidInfo;
         return '${info.manufacturer} ${info.model}'.trim();
       }
-      if (Platform.isIOS) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
         final IosDeviceInfo info = await _plugin.iosInfo;
         return info.utsname.machine;
       }

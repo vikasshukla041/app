@@ -52,3 +52,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local run helper: PowerShell only, so it would not serve the whole team.
+# The equivalent commands belong in README.md instead.
+run.ps1

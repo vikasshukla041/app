@@ -11,12 +11,7 @@ import 'data/models/register_device_dto.dart';
 import 'data/services/notification_service.dart';
 import 'notification_state.dart';
 
-/// Owns the push-notification subscription logic.
-///
-/// Nothing here fabricates a token. If the platform cannot issue one, that
-/// surfaces as a failure state the user can read — a fake token would be
-/// registered with the backend, fail on first dispatch, and be auto-purged,
-/// while the user was told it worked.
+/// Owns the push-notification subscription logic; never fakes a token on failure.
 class NotificationCubit extends Cubit<NotificationState> {
   NotificationCubit({
     PushNotificationService? pushService,
@@ -38,9 +33,7 @@ class NotificationCubit extends Cubit<NotificationState> {
 
   /// Asks for permission, then registers the token with the backend.
   Future<void> subscribe() async {
-    // Re-entry guard, plus the same closed check every other emit here makes:
-    // the dialog is barrier-dismissible, so the widget can disappear between
-    // the button press and this line.
+    // Guard against double taps and a dialog that closed before this ran.
     if (isClosed || state is NotificationRequesting) {
       return;
     }
@@ -49,7 +42,7 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     final String? platform = _pushService.platform;
     if (platform == null) {
-      // Desktop or web host: the backend only knows android and ios.
+      // A desktop host: the backend knows android, ios and web, nothing else.
       _emitFailure(NotificationFailureReason.unavailable);
       return;
     }
@@ -78,21 +71,54 @@ class NotificationCubit extends Cubit<NotificationState> {
     await _register(token: token, platform: platform);
   }
 
+  /// Re-attaches this device's token to whoever just signed in; silent, and never prompts.
+  Future<void> claimForCurrentUser() async {
+    final String? platform = _pushService.platform;
+    if (platform == null) {
+      return;
+    }
+
+    final PushPermissionResult permission = await _pushService
+        .currentPermission();
+    if (permission != PushPermissionResult.granted) {
+      return;
+    }
+
+    final String? token = await _pushService.getToken();
+    if (token == null || token.isEmpty) {
+      return;
+    }
+
+    try {
+      await _sendRegistration(token: token, platform: platform);
+    } catch (e, stackTrace) {
+      // Nothing to surface: the user never asked for this to happen.
+      _log('Token claim failed: $e', stackTrace);
+    }
+  }
+
+  /// Posts the registration and starts watching for rotations; shared by [subscribe] and [claimForCurrentUser].
+  Future<void> _sendRegistration({
+    required String token,
+    required String platform,
+  }) async {
+    await _notificationService.registerDevice(
+      RegisterDeviceDto(
+        fcmToken: token,
+        deviceId: await _storageService.getOrCreateDeviceId(),
+        platform: platform,
+        deviceName: await _deviceInfoService.deviceName(),
+      ),
+    );
+    _listenForTokenRotation();
+  }
+
   Future<void> _register({
     required String token,
     required String platform,
   }) async {
     try {
-      await _notificationService.registerDevice(
-        RegisterDeviceDto(
-          fcmToken: token,
-          deviceId: await _storageService.getOrCreateDeviceId(),
-          platform: platform,
-          deviceName: await _deviceInfoService.deviceName(),
-        ),
-      );
-
-      _listenForTokenRotation();
+      await _sendRegistration(token: token, platform: platform);
       _emitTransient(const NotificationRegistered());
     } on DioException catch (e, stackTrace) {
       _log('Device registration failed: ${e.type}', stackTrace);
@@ -103,8 +129,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
-  /// FCM rotates tokens on reinstall and restore. Re-registering keeps the
-  /// backend from holding one that silently stopped delivering.
+  /// Re-registers when FCM rotates the token, so the backend never holds a dead one.
   void _listenForTokenRotation() {
     _tokenRefreshSubscription ??= _pushService.onTokenRefresh.listen((
       String token,
@@ -137,7 +162,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     };
   }
 
-  /// Logs the reason only — never the token, which is a credential.
+  /// Logs only the error reason; the token itself must never be logged.
   void _log(String message, [StackTrace? stackTrace]) {
     if (kDebugMode) {
       debugPrint('[NotificationCubit] $message');
@@ -147,9 +172,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
-  /// Only reached in tests — this cubit is an app-lifetime singleton in
-  /// production. The cancel is awaited rather than discarded so a test that
-  /// closes the cubit cannot leak a live subscription into the next one.
+  /// Only used in tests; waits for the subscription to cancel so tests do not leak it.
   @override
   Future<void> close() async {
     await _tokenRefreshSubscription?.cancel();

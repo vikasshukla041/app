@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
@@ -8,19 +9,20 @@ import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/domain/user.dart';
 import '../../core/security/biometric_service.dart';
 import '../../core/storage/secure_storage_service.dart';
+import '../notifications/notification_cubit.dart';
 import 'auth_state.dart';
 import 'data/models/auth_response_dto.dart';
 import 'data/models/login_request_dto.dart';
 import 'data/services/auth_service.dart';
 
 /// Owns the login business logic for the Auth feature.
-/// class declaration & constructor
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit({
     AuthService? authService,
     SecureStorageService? storageService,
     BiometricService? biometricService,
     this.appAuthCubit,
+    this.notificationCubit,
   }) : _authService = authService ?? AuthService(),
        _storageService = storageService ?? SecureStorageService(),
        _biometricService = biometricService ?? BiometricService(),
@@ -31,7 +33,18 @@ class AuthCubit extends Cubit<AuthState> {
   final BiometricService _biometricService;
   final AppAuthCubit? appAuthCubit;
 
+  /// Optional: sign-in still has to work when push was never wired up.
+  final NotificationCubit? notificationCubit;
+
   void reset() => emit(const AuthInitial());
+
+  /// The single exit from every successful sign-in path, so none can forget the push-token claim.
+  void _completeLogin(User user) {
+    appAuthCubit?.logIn(user);
+    // Not awaited: the dashboard should not wait on this network call.
+    unawaited(notificationCubit?.claimForCurrentUser() ?? Future<void>.value());
+    emit(AuthSuccess(user));
+  }
 
   /// Password login() using AuthService and DTO payload.
   Future<void> login({
@@ -53,8 +66,7 @@ class AuthCubit extends Cubit<AuthState> {
       final AuthResponseDto responseDto = await _authService.login(requestDto);
       final User user = responseDto.toDomain();
 
-      // Local Storage Saving
-      // Access Token to Secure Storage
+      // Save the access token to secure storage.
       await _storageService.saveAccessToken(responseDto.accessToken);
 
       final bool refreshSaved = responseDto.refreshToken.isNotEmpty;
@@ -63,7 +75,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
       await _storageService.saveUser(jsonEncode(user.toJson()));
 
-      // Check if biometric hardware is available and not yet enabled for post-login prompt
+      // Check if we should show the biometric setup prompt.
       final bool hardwareAvailable = await _biometricService.isAvailable();
       final bool biometricAlreadyEnabled = await _storageService
           .isBiometricEnabled();
@@ -72,8 +84,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthRequireBiometricPrompt(user));
       } else {
         // dashboard entry
-        appAuthCubit?.logIn(user);
-        emit(AuthSuccess(user));
+        _completeLogin(user);
       }
     } on DioException catch (e, stackTrace) {
       _log('Login failed: ${e.type} ${e.message}', stackTrace);
@@ -87,7 +98,7 @@ class AuthCubit extends Cubit<AuthState> {
   /// Double-tap guard.
   bool _biometricSetupInFlight = false;
 
-  // Biometric Setup, setupBiometricsPostLogin() - when fingerprint
+  /// Runs after login to set up biometrics if the user agrees.
   Future<void> setupBiometricsPostLogin(User user) async {
     if (state is! AuthRequireBiometricPrompt || _biometricSetupInFlight) {
       return;
@@ -109,8 +120,7 @@ class AuthCubit extends Cubit<AuthState> {
         _log('Biometric enrolment did not complete: $result');
       }
 
-      appAuthCubit?.logIn(user);
-      emit(AuthSuccess(user));
+      _completeLogin(user);
     } finally {
       _biometricSetupInFlight = false;
     }
@@ -121,8 +131,7 @@ class AuthCubit extends Cubit<AuthState> {
     if (state is! AuthRequireBiometricPrompt) {
       return;
     }
-    appAuthCubit?.logIn(user);
-    emit(AuthSuccess(user));
+    _completeLogin(user);
   }
 
   /// Subsequent launch: unlocks secure storage refresh token and exchanges it with backend.
@@ -153,7 +162,7 @@ class AuthCubit extends Cubit<AuthState> {
         break;
     }
 
-    //session check: rt & user-details fetch Secure Storage .
+    // Load the saved refresh token and user from secure storage.
     final String? refreshToken = await _storageService.getRefreshToken();
     final User? user = _decodeUser(await _storageService.getUser());
 
@@ -166,16 +175,13 @@ class AuthCubit extends Cubit<AuthState> {
     }
 
     try {
-      // Exchange refresh token with backend using local storage for fresh access token
-      // The response carries no user - we already have one
-
+      // Trade the refresh token for a new access token; we already have the user.
       final ({String accessToken, String refreshToken}) exchanged =
           await _authService.refreshTokenExchange(refreshToken: refreshToken);
 
       await _storageService.saveAccessToken(exchanged.accessToken);
       await _storageService.saveRefreshToken(exchanged.refreshToken);
-      appAuthCubit?.logIn(user);
-      emit(AuthSuccess(user));
+      _completeLogin(user);
     } on DioException catch (e, stackTrace) {
       _log('Token exchange failed during biometric login', stackTrace);
 
@@ -187,8 +193,7 @@ class AuthCubit extends Cubit<AuthState> {
       _emitFailure(reason);
     } catch (e, stackTrace) {
       _log('Biometric login error', stackTrace);
-      // await _abandonSession();
-      //An unrecognised failure leaves the session in an unknown state.
+      // Unknown error, so treat it as a generic failure.
       _emitFailure(AuthFailureReason.generic);
     }
   }
@@ -198,7 +203,7 @@ class AuthCubit extends Cubit<AuthState> {
     await appAuthCubit?.logOut();
   }
 
-  // snackBar show
+  // Show the error, then reset to the initial state.
   void _emitFailure(AuthFailureReason reason) {
     emit(AuthFailure(reason));
     emit(const AuthInitial());
@@ -225,7 +230,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  //network errors enums
+  // Turn a Dio error into an AuthFailureReason.
   AuthFailureReason _mapDioError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionError:

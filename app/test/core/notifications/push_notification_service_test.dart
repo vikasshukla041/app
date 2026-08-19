@@ -59,8 +59,7 @@ void main() {
       final Future<List<PushMessage>> collected = service.onForegroundMessage
           .toList();
 
-      // A data-only push carries no notification block, so there is nothing
-      // to draw. Forwarding it would post an empty banner.
+      // A data-only push has nothing to show, so do not draw an empty banner.
       incoming.add(_message());
       incoming.add(_message(title: 'Order filled', body: '500 AAPL'));
       await incoming.close();
@@ -95,9 +94,7 @@ void main() {
     });
 
     test('maps a thrown platform error to unavailable, not denied', () async {
-      // A device without Play Services cannot answer at all. Reporting that
-      // as "denied" would tell the user they refused something they were
-      // never asked.
+      // A device that cannot ask at all is not the same as one that says no.
       when(
         () => messaging.requestPermission(
           alert: any(named: 'alert'),
@@ -110,6 +107,13 @@ void main() {
         await service.requestPermission(),
         PushPermissionResult.unavailable,
       );
+    });
+  });
+
+  group('platform', () {
+    test('reports the host platform for the backend', () async {
+      // The web branch cannot run in a VM test; check it by running in a browser.
+      expect(service.platform, anyOf('android', 'ios'));
     });
   });
 

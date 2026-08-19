@@ -14,17 +14,18 @@ import 'features/auth/auth_cubit.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/auth/locked_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
+import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialised once here rather than lazily inside a service: Firebase is a
-  // process-wide dependency, and starting it mid-flow hides a missing
-  // google-services.json behind whatever feature happened to trigger it.
-  // A failure is logged and the app still runs — only push is unavailable.
+  // Start Firebase once here; if it fails, log it and keep the app running.
   try {
-    await Firebase.initializeApp();
+    // Web has no config file, so Firebase options must be passed in by hand.
+    await Firebase.initializeApp(
+      options: kIsWeb ? DefaultFirebaseOptions.web : null,
+    );
   } catch (e) {
     if (kDebugMode) {
       debugPrint('Firebase init failed; push notifications unavailable: $e');
@@ -32,7 +33,7 @@ Future<void> main() async {
   }
 
   setupServiceLocator();
-  // Started push notification here so, can land on any screen
+  // Start push notifications here so they work from any screen.
   unawaited(getIt<ForegroundPushHandler>().start());
 
   runApp(const ActivoTradeApp());
@@ -64,7 +65,6 @@ class ActivoTradeApp extends StatelessWidget {
             return switch (state) {
               AppAuthenticated() => const DashboardScreen(),
               AppAuthLocked(:final user) => LockedScreen(user: user),
-              //
               AppAuthInitial() => const _SplashScreen(),
               AppUnauthenticated() => const AuthScreen(),
             };

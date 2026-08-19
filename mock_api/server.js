@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server';
 import { OpenAPIHono } from '@hono/zod-openapi';
+import { cors } from 'hono/cors';
 import { seedDatabase } from './db/index.js';
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
@@ -8,6 +9,9 @@ import docsRouter from './docs/stoplight.js';
 
 // Initialize OpenAPIHono
 const app = new OpenAPIHono();
+
+// Allow browser requests; a real backend should restrict this to known origins.
+app.use('/api/*', cors());
 
 // Logger middleware
 app.use('*', async (c, next) => {

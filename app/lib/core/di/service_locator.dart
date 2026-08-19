@@ -46,8 +46,7 @@ void setupServiceLocator() {
     () => ApiService(
       storageService: getIt<SecureStorageService>(),
       appAuthCubit: getIt<AppAuthCubit>(),
-      // Provider, not instance: AuthService needs ApiService, which is what
-      // is being registered here. Resolving lazily breaks the cycle.
+      // Pass a provider function here to avoid a circular dependency.
       tokenRefresherProvider: () => getIt<AuthService>(),
     ),
   );
@@ -67,6 +66,8 @@ void setupServiceLocator() {
       storageService: getIt<SecureStorageService>(),
       biometricService: getIt<BiometricService>(),
       appAuthCubit: getIt<AppAuthCubit>(),
+      // Re-attach this device's push token to whoever just signed in.
+      notificationCubit: getIt<NotificationCubit>(),
     ),
   );
 
@@ -74,8 +75,7 @@ void setupServiceLocator() {
     () => DashboardCubit(apiService: getIt<ApiService>()),
   );
 
-  // Singleton, unlike the other feature cubits: it owns the FCM token-rotation
-  // subscription, which must outlive the dialog that opened it.
+  // Kept as a singleton because it owns a long-living FCM subscription.
   getIt.registerLazySingleton<NotificationCubit>(
     () => NotificationCubit(
       pushService: getIt<PushNotificationService>(),
