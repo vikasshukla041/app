@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import '../../../core/design_system/widgets/app_snack_bar.dart';
-import '../../../l10n/app_localizations.dart';
+import '../../core/design_system/widgets/app_snack_bar.dart';
+import '../../l10n/app_localizations.dart';
 import 'notification_state.dart';
 
 /// Maps [NotificationFailureReason] to localized text and snackbar severity.

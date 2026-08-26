@@ -1,39 +1,37 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../core/network/api_service.dart';
 import 'dashboard_state.dart';
+import 'data/services/dashboard_service.dart';
+import 'domain/dashboard_failure.dart';
 import 'models/portfolio_summary.dart';
 
-/// owns fetching teh portfolio balance shown on the dashboard.
+/// Owns fetching the portfolio balance shown on the dashboard.
 class DashboardCubit extends Cubit<DashboardState> {
-  DashboardCubit({ApiService? apiService})
-    : _apiService = apiService ?? ApiService(),
+  DashboardCubit({DashboardService? dashboardService})
+    : _dashboardService = dashboardService ?? DashboardService(),
       super(const DashboardLoading());
 
-  final ApiService _apiService;
+  final DashboardService _dashboardService;
 
   Future<void> loadBalance() async {
     emit(const DashboardLoading());
 
     try {
-      final response = await _apiService.balance();
-      final PortfolioSummary? summary = response.data is Map<String, dynamic>
-          ? PortfolioSummary.fromJson(
-              (response.data as Map<String, dynamic>)['data'],
-            )
-          : null;
-
-      if (summary == null) {
-        emit(const DashboardError());
-        return;
-      }
+      final PortfolioSummary summary = await _dashboardService.balance();
       emit(DashboardLoaded(summary));
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Failed to load balance: $e');
-      }
+    } on DashboardException catch (e) {
+      _log('Failed to load balance: ${e.reason}');
       emit(const DashboardError());
+    } catch (e) {
+      _log('Failed to load balance: $e');
+      emit(const DashboardError());
+    }
+  }
+
+  void _log(String message) {
+    if (kDebugMode) {
+      debugPrint('[DashboardCubit] $message');
     }
   }
 }

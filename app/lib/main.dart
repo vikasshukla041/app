@@ -9,11 +9,12 @@ import 'core/auth/app_auth_cubit.dart';
 import 'core/auth/app_auth_state.dart';
 import 'core/design_system/theme.dart';
 import 'core/di/service_locator.dart';
-import 'core/notifications/foreground_push_handler.dart';
 import 'features/auth/auth_cubit.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/auth/locked_screen.dart';
 import 'features/dashboard/dashboard_screen.dart';
+import 'features/notifications/data/services/foreground_push_handler.dart';
+import 'features/notifications/widgets/notification_session_listener.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 
@@ -60,15 +61,17 @@ class ActivoTradeApp extends StatelessWidget {
         darkTheme: ActivoTradeTheme.darkTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: BlocBuilder<AppAuthCubit, AppAuthState>(
-          builder: (context, state) {
-            return switch (state) {
-              AppAuthenticated() => const DashboardScreen(),
-              AppAuthLocked(:final user) => LockedScreen(user: user),
-              AppAuthInitial() => const _SplashScreen(),
-              AppUnauthenticated() => const AuthScreen(),
-            };
-          },
+        home: NotificationSessionListener(
+          child: BlocBuilder<AppAuthCubit, AppAuthState>(
+            builder: (context, state) {
+              return switch (state) {
+                AppAuthenticated() => const DashboardScreen(),
+                AppAuthLocked(:final user) => LockedScreen(user: user),
+                AppAuthInitial() => const _SplashScreen(),
+                AppUnauthenticated() => const AuthScreen(),
+              };
+            },
+          ),
         ),
       ),
     );

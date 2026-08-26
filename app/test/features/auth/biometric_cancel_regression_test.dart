@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:activotrade_app/core/auth/domain/user.dart';
-import 'package:activotrade_app/core/security/biometric_service.dart';
 import 'package:activotrade_app/core/storage/secure_storage_service.dart';
 import 'package:activotrade_app/features/auth/auth_cubit.dart';
 import 'package:activotrade_app/features/auth/auth_state.dart';
 import 'package:activotrade_app/features/auth/data/models/auth_response_dto.dart';
 import 'package:activotrade_app/features/auth/data/models/login_request_dto.dart';
 import 'package:activotrade_app/features/auth/data/services/auth_service.dart';
+import 'package:activotrade_app/features/auth/data/services/biometric_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -18,6 +18,8 @@ class MockSecureStorageService extends Mock implements SecureStorageService {}
 class MockBiometricService extends Mock implements BiometricService {}
 
 class _FakeLoginRequestDto extends Fake implements LoginRequestDto {}
+
+class _FakeUser extends Fake implements User {}
 
 /// Regression guard for the biometric cancel loop.
 ///
@@ -33,6 +35,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(_FakeLoginRequestDto());
+    registerFallbackValue(_FakeUser());
   });
 
   setUp(() {

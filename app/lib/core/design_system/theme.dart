@@ -73,9 +73,8 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   static const AppSemanticColors dark = AppSemanticColors(
     warningContainer: Color(0xFF564500),
     onWarningContainer: Color(0xFFFFEFC9),
-    // Swapped like the warning pair above. Reusing the light values here puts
-    // a pale-green bar on a dark surface, the one element on screen that
-    // ignores the theme.
+    // Swapped like the warning pair above: reusing the light values would put
+    // a pale-green bar on a dark surface.
     successContainer: Color(0xFF064E3B),
     onSuccessContainer: Color(0xFFD1FAE5),
     positive: Color(0xFF34D399),

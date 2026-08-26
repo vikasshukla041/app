@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:activotrade_app/core/auth/app_auth_cubit.dart';
 import 'package:activotrade_app/core/auth/token_refresher.dart';
-import 'package:activotrade_app/core/network/api_service.dart';
 import 'package:activotrade_app/core/network/auth_interceptor.dart';
 import 'package:activotrade_app/core/storage/secure_storage_service.dart';
 import 'package:dio/dio.dart';
@@ -91,7 +90,7 @@ void main() {
       // The refresh endpoint authenticates from its body. Sending an expired
       // Bearer alongside it risks a 401 from the call meant to fix 401s.
       final RequestOptions options = await run(
-        extra: <String, dynamic>{ApiService.refreshRequestFlag: true},
+        extra: <String, dynamic>{AuthInterceptor.skipAuthFlag: true},
       );
 
       expect(options.headers.containsKey('Authorization'), isFalse);
@@ -191,7 +190,7 @@ void main() {
 
       await runOnError(
         buildInterceptor(),
-        build401(extra: <String, dynamic>{ApiService.refreshRequestFlag: true}),
+        build401(extra: <String, dynamic>{AuthInterceptor.skipAuthFlag: true}),
       );
 
       verifyNever(

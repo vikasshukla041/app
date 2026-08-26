@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:activotrade_app/core/auth/app_auth_cubit.dart';
 import 'package:activotrade_app/core/auth/app_auth_state.dart';
 import 'package:activotrade_app/core/auth/domain/user.dart';
@@ -14,11 +12,6 @@ void main() {
   late MockSecureStorageService storage;
 
   const User user = User(id: '1', username: 'demo', fullname: 'Demo User');
-  final String userRaw = jsonEncode(<String, String>{
-    'id': '1',
-    'username': 'demo',
-    'fullName': 'Demo User',
-  });
 
   /// The default is a complete, healthy session, so each test overrides only
   /// the one value it is actually about.
@@ -26,14 +19,16 @@ void main() {
     bool biometricEnabled = false,
     String? accessToken = 'access',
     String? refreshToken = 'refresh',
-    String? storedUser,
+    bool hasStoredUser = true,
   }) {
     when(
       () => storage.isBiometricEnabled(),
     ).thenAnswer((_) async => biometricEnabled);
     when(() => storage.getAccessToken()).thenAnswer((_) async => accessToken);
     when(() => storage.getRefreshToken()).thenAnswer((_) async => refreshToken);
-    when(() => storage.getUser()).thenAnswer((_) async => storedUser ?? userRaw);
+    when(
+      () => storage.getUser(),
+    ).thenAnswer((_) async => hasStoredUser ? user : null);
   }
 
   setUp(() {
@@ -87,8 +82,10 @@ void main() {
     );
 
     blocTest<AppAuthCubit, AppAuthState>(
-      'treats a stored user it can no longer parse as no session',
-      setUp: () => stubSession(storedUser: '{"broken":true}'),
+      // Storage returns null for a blob it cannot parse, so from here a
+      // corrupt entry and an absent one are the same thing.
+      'treats a missing stored user as no session',
+      setUp: () => stubSession(hasStoredUser: false),
       build: () => AppAuthCubit(storageService: storage),
       act: (AppAuthCubit cubit) => cubit.checkSession(),
       expect: () => <AppAuthState>[const AppUnauthenticated()],

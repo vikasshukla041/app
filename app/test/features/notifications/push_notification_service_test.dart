@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:activotrade_app/core/notifications/push_notification_service.dart';
+import 'package:activotrade_app/features/notifications/data/services/push_notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

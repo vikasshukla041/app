@@ -3,21 +3,13 @@ import 'package:dio/dio.dart';
 import '../auth/app_auth_cubit.dart';
 import '../auth/token_refresher.dart';
 import '../config/app_config.dart';
-import '../constants/api_constant.dart';
 import '../storage/secure_storage_service.dart';
 import 'auth_interceptor.dart';
 
-/// Handles HTTP requests to the backend API using Dio.
-// @override
-// void onError(DioException err, ErrorInterceptorHandler handler) {
-//   // Handle errors globally, e.g., log them or show a user-friendly message.
-//   if (err.response?.statusCode == 401) {
-//     // Handle unauthorized error, e.g., redirect to login.
-//     appAuthCubit?.logOut();
-//   }
-//   handler.next(err); // Continue with the error handling
-// }
-
+/// The app's only HTTP client: base URL, timeouts and the auth interceptor.
+///
+/// Deliberately knows no endpoint paths. Each feature's data service owns its
+/// own, so adding a feature never edits anything in core/.
 class ApiService {
   ApiService({
     Dio? dio,
@@ -29,9 +21,6 @@ class ApiService {
            _createDio(storageService, appAuthCubit, tokenRefresherProvider);
 
   final Dio _dio;
-
-  ///
-  static const String refreshRequestFlag = 'is_refresh_request';
 
   static Dio _createDio(
     SecureStorageService? storageService,
@@ -55,39 +44,23 @@ class ApiService {
     return dio;
   }
 
-  Future<Response<dynamic>> login({
-    required String username,
-    required String password,
+  Future<Response<dynamic>> get(String path) => _dio.get<dynamic>(path);
+
+  /// [skipAuth] keeps a request outside the auth loop entirely: no Bearer
+  /// header on the way out, no refresh-and-replay on a 401 coming back.
+  Future<Response<dynamic>> post(
+    String path, {
+    Object? data,
+    bool skipAuth = false,
   }) {
     return _dio.post<dynamic>(
-      ApiConstants.login,
-      data: <String, dynamic>{'username': username, 'password': password},
+      path,
+      data: data,
+      options: skipAuth
+          ? Options(
+              extra: <String, dynamic>{AuthInterceptor.skipAuthFlag: true},
+            )
+          : null,
     );
-  }
-
-  /// Exchanges a refresh token for a new token pair.
-  ///
-  /// tagged with refreshRequestFlag so AuthInterceptor neither attch teh exppired access token
-  Future<Response<dynamic>> refreshToken({required String refreshToken}) {
-    return _dio.post<dynamic>(
-      ApiConstants.refresh,
-      data: <String, dynamic>{'refreshToken': refreshToken},
-      options: Options(extra: <String, dynamic>{refreshRequestFlag: true}),
-    );
-  }
-
-  Future<Response<dynamic>> balance() =>
-      _dio.get<dynamic>(ApiConstants.balance);
-
-  /// Registers an FCM/APNs push notification device token for the user.
-  /// Registers this device for push notifications.
-  ///
-  /// Bearer token is attached by [AuthInterceptor]; this endpoint requires it.
-  /// The payload is built by RegisterDeviceDto so the shape lives with the
-  /// feature that owns it, not in the shared network layer.
-  Future<Response<dynamic>> registerDevice({
-    required Map<String, dynamic> payload,
-  }) {
-    return _dio.post<dynamic>(ApiConstants.registerDevice, data: payload);
   }
 }

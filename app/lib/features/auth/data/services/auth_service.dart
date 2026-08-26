@@ -1,13 +1,18 @@
-import 'package:activotrade_app/core/auth/token_refresher.dart';
 import 'package:dio/dio.dart';
 
+import '../../../../core/auth/token_refresher.dart';
+import '../../../../core/constants/api_constant.dart';
 import '../../../../core/network/api_service.dart';
+import '../../domain/auth_failure.dart';
 import '../models/auth_response_dto.dart';
 import '../models/login_request_dto.dart';
 
-/// Feature-isolated API client responsible for authentication network calls.
+/// The auth feature's only network entry point.
 ///
-/// Implement [TokenRefresher] so 'core/' AuthInterceptor can refresh an expired access token.
+/// The only class allowed to call the auth endpoints, and the only one that
+/// names Dio: every failure leaves here as an [AuthException]. Implements
+/// [TokenRefresher] so core's AuthInterceptor can refresh a token without
+/// depending on this feature.
 class AuthService implements TokenRefresher {
   AuthService({ApiService? apiService})
     : _apiService = apiService ?? ApiService();
@@ -15,15 +20,19 @@ class AuthService implements TokenRefresher {
   final ApiService _apiService;
 
   Future<AuthResponseDto> login(LoginRequestDto requestDto) async {
-    final Response<dynamic> response = await _apiService.login(
-      username: requestDto.username,
-      password: requestDto.password,
-    );
+    try {
+      final Response<dynamic> response = await _apiService.post(
+        ApiConstants.login,
+        data: requestDto.toJson(),
+      );
 
-    if (response.data is Map<String, dynamic>) {
-      return AuthResponseDto.fromJson(response.data as Map<String, dynamic>);
-    } else {
-      throw const FormatException('Invalid authentication response format');
+      final dynamic data = response.data;
+      if (data is Map<String, dynamic>) {
+        return AuthResponseDto.fromJson(data);
+      }
+      throw const AuthException(AuthFailureReason.generic);
+    } on DioException catch (e) {
+      throw AuthException(_reasonFor(e));
     }
   }
 
@@ -32,22 +41,49 @@ class AuthService implements TokenRefresher {
   Future<({String accessToken, String refreshToken})> refreshTokenExchange({
     required String refreshToken,
   }) async {
-    final Response<dynamic> response = await _apiService.refreshToken(
-      refreshToken: refreshToken,
-    );
+    try {
+      // skipAuth: this call authenticates from its body, and a 401 here means
+      // the session is over rather than that a token needs refreshing.
+      final Response<dynamic> response = await _apiService.post(
+        ApiConstants.refresh,
+        data: <String, dynamic>{'refreshToken': refreshToken},
+        skipAuth: true,
+      );
 
-    if (response.data is Map<String, dynamic>) {
-      final Map<String, dynamic> json = response.data as Map<String, dynamic>;
-      final String accessToken = json['accessToken'] as String? ?? '';
-      final String newRefreshToken = json['refreshToken'] as String? ?? '';
+      final dynamic data = response.data;
+      if (data is Map<String, dynamic>) {
+        final String access = data['accessToken'] as String? ?? '';
+        final String rotated = data['refreshToken'] as String? ?? '';
 
-      // The backend rotates teh pair on every exchange so, a response without a new refresh token is malformed
-      if (accessToken.isNotEmpty && newRefreshToken.isNotEmpty) {
-        // final String newRefreshToken =
-        //     json['refreshToken'] as String? ?? refreshToken;
-        return (accessToken: accessToken, refreshToken: newRefreshToken);
+        // The backend rotates the pair on every exchange, so a response
+        // without a new refresh token is malformed rather than incomplete.
+        if (access.isNotEmpty && rotated.isNotEmpty) {
+          return (accessToken: access, refreshToken: rotated);
+        }
       }
+      throw const AuthException(AuthFailureReason.generic);
+    } on DioException catch (e) {
+      throw AuthException(_reasonFor(e));
     }
-    throw const FormatException('Invalid refresh token response format');
+  }
+
+  AuthFailureReason _reasonFor(DioException e) => switch (e.type) {
+    DioExceptionType.connectionError ||
+    DioExceptionType.connectionTimeout ||
+    DioExceptionType.sendTimeout ||
+    DioExceptionType.receiveTimeout => AuthFailureReason.network,
+    DioExceptionType.badResponse => _reasonForStatus(e.response?.statusCode),
+    _ => AuthFailureReason.generic,
+  };
+
+  AuthFailureReason _reasonForStatus(int? status) {
+    if (status != null && status >= 500) {
+      return AuthFailureReason.serverUnavailable;
+    }
+    return switch (status) {
+      401 || 403 => AuthFailureReason.credentials,
+      429 => AuthFailureReason.tooManyAttempts,
+      _ => AuthFailureReason.generic,
+    };
   }
 }

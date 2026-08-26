@@ -2,18 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../../../../core/auth/app_auth_cubit.dart';
+import '../../../../core/auth/app_auth_state.dart';
 import 'local_notifications_service.dart';
 import 'push_notification_service.dart';
 
-/// Connect incoming foreground pushes to local banner
+/// Connects an incoming foreground push to a local banner.
+///
+/// A push is addressed to an account, but the device stays subscribed after
+/// sign-out, so every message is gated on there being a live session.
 class ForegroundPushHandler {
   ForegroundPushHandler({
     required this._pushService,
     required this._localNotifications,
+    required this._appAuthCubit,
   });
 
   final PushNotificationService _pushService;
   final LocalNotificationsService _localNotifications;
+  final AppAuthCubit _appAuthCubit;
 
   StreamSubscription<PushMessage>? _subscription;
 
@@ -37,10 +44,7 @@ class ForegroundPushHandler {
     try {
       await _localNotifications.init();
 
-      _subscription = _pushService.onForegroundMessage.listen(
-        (PushMessage message) =>
-            _localNotifications.show(title: message.title, body: message.body),
-      );
+      _subscription = _pushService.onForegroundMessage.listen(_onMessage);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('[ForegroundPushHandler] Could not start: $e');
@@ -50,8 +54,29 @@ class ForegroundPushHandler {
     }
   }
 
+  /// Drops anything that arrives without a live session.
+  ///
+  /// Locked counts as no session: the app is on screen behind the unlock
+  /// prompt, so a banner there would defeat the lock it is sitting on.
+  void _onMessage(PushMessage message) {
+    if (_appAuthCubit.state is! AppAuthenticated) {
+      _log('Dropped a foreground push: no signed-in user');
+      return;
+    }
+    unawaited(
+      _localNotifications.show(title: message.title, body: message.body),
+    );
+  }
+
   Future<void> stop() async {
     await _subscription?.cancel();
     _subscription = null;
+  }
+
+  /// Logs the reason only — a push body may carry account information.
+  void _log(String message) {
+    if (kDebugMode) {
+      debugPrint('[ForegroundPushHandler] $message');
+    }
   }
 }

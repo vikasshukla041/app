@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Handles encrypted storage of access tokens, refresh tokens, and user credentials.
-/// data using OS level (Android KeyStore/IOS Keychain)
+import '../auth/domain/user.dart';
+
+/// Encrypted storage for tokens and the signed-in user, backed by the OS
+/// (Android Keystore / iOS Keychain).
 class SecureStorageService {
   SecureStorageService({FlutterSecureStorage? storage})
     : _storage = storage ?? const FlutterSecureStorage();
@@ -28,11 +31,24 @@ class SecureStorageService {
 
   Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
 
-  /// flutterSecureStorage only store string
-  Future<void> saveUser(String userJson) =>
-      _storage.write(key: _userKey, value: userJson);
+  /// FlutterSecureStorage holds strings only, so the encoding lives here
+  /// rather than being repeated by every caller.
+  Future<void> saveUser(User user) =>
+      _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
 
-  Future<String?> getUser() => _storage.read(key: _userKey);
+  /// Returns null for a blob that no longer parses: a corrupt entry is not a
+  /// session, and throwing here would break app launch.
+  Future<User?> getUser() async {
+    final String? raw = await _storage.read(key: _userKey);
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+    try {
+      return User.fromJson(jsonDecode(raw));
+    } on FormatException {
+      return null;
+    }
+  }
 
   Future<void> setBiometricEnabled({required bool enabled}) =>
       _storage.write(key: _biometricEnabledKey, value: enabled.toString());

@@ -1,6 +1,10 @@
 import 'package:equatable/equatable.dart';
 
 import '../../core/auth/domain/user.dart';
+import 'domain/auth_failure.dart';
+
+// Re-exported so importing this file still brings the reason into scope.
+export 'domain/auth_failure.dart';
 
 // All possible states of the authentication flow.
 sealed class AuthState extends Equatable {
@@ -36,16 +40,6 @@ class AuthSuccess extends AuthState {
 
   @override
   List<Object?> get props => <Object?>[user];
-}
-
-enum AuthFailureReason {
-  network,
-  credentials,
-  tooManyAttempts,
-  serverUnavailable,
-  biometricSessionExpired,
-  biometricLockedOut,
-  generic,
 }
 
 class AuthFailure extends AuthState {

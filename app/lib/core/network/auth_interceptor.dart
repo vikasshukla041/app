@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import '../auth/app_auth_cubit.dart';
 import '../auth/token_refresher.dart';
 import '../storage/secure_storage_service.dart';
-import 'api_service.dart';
 
 /// Attaches `Authorization: Bearer <token>` to every request, and recovers
 /// from an expired access token by refreshing once and replaying the call.
@@ -31,6 +30,10 @@ class AuthInterceptor extends Interceptor {
   /// construction cycle.
   final TokenRefresher Function()? tokenRefresherProvider;
 
+  /// Set by `ApiService.post(skipAuth: true)` on the refresh call, the one
+  /// request that must not carry a Bearer token or trigger a refresh.
+  static const String skipAuthFlag = 'skip_auth';
+
   /// Injectable so tests can assert the replay without a live server.
   final Dio? replayClient;
 
@@ -49,7 +52,7 @@ class AuthInterceptor extends Interceptor {
   ) async {
     // The refresh endpoint authenticates from its body. Sending an expired
     // Bearer alongside it risks a 401 from the one call meant to fix 401s.
-    if (options.extra[ApiService.refreshRequestFlag] == true) {
+    if (options.extra[skipAuthFlag] == true) {
       handler.next(options);
       return;
     }
@@ -96,7 +99,7 @@ class AuthInterceptor extends Interceptor {
     }
 
     // Never refresh in reaction to the refresh call itself failing.
-    if (err.requestOptions.extra[ApiService.refreshRequestFlag] == true) {
+    if (err.requestOptions.extra[skipAuthFlag] == true) {
       return false;
     }
 

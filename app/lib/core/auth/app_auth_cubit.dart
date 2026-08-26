@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -21,29 +19,15 @@ class AppAuthCubit extends Cubit<AppAuthState> {
       final bool biometricEnabled = await _storageService.isBiometricEnabled();
       final String? refreshToken = await _storageService.getRefreshToken();
       final String? token = await _storageService.getAccessToken();
-      final String? userRaw = await _storageService.getUser();
+      final User? user = await _storageService.getUser();
 
-      final bool hasSession =
-          token != null && token.isNotEmpty && userRaw != null;
-
-      // If biometric login is enabled, force user to pass biometric unlock on AuthScreen
-      if (!hasSession) {
-        emit(const AppUnauthenticated());
-        return;
-      }
-
-      final User? user = User.fromJson(jsonDecode(userRaw));
-
-      // A stored blob we can no loger parse is not a session
-      if (user == null) {
-        emit(const AppUnauthenticated());
-        return;
-      }
-
-      // Neither branch below can survive without a refresh token: the access
-      // token dies within the hour and AuthInterceptor would have nothing to
-      // refresh with, dropping the user mid-session instead of at launch.
-      if (refreshToken == null || refreshToken.isEmpty) {
+      // Without a refresh token the access token dies within the hour, so the
+      // user would be dropped mid-session rather than asked to sign in here.
+      if (token == null ||
+          token.isEmpty ||
+          refreshToken == null ||
+          refreshToken.isEmpty ||
+          user == null) {
         emit(const AppUnauthenticated());
         return;
       }
@@ -55,9 +39,8 @@ class AppAuthCubit extends Cubit<AppAuthState> {
         return;
       }
 
-      // Biometrics off but the session is intact. Signing this user out would
-      // discard tokens that are still valid and make them retype their
-      // password on every launch.
+      // Biometrics off but the session is intact: signing out here would
+      // discard valid tokens and force a password on every launch.
       emit(AppAuthenticated(user));
       return;
     } catch (e) {

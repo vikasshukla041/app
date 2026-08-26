@@ -1,5 +1,10 @@
 import 'package:equatable/equatable.dart';
 
+import 'domain/notification_failure.dart';
+
+// Re-exported so every existing import of this file still sees the reason.
+export 'domain/notification_failure.dart';
+
 sealed class NotificationState extends Equatable {
   const NotificationState();
 
@@ -21,14 +26,6 @@ class NotificationRegistered extends NotificationState {
 
 class NotificationDenied extends NotificationState {
   const NotificationDenied();
-}
-
-enum NotificationFailureReason {
-  unavailable,
-  noToken,
-  registrationFailed,
-  network,
-  generic,
 }
 
 class NotificationFailure extends NotificationState {

@@ -1,19 +1,14 @@
-import 'dart:async';
-import 'dart:convert';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/domain/user.dart';
-import '../../core/security/biometric_service.dart';
 import '../../core/storage/secure_storage_service.dart';
-import '../notifications/notification_cubit.dart';
 import 'auth_state.dart';
 import 'data/models/auth_response_dto.dart';
 import 'data/models/login_request_dto.dart';
 import 'data/services/auth_service.dart';
+import 'data/services/biometric_service.dart';
 
 /// Owns the login business logic for the Auth feature.
 class AuthCubit extends Cubit<AuthState> {
@@ -22,7 +17,6 @@ class AuthCubit extends Cubit<AuthState> {
     SecureStorageService? storageService,
     BiometricService? biometricService,
     this.appAuthCubit,
-    this.notificationCubit,
   }) : _authService = authService ?? AuthService(),
        _storageService = storageService ?? SecureStorageService(),
        _biometricService = biometricService ?? BiometricService(),
@@ -33,16 +27,14 @@ class AuthCubit extends Cubit<AuthState> {
   final BiometricService _biometricService;
   final AppAuthCubit? appAuthCubit;
 
-  /// Optional: sign-in still has to work when push was never wired up.
-  final NotificationCubit? notificationCubit;
-
   void reset() => emit(const AuthInitial());
 
-  /// The single exit from every successful sign-in path, so none can forget the push-token claim.
+  /// The single exit from every successful sign-in path.
+  ///
+  /// Notifications react to the session change themselves, in
+  /// NotificationSessionListener — this method must not know they exist.
   void _completeLogin(User user) {
     appAuthCubit?.logIn(user);
-    // Not awaited: the dashboard should not wait on this network call.
-    unawaited(notificationCubit?.claimForCurrentUser() ?? Future<void>.value());
     emit(AuthSuccess(user));
   }
 
@@ -73,7 +65,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (refreshSaved) {
         await _storageService.saveRefreshToken(responseDto.refreshToken);
       }
-      await _storageService.saveUser(jsonEncode(user.toJson()));
+      await _storageService.saveUser(user);
 
       // Check if we should show the biometric setup prompt.
       final bool hardwareAvailable = await _biometricService.isAvailable();
@@ -86,9 +78,9 @@ class AuthCubit extends Cubit<AuthState> {
         // dashboard entry
         _completeLogin(user);
       }
-    } on DioException catch (e, stackTrace) {
-      _log('Login failed: ${e.type} ${e.message}', stackTrace);
-      _emitFailure(_mapDioError(e));
+    } on AuthException catch (e, stackTrace) {
+      _log('Login failed: ${e.reason}', stackTrace);
+      _emitFailure(e.reason);
     } catch (e, stackTrace) {
       _log('Login failed: $e', stackTrace);
       _emitFailure(AuthFailureReason.generic);
@@ -164,7 +156,7 @@ class AuthCubit extends Cubit<AuthState> {
 
     // Load the saved refresh token and user from secure storage.
     final String? refreshToken = await _storageService.getRefreshToken();
-    final User? user = _decodeUser(await _storageService.getUser());
+    final User? user = await _storageService.getUser();
 
     if (refreshToken == null || user == null) {
       _log('Biometric unlock failed: no saved refresh token.');
@@ -182,15 +174,14 @@ class AuthCubit extends Cubit<AuthState> {
       await _storageService.saveAccessToken(exchanged.accessToken);
       await _storageService.saveRefreshToken(exchanged.refreshToken);
       _completeLogin(user);
-    } on DioException catch (e, stackTrace) {
+    } on AuthException catch (e, stackTrace) {
       _log('Token exchange failed during biometric login', stackTrace);
 
-      final AuthFailureReason reason = _mapDioError(e);
-      if (reason == AuthFailureReason.credentials) {
-        // final AuthFailureReason reason = _mapDioError(e);
+      // A rejected refresh token means the session is over, not merely delayed.
+      if (e.reason == AuthFailureReason.credentials) {
         await _abandonSession();
       }
-      _emitFailure(reason);
+      _emitFailure(e.reason);
     } catch (e, stackTrace) {
       _log('Biometric login error', stackTrace);
       // Unknown error, so treat it as a generic failure.
@@ -216,46 +207,5 @@ class AuthCubit extends Cubit<AuthState> {
         debugPrintStack(stackTrace: stackTrace);
       }
     }
-  }
-
-  User? _decodeUser(String? json) {
-    if (json == null) {
-      return null;
-    }
-    try {
-      return User.fromJson(jsonDecode(json));
-    } on FormatException catch (e) {
-      _log('Stored user could not be decoded: $e');
-      return null;
-    }
-  }
-
-  // Turn a Dio error into an AuthFailureReason.
-  AuthFailureReason _mapDioError(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionError:
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        return AuthFailureReason.network;
-      case DioExceptionType.badResponse:
-        return _mapStatusCode(e.response?.statusCode);
-      default:
-        return AuthFailureReason.generic;
-    }
-  }
-
-  AuthFailureReason _mapStatusCode(int? statusCode) {
-    if (statusCode == null) {
-      return AuthFailureReason.generic;
-    }
-    if (statusCode >= 500) {
-      return AuthFailureReason.serverUnavailable;
-    }
-    return switch (statusCode) {
-      401 || 403 => AuthFailureReason.credentials,
-      429 => AuthFailureReason.tooManyAttempts,
-      _ => AuthFailureReason.generic,
-    };
   }
 }

@@ -51,7 +51,9 @@ UI layer
   Cubit         all business logic (the ViewModel role)
        ↓
 Data layer
-  ApiService    sole network gateway (Dio + AuthInterceptor)
+  <Feature>Service   the feature's only network entry point; owns its paths
+       ↓             and turns DioException into the feature's own exception
+  ApiService          transport only: base URL, timeouts, AuthInterceptor
   SecureStorageService / BiometricService   platform services
        ↓
   Backend
@@ -71,26 +73,50 @@ unnecessary overhead"). Add one only when logic is duplicated across Cubits.
 app/
 ├── config/                       env_dev.json · env_staging.json · env_prod.json
 └── lib/
-    ├── core/
+    ├── core/                     shared by two or more features, nothing else
+    │   ├── auth/                 AppAuthCubit · User · TokenRefresher
     │   ├── config/app_config.dart          baseUrl · environment · timeouts
-    │   ├── constants/api_constant.dart     relative paths only
+    │   ├── constants/api_constant.dart     every path, grouped by feature
     │   ├── design_system/
     │   │   ├── theme.dart                  light/dark + semantic colour tokens
     │   │   └── widgets/app_snack_bar.dart  shared UI components
+    │   ├── di/service_locator.dart         every registration, one file
     │   ├── network/
-    │   │   ├── api_service.dart
+    │   │   ├── api_service.dart            transport only — no endpoint paths
     │   │   └── auth_interceptor.dart       Bearer token on every request
-    │   ├── security/biometric_service.dart local_auth wrapper
     │   └── storage/secure_storage_service.dart  Keychain / Keystore
     ├── features/
-    │   ├── auth/       screen · cubit · state · models/ · widgets/
-    │   └── dashboard/
+    │   └── <feature>/
+    │       ├── <feature>_cubit.dart    business logic, no transport types
+    │       ├── <feature>_state.dart    states; re-exports the failure reason
+    │       ├── domain/                 failure reason enum + typed exception
+    │       ├── data/
+    │       │   ├── models/             request/response DTOs
+    │       │   └── services/           only network entry point; owns paths
+    │       ├── widgets/
+    │       └── <feature>_screen.dart   assembly only
     ├── l10n/           app_en.arb · app_es.arb (sources) + generated Dart
     └── main.dart
 ```
 
 **`core/` vs `features/`:** would two features both use it? Yes → `core/`.
 `core/` must never import from `features/`.
+
+**Why `ApiConstants` stays in `core/`.** The senior's objection was that
+`ApiService` exposed `login()`, `balance()` and `registerDevice()` — core held
+*behaviour* for every feature, so core changed whenever a feature did. That is
+gone: `ApiService` is transport only. What remains in core is a table of path
+strings that nothing in `core/` imports. Keeping every endpoint visible in one
+file is worth more day to day than the last inch of separation, and the cost
+is bounded — a new endpoint adds one line here and one call in that feature's
+service, and nowhere else. Raise it if the senior disagrees; do not quietly
+scatter the paths again.
+
+**Where a type belongs inside a feature.** `data/services/` is the only place
+that may name a transport type; `domain/` holds the vocabulary both sides
+share; the Cubit sits above both and knows neither Dio nor JSON. The tell that
+a boundary has leaked is an import: `package:dio` or `dart:convert` in a Cubit
+means work is happening one layer too high.
 
 ## Rules
 
@@ -105,11 +131,100 @@ app/
 7. `Semantics` goes *inside* each interactive widget, so no call site can omit it.
 8. Constructor injection with production defaults:
    `ClassName({Dep? dep}) : _dep = dep ?? Dep();`
-9. Only `ApiService` touches the network. Only `SecureStorageService` touches
-   secure storage. Only `BiometricService` touches `local_auth`.
+9. Only `ApiService` touches the network, and only a feature's own
+   `data/services/` class calls it — no Cubit holds an `ApiService`. Paths come
+   from `ApiConstants`, and a feature's service is the only thing allowed to
+   read the constants belonging to that feature. Only `SecureStorageService`
+   touches secure storage; only `BiometricService` touches `local_auth`.
+   Transport types stop at `data/services/`: a service catches `DioException`
+   and rethrows the feature's own exception (`AuthException`,
+   `NotificationException`), and the Cubit switches on `.reason`. Likewise
+   `SecureStorageService` takes and returns a `User`, so the
+   `jsonEncode`/`jsonDecode` pair lives there and not in a Cubit.
 10. Trailing commas everywhere; `dart format` clean.
 11. `debugPrint` only inside `if (kDebugMode)`. Never `print`.
 12. Comments explain **why**, never what. Max ~2 lines. Use `///` for public APIs.
+13. A feature never reaches into another feature. If signing in has to trigger
+    something in notifications, the *listener* lives in notifications and
+    watches `AppAuthCubit` — auth must not know notifications exists.
+14. No dead registrations. If a Cubit is in `service_locator` it must be used by
+    a screen. Ship it wired or do not ship it.
+15. No new package, CI workflow, or analyzer rule without asking first. These
+    bind the whole team, not just the author.
+
+### How these get checked
+
+`flutter analyze` catches none of 2, 3, 12, 13 or 14. Before opening a PR:
+
+```bash
+grep -rn "Widget _build" lib/                      # rule 2  → expect nothing
+wc -l lib/features/*/[a-z]*screen.dart             # rule 3  → each under ~150
+grep -rn "Color(0x\|Colors\.\|TextStyle(" lib/ \
+  | grep -v design_system/theme.dart               # rule 5  → expect nothing
+grep -rn "Text('" lib/ --include=*.dart | grep -v l10n   # rule 6  → expect nothing
+grep -rn "debugPrint" lib/ -B2 | grep -c kDebugMode      # rule 11 → matches count
+grep -rln "package:dio\|dart:convert" lib/features/*/*cubit.dart  # rule 9 → nothing
+```
+
+For rule 13, a Cubit constructor taking another Cubit from a different feature
+is the smell. For rule 14, cross-check `service_locator.dart` registrations
+against actual `getIt<...>()` call sites.
+
+### Standing review findings
+
+Raised by the senior and not yet resolved. Do not re-litigate them in code —
+they need a decision first:
+
+- **Repositories and use-cases.** The senior's architecture review asks for
+  them; the *Architecture* section above deliberately defers them, citing
+  Flutter's own guidance. **These two documents currently contradict each
+  other.** Whoever resolves it should update this file in the same change.
+- **`freezed` / required dependencies.** Also from that review, also in
+  tension — with the no-code-generation rule under *Testing*, and with rule 8.
+
+## Where the rest of the history lives
+
+This file is loaded into every session, so it stays short. The detail sits in
+`docs/` and should be read when the work touches it:
+
+| File | What it holds |
+|---|---|
+| `docs/SENIOR_REVIEW_SOURCE.md` | the senior's 40 PR comments + architecture verdict, verbatim, with a status column |
+| `docs/reference/06_ENGINEERING_STANDARDS.md` | §1–10 plus the mistakes log M1–M7 |
+| `docs/BACKEND_ASKS_FRIDAY.md` | open requests for the backend team |
+| `docs/DOCS.html` | the docs SPA — Learn, Reference and Source tracks |
+| `docs/STUDY_GUIDE.md` / `.pdf` | 28-chapter walkthrough of the whole app |
+
+Do not paraphrase `SENIOR_REVIEW_SOURCE.md` — it is a record of what was said,
+not a working document. Edit the status column only.
+
+## Things that have bitten us
+
+Each of these cost real time. Read before touching the same area.
+
+- **Two machines, one repo.** Work happens on a second laptop as well as this
+  checkout, and the two drift. Before diagnosing anything, confirm which copy
+  the symptom is on. A `getUser()` that called `jsonEncode` instead of
+  `jsonDecode` survived on one machine only, and read back as "no saved
+  session" — every token was present, the user object alone failed to parse.
+- **`FirebaseMessaging.deleteToken()` on logout.** Tried once to stop a signed
+  out device receiving push. Every call minted a fresh token while the old row
+  survived in `user_tokens`, so one push arrived three times and eleven dead
+  rows accumulated for one account. Fully reverted. The real fix is a backend
+  `DELETE /api/user/register-device`, which does not exist yet.
+- **The mock's `platform` enum.** `mock_api/routes/user.js` must list `web`
+  alongside `android` and `ios`, or web device registration returns 400. This
+  was patched locally once and nearly went uncommitted — a fresh clone would
+  have failed web push with no obvious cause. Same class of problem as the
+  missing `cors()` call, which cost an afternoon.
+- **Changing code to make a test pass.** A test expected `AuthLoading` from
+  `setupBiometricsPostLogin`; emitting it made the test green and put the login
+  form on screen behind the OS fingerprint sheet. Ask which of the two is wrong
+  before editing either. This is entry M2 in the standards doc.
+- **Mock Mode is easy to miss.** `mock_api/services/firebase.js` returns
+  `realFcm: false` when `firebase-service-account.json` is absent, and push
+  "works" in a way that does not match production. Check which mode you are in
+  before concluding anything from a push test.
 
 ## Conventions worth knowing
 
@@ -209,7 +324,9 @@ Build in this order — each step unblocks the next.
    second data source or caching appears — Flutter's guidance recommends
    abstract repository classes so environments can swap implementations. Today
    they would be pass-through classes, so they are deliberately deferred.
-4. **Dashboard** with real data via `ApiService.balance()`.
+4. **Dashboard** with real data — `DashboardService.balance()` is wired; what
+   remains is replacing `_PlaceholderSummaryCard` and adding an error state
+   the user can act on.
 5. **Push notifications** (`firebase_core` + `firebase_messaging`).
 
 ## Before proposing changes

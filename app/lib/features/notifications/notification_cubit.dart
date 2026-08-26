@@ -1,14 +1,13 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../core/device/device_info_service.dart';
-import '../../core/notifications/push_notification_service.dart';
 import '../../core/storage/secure_storage_service.dart';
 import 'data/models/register_device_dto.dart';
+import 'data/services/device_info_service.dart';
 import 'data/services/notification_service.dart';
+import 'data/services/push_notification_service.dart';
 import 'notification_state.dart';
 
 /// Owns the push-notification subscription logic; never fakes a token on failure.
@@ -97,7 +96,8 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
-  /// Posts the registration and starts watching for rotations; shared by [subscribe] and [claimForCurrentUser].
+  /// Posts the registration and starts watching for rotations; shared by
+  /// [subscribe] and [claimForCurrentUser].
   Future<void> _sendRegistration({
     required String token,
     required String platform,
@@ -120,9 +120,9 @@ class NotificationCubit extends Cubit<NotificationState> {
     try {
       await _sendRegistration(token: token, platform: platform);
       _emitTransient(const NotificationRegistered());
-    } on DioException catch (e, stackTrace) {
-      _log('Device registration failed: ${e.type}', stackTrace);
-      _emitFailure(_mapDioError(e));
+    } on NotificationException catch (e, stackTrace) {
+      _log('Device registration failed: ${e.reason}', stackTrace);
+      _emitFailure(e.reason);
     } catch (e, stackTrace) {
       _log('Device registration failed: $e', stackTrace);
       _emitFailure(NotificationFailureReason.registrationFailed);
@@ -150,16 +150,6 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
     emit(outcome);
     emit(const NotificationInitial());
-  }
-
-  NotificationFailureReason _mapDioError(DioException e) {
-    return switch (e.type) {
-      DioExceptionType.connectionError ||
-      DioExceptionType.connectionTimeout ||
-      DioExceptionType.sendTimeout ||
-      DioExceptionType.receiveTimeout => NotificationFailureReason.network,
-      _ => NotificationFailureReason.registrationFailed,
-    };
   }
 
   /// Logs only the error reason; the token itself must never be logged.

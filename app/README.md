@@ -42,8 +42,9 @@ CI runs all three on every push and pull request
 Screen (assembly only)
   └─ Widgets (UI + input capture)
        └─ Cubit (business logic, emits states)
-            └─ ApiService (sole network gateway)
-                 └─ Dio + AuthInterceptor → backend
+            └─ <Feature>Service (owns its endpoint paths; throws the
+                 feature's own exception, never a DioException)
+                 └─ ApiService → Dio + AuthInterceptor → backend
 Token → SecureStorageService (Keychain / Keystore)
 ```
 

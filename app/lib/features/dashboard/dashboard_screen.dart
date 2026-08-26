@@ -79,12 +79,11 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-/// Sample figures shown until GET /api/user/balance is wired up.
+/// Sample figures shown until the balance API contract is signed off; wiring
+/// instructions live in docs/reference/03_DASHBOARD_FEATURE.md.
 ///
-/// Formatted through NumberFormat against the active locale rather than
-/// hardcoded, so the placeholder exercises the same currency and grouping
-/// rules the real data will — a euro string would look identical in every
-/// language and hide the bug until launch.
+/// Formatted through NumberFormat rather than hardcoded, so the placeholder
+/// exercises the same locale rules the real data will.
 class _PlaceholderSummaryCard extends StatelessWidget {
   const _PlaceholderSummaryCard();
 
@@ -110,56 +109,3 @@ class _PlaceholderSummaryCard extends StatelessWidget {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// LIVE BALANCE INTEGRATION — enable once GET /api/user/balance is working.
-//
-// DashboardCubit, DashboardState, PortfolioSummary and DashboardBody are all
-// implemented and wired into service_locator already. Only this screen needs
-// changing. Add these imports:
-//
-//   import '../../core/di/service_locator.dart';
-//   import 'dashboard_cubit.dart';
-//   import 'dashboard_state.dart';
-//   import 'widgets/dashboard_body.dart';
-//
-// Then wrap the Scaffold in a provider and swap the card block:
-//
-//   return BlocProvider<DashboardCubit>(
-//     create: (_) => getIt<DashboardCubit>()..loadBalance(),
-//     child: Scaffold(
-//       ...
-//       body: BlocBuilder<AppAuthCubit, AppAuthState>(
-//         builder: (context, authState) {
-//           if (authState is! AppAuthenticated) {
-//             return const Center(child: CircularProgressIndicator());
-//           }
-//           return BlocBuilder<DashboardCubit, DashboardState>(
-//             builder: (context, state) => switch (state) {
-//               DashboardLoading() =>
-//                 const Center(child: CircularProgressIndicator()),
-//               DashboardLoaded(:final summary) => DashboardBody(
-//                   userFullName: authState.user.fullname,
-//                   summary: summary,
-//                 ),
-//               DashboardError() => Center(
-//                   child: Column(
-//                     mainAxisSize: MainAxisSize.min,
-//                     children: <Widget>[
-//                       Text(l10n.dashboardLoadError),
-//                       const SizedBox(height: 12),
-//                       FilledButton(
-//                         onPressed: () =>
-//                             context.read<DashboardCubit>().loadBalance(),
-//                         child: Text(l10n.retry),
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//             },
-//           );
-//         },
-//       ),
-//     ),
-//   );
-// ---------------------------------------------------------------------------

@@ -1,14 +1,13 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:activotrade_app/core/auth/domain/user.dart';
-import 'package:activotrade_app/core/security/biometric_service.dart';
 import 'package:activotrade_app/core/storage/secure_storage_service.dart';
 import 'package:activotrade_app/features/auth/auth_cubit.dart';
 import 'package:activotrade_app/features/auth/auth_state.dart';
 import 'package:activotrade_app/features/auth/data/models/auth_response_dto.dart';
 import 'package:activotrade_app/features/auth/data/models/login_request_dto.dart';
 import 'package:activotrade_app/features/auth/data/services/auth_service.dart';
+import 'package:activotrade_app/features/auth/data/services/biometric_service.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -21,9 +20,13 @@ class MockBiometricService extends Mock implements BiometricService {}
 
 class FakeLoginRequestDto extends Fake implements LoginRequestDto {}
 
+class FakeUser extends Fake implements User {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(FakeLoginRequestDto());
+    // saveUser now takes a User, so any() needs a fallback for that type.
+    registerFallbackValue(FakeUser());
   });
   late MockAuthService authService;
   late MockSecureStorageService storageService;
@@ -86,9 +89,7 @@ void main() {
       verify: (_) {
         verify(() => storageService.saveAccessToken('tok_123')).called(1);
         verify(() => storageService.saveRefreshToken('ref_123')).called(1);
-        verify(
-          () => storageService.saveUser(jsonEncode(demoUser.toJson())),
-        ).called(1);
+        verify(() => storageService.saveUser(demoUser)).called(1);
       },
     );
 
@@ -177,6 +178,28 @@ void main() {
         verify(() => authService.login(any())).called(1);
       },
     );
+
+    blocTest<AuthCubit, AuthState>(
+      'surfaces the reason AuthService reported, then returns to rest',
+      // The cubit never sees a DioException: AuthService maps the transport
+      // error to a reason, which is the whole point of the boundary.
+      build: () {
+        when(() => authService.login(any())).thenThrow(
+          const AuthException(AuthFailureReason.credentials),
+        );
+        return buildCubit();
+      },
+      act: (AuthCubit cubit) =>
+          cubit.login(username: 'demo', password: 'wrong'),
+      expect: () => <AuthState>[
+        const AuthLoading(),
+        const AuthFailure(AuthFailureReason.credentials),
+        const AuthInitial(),
+      ],
+      verify: (_) {
+        verifyNever(() => storageService.saveAccessToken(any()));
+      },
+    );
   });
 
   group('setupBiometricsPostLogin', () {
@@ -228,9 +251,7 @@ void main() {
         when(
           () => storageService.getAccessToken(),
         ).thenAnswer((_) async => null);
-        when(
-          () => storageService.getUser(),
-        ).thenAnswer((_) async => jsonEncode(demoUser.toJson()));
+        when(() => storageService.getUser()).thenAnswer((_) async => demoUser);
         when(
           () => authService.refreshTokenExchange(
             refreshToken: any(named: 'refreshToken'),

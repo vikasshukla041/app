@@ -8,7 +8,8 @@ class User extends Equatable {
     required this.fullname,
   });
 
-  /// network responses making narrows teh payload and return null rather thn a user misue missing field
+  /// Narrows an untrusted network payload, returning null rather than a User
+  /// built from missing fields.
   static User? fromJson(Object? json) {
     if (json case {
       'id': final String id,
