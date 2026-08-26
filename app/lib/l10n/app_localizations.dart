@@ -439,6 +439,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not register this device. Please try again.'**
   String get errorNotificationRegistrationFailed;
+
+  /// No description provided for @alertDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert'**
+  String get alertDetailTitle;
+
+  /// No description provided for @alertDetailHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert opened from a notification'**
+  String get alertDetailHeading;
+
+  /// No description provided for @alertDetailPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert {alertId} will be shown here once the alerts API is available.'**
+  String alertDetailPlaceholder(String alertId);
+
+  /// No description provided for @backSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get backSemantics;
 }
 
 class _AppLocalizationsDelegate

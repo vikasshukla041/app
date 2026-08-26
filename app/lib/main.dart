@@ -6,14 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/auth/app_auth_cubit.dart';
-import 'core/auth/app_auth_state.dart';
 import 'core/design_system/theme.dart';
 import 'core/di/service_locator.dart';
+import 'core/routing/app_router.dart';
 import 'features/auth/auth_cubit.dart';
-import 'features/auth/auth_screen.dart';
-import 'features/auth/locked_screen.dart';
-import 'features/dashboard/dashboard_screen.dart';
 import 'features/notifications/data/services/foreground_push_handler.dart';
+import 'features/notifications/data/services/notification_tap_handler.dart';
 import 'features/notifications/widgets/notification_session_listener.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
@@ -37,23 +35,31 @@ Future<void> main() async {
   // Start push notifications here so they work from any screen.
   unawaited(getIt<ForegroundPushHandler>().start());
 
-  runApp(const ActivoTradeApp());
+  // Awaited, unlike the handler above: a notification that launched the app
+  // has to reach DeepLinkController before the router runs its first redirect.
+  await getIt<NotificationTapHandler>().start();
+
+  unawaited(getIt<AppAuthCubit>().checkSession());
+
+  runApp(ActivoTradeApp(router: getIt<AppRouter>()));
 }
 
-/// Composition root: provides GetIt singletons, theme, localization and auth gateway.
+/// Composition root: provides GetIt singletons, theme, localization and router.
 class ActivoTradeApp extends StatelessWidget {
-  const ActivoTradeApp({super.key});
+  const ActivoTradeApp({super.key, required this.router});
+
+  final AppRouter router;
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        BlocProvider<AppAuthCubit>(
-          create: (_) => getIt<AppAuthCubit>()..checkSession(),
-        ),
+      providers: <BlocProvider<dynamic>>[
+        // .value, not create: the router already holds this singleton and
+        // would otherwise be listening to a cubit this provider later closes.
+        BlocProvider<AppAuthCubit>.value(value: getIt<AppAuthCubit>()),
         BlocProvider<AuthCubit>(create: (_) => getIt<AuthCubit>()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         onGenerateTitle: (BuildContext context) =>
             AppLocalizations.of(context).appTitle,
         debugShowCheckedModeBanner: false,
@@ -61,29 +67,13 @@ class ActivoTradeApp extends StatelessWidget {
         darkTheme: ActivoTradeTheme.darkTheme,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: NotificationSessionListener(
-          child: BlocBuilder<AppAuthCubit, AppAuthState>(
-            builder: (context, state) {
-              return switch (state) {
-                AppAuthenticated() => const DashboardScreen(),
-                AppAuthLocked(:final user) => LockedScreen(user: user),
-                AppAuthInitial() => const _SplashScreen(),
-                AppUnauthenticated() => const AuthScreen(),
-              };
-            },
-          ),
-        ),
+        routerConfig: router.config,
+        // MaterialApp.router has no `home`, so the session listener wraps every
+        // route from here. Dropping it stops the push token being re-claimed on
+        // sign-in, which is silent — no error, just the wrong user's alerts.
+        builder: (BuildContext context, Widget? child) =>
+            NotificationSessionListener(child: child ?? const SizedBox.shrink()),
       ),
     );
-  }
-}
-
-// neutral holding screen shown while saved session is being restored.
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

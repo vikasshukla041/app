@@ -35,6 +35,16 @@ class AppAuthLocked extends AppAuthState {
   List<Object?> get props => <Object?>[user];
 }
 
+/// Login is done and saved, but the biometric opt-in is still unanswered.
+class AppAuthPendingBiometricOptIn extends AppAuthState {
+  const AppAuthPendingBiometricOptIn(this.user);
+
+  final User user;
+
+  @override
+  List<Object?> get props => <Object?>[user];
+}
+
 /// User is unauthenticated (logged out or session expired).
 class AppUnauthenticated extends AppAuthState {
   const AppUnauthenticated();

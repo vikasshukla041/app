@@ -203,4 +203,18 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get errorNotificationRegistrationFailed =>
       'No se pudo registrar este dispositivo. Inténtalo de nuevo.';
+
+  @override
+  String get alertDetailTitle => 'Alerta';
+
+  @override
+  String get alertDetailHeading => 'Alerta abierta desde una notificación';
+
+  @override
+  String alertDetailPlaceholder(String alertId) {
+    return 'La alerta $alertId se mostrará aquí cuando la API de alertas esté disponible.';
+  }
+
+  @override
+  String get backSemantics => 'Atrás';
 }

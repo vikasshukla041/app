@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/auth/app_auth_cubit.dart';
-import '../../core/auth/domain/user.dart';
+import '../../core/auth/app_auth_state.dart';
 import '../../l10n/app_localizations.dart';
 import 'auth_cubit.dart';
 import 'auth_failure_presenter.dart';
@@ -15,9 +15,7 @@ import 'widgets/brand_header.dart';
 /// form. Signing out is the way to switch accounts or recover from a device
 /// whose biometrics stopped working.
 class LockedScreen extends StatefulWidget {
-  const LockedScreen({super.key, required this.user});
-
-  final User user;
+  const LockedScreen({super.key});
 
   @override
   State<LockedScreen> createState() => _LockedScreenState();
@@ -48,6 +46,12 @@ class _LockedScreenState extends State<LockedScreen> {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final TextTheme text = Theme.of(context).textTheme;
     final ColorScheme colors = Theme.of(context).colorScheme;
+
+    final AppAuthState session = context.watch<AppAuthCubit>().state;
+    // Holds the frame between a successful unlock and the router moving on.
+    if (session is! AppAuthLocked) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -80,7 +84,7 @@ class _LockedScreenState extends State<LockedScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        widget.user.fullname,
+                        session.user.fullname,
                         style: text.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),

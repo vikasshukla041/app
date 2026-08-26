@@ -56,5 +56,9 @@
   "notificationDeniedMessage": "Las notificaciones siguen desactivadas. Puedes activarlas cuando quieras desde la campana.",
   "errorNotificationUnavailable": "Este dispositivo no puede recibir notificaciones push.",
   "errorNotificationNoToken": "No se pudo obtener un token de notificación de este dispositivo.",
-  "errorNotificationRegistrationFailed": "No se pudo registrar este dispositivo. Inténtalo de nuevo."
+  "errorNotificationRegistrationFailed": "No se pudo registrar este dispositivo. Inténtalo de nuevo.",
+  "alertDetailTitle": "Alerta",
+  "alertDetailHeading": "Alerta abierta desde una notificación",
+  "alertDetailPlaceholder": "La alerta {alertId} se mostrará aquí cuando la API de alertas esté disponible.",
+  "backSemantics": "Atrás"
 }

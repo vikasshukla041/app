@@ -48,6 +48,7 @@ void main() {
       () => localNotifications.show(
         title: any(named: 'title'),
         body: any(named: 'body'),
+        payload: any(named: 'payload'),
       ),
     ).thenAnswer((_) async {});
 
@@ -73,7 +74,34 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     verify(
-      () => localNotifications.show(title: 'Market Alert', body: 'EUR/USD up'),
+      () => localNotifications.show(
+        title: 'Market Alert',
+        body: 'EUR/USD up',
+        payload: any(named: 'payload'),
+      ),
+    ).called(1);
+  });
+
+  test('forwards the data payload so the banner stays tappable', () async {
+    await handler.start();
+
+    // Without this a tap on a banner this app drew could not open a route,
+    // while a tap on a system notification could — same push, two behaviours.
+    messages.add(
+      const PushMessage(
+        title: 'Order filled',
+        body: '500 AAPL',
+        data: <String, String>{'route': '/alerts', 'id': 'alert_987'},
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    verify(
+      () => localNotifications.show(
+        title: 'Order filled',
+        body: '500 AAPL',
+        payload: <String, String>{'route': '/alerts', 'id': 'alert_987'},
+      ),
     ).called(1);
   });
 
@@ -94,7 +122,11 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     verify(
-      () => localNotifications.show(title: 'Order filled', body: '500 AAPL'),
+      () => localNotifications.show(
+        title: 'Order filled',
+        body: '500 AAPL',
+        payload: any(named: 'payload'),
+      ),
     ).called(1);
   });
 
@@ -112,6 +144,7 @@ void main() {
       () => localNotifications.show(
         title: any(named: 'title'),
         body: any(named: 'body'),
+        payload: any(named: 'payload'),
       ),
     );
   });
@@ -127,6 +160,7 @@ void main() {
       () => localNotifications.show(
         title: any(named: 'title'),
         body: any(named: 'body'),
+        payload: any(named: 'payload'),
       ),
     );
   });
@@ -149,6 +183,7 @@ void main() {
         () => localNotifications.show(
           title: any(named: 'title'),
           body: any(named: 'body'),
+          payload: any(named: 'payload'),
         ),
       );
     }
@@ -161,6 +196,12 @@ void main() {
       // The app is on screen behind the unlock prompt; a banner there would
       // defeat the lock it is sitting on.
       await expectDropped(const AppAuthLocked(demoUser));
+    });
+
+    test('drops a push during the biometric opt-in', () async {
+      // Tokens are saved by this point, but the user has not finished signing
+      // in and the router still has them on a pre-auth screen.
+      await expectDropped(const AppAuthPendingBiometricOptIn(demoUser));
     });
 
     test('drops a push before the session check has finished', () async {
@@ -184,10 +225,15 @@ void main() {
         () => localNotifications.show(
           title: 'Market Alert',
           body: 'EUR/USD up',
+          payload: any(named: 'payload'),
         ),
       ).called(1);
       verifyNever(
-        () => localNotifications.show(title: 'Dropped', body: 'while out'),
+        () => localNotifications.show(
+          title: 'Dropped',
+          body: 'while out',
+          payload: any(named: 'payload'),
+        ),
       );
     });
   });

@@ -9,10 +9,13 @@ import '../../features/notifications/data/services/device_info_service.dart';
 import '../../features/notifications/data/services/foreground_push_handler.dart';
 import '../../features/notifications/data/services/local_notifications_service.dart';
 import '../../features/notifications/data/services/notification_service.dart';
+import '../../features/notifications/data/services/notification_tap_handler.dart';
 import '../../features/notifications/data/services/push_notification_service.dart';
 import '../../features/notifications/notification_cubit.dart';
 import '../auth/app_auth_cubit.dart';
 import '../network/api_service.dart';
+import '../routing/app_router.dart';
+import '../routing/deep_link_controller.dart';
 import '../storage/secure_storage_service.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -44,6 +47,23 @@ void setupServiceLocator() {
       pushService: getIt<PushNotificationService>(),
       localNotifications: getIt<LocalNotificationsService>(),
       appAuthCubit: getIt<AppAuthCubit>(),
+    ),
+  );
+
+  // Routing: controller first, then the router that listens to it, then the
+  // tap handler that feeds it.
+  getIt.registerLazySingleton<DeepLinkController>(() => DeepLinkController());
+  getIt.registerLazySingleton<AppRouter>(
+    () => AppRouter(
+      authCubit: getIt<AppAuthCubit>(),
+      deepLinks: getIt<DeepLinkController>(),
+    ),
+  );
+  getIt.registerLazySingleton<NotificationTapHandler>(
+    () => NotificationTapHandler(
+      pushService: getIt<PushNotificationService>(),
+      localNotifications: getIt<LocalNotificationsService>(),
+      deepLinks: getIt<DeepLinkController>(),
     ),
   );
 

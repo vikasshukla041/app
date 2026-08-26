@@ -73,9 +73,11 @@ class AuthCubit extends Cubit<AuthState> {
           .isBiometricEnabled();
 
       if (hardwareAvailable && !biometricAlreadyEnabled && refreshSaved) {
+        // Both cubits are told: this one drives the panel, the app-level one
+        // moves the router onto the opt-in route.
+        appAuthCubit?.requireBiometricOptIn(user);
         emit(AuthRequireBiometricPrompt(user));
       } else {
-        // dashboard entry
         _completeLogin(user);
       }
     } on AuthException catch (e, stackTrace) {

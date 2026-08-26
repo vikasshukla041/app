@@ -70,6 +70,16 @@
   "notificationDeniedMessage": "Notifications stay off. You can enable them any time from the bell.",
   "errorNotificationUnavailable": "This device cannot receive push notifications.",
   "errorNotificationNoToken": "Could not get a notification token from this device.",
-  "errorNotificationRegistrationFailed": "Could not register this device. Please try again."
+  "errorNotificationRegistrationFailed": "Could not register this device. Please try again.",
+  "alertDetailTitle": "Alert",
+  "alertDetailHeading": "Alert opened from a notification",
+  "alertDetailPlaceholder": "Alert {alertId} will be shown here once the alerts API is available.",
+  "backSemantics": "Back",
+  "@alertDetailPlaceholder": {
+    "placeholders": {
+      "alertId": {
+        "type": "String"
+      }
+    }
+  }
 }
-

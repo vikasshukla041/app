@@ -1,4 +1,8 @@
+import 'dart:async';
+
+import 'package:activotrade_app/core/auth/app_auth_cubit.dart';
 import 'package:activotrade_app/core/di/service_locator.dart';
+import 'package:activotrade_app/core/routing/app_router.dart';
 import 'package:activotrade_app/features/auth/widgets/login_form.dart';
 import 'package:activotrade_app/main.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +39,11 @@ void main() {
 
   testWidgets('app boots to the login screen', (WidgetTester tester) async {
     setupServiceLocator();
-    await tester.pumpWidget(const ActivoTradeApp());
+    // main() kicks this off before runApp; the test has to do the same, since
+    // the router's first redirect reads whatever state it has settled on.
+    unawaited(getIt<AppAuthCubit>().checkSession());
+
+    await tester.pumpWidget(ActivoTradeApp(router: getIt<AppRouter>()));
 
     // checkSession() has not answered yet, so the first frame must be the
     // splash — never the login form, which would flash and be replaced.

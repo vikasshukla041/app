@@ -64,7 +64,13 @@ class ForegroundPushHandler {
       return;
     }
     unawaited(
-      _localNotifications.show(title: message.title, body: message.body),
+      _localNotifications.show(
+        title: message.title,
+        body: message.body,
+        // Carried through so a tap on this banner can deep-link the same way
+        // a tap on a system notification does.
+        payload: message.data,
+      ),
     );
   }
 

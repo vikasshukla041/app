@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 // FirebaseException lives in firebase_core, not firebase_messaging.
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -6,12 +8,31 @@ import 'package:flutter/foundation.dart';
 /// Result of asking for notification permission, simplified to 3 outcomes.
 enum PushPermissionResult { granted, denied, unavailable }
 
-/// One push notification, reduced to a title and body.
+/// One notification, reduced to what the app actually uses.
 class PushMessage {
-  const PushMessage({required this.title, required this.body});
+  const PushMessage({
+    required this.title,
+    required this.body,
+    this.data = const <String, String>{},
+  });
+
+  /// Builds a PushMessage from raw FCM data, dropping any non-string values.
+  factory PushMessage.fromRemote(RemoteMessage message) {
+    return PushMessage(
+      title: message.notification?.title ?? '',
+      body: message.notification?.body ?? '',
+      data: <String, String>{
+        for (final MapEntry<String, dynamic> entry in message.data.entries)
+          if (entry.value is String) entry.key: entry.value as String,
+      },
+    );
+  }
 
   final String title;
   final String body;
+
+  /// The FCM data payload — where a `route` for deep-linking lives.
+  final Map<String, String> data;
 }
 
 /// Wraps Firebase Cloud Messaging (FCM) push notifications.
@@ -20,11 +41,14 @@ class PushNotificationService {
   PushNotificationService({
     FirebaseMessaging? messaging,
     Stream<RemoteMessage>? foregroundMessages,
+    Stream<RemoteMessage>? openedAppMessages,
   }) : _injected = messaging,
-       _injectedForeground = foregroundMessages;
+       _injectedForeground = foregroundMessages,
+       _injectedOpenedApp = openedAppMessages;
 
   final FirebaseMessaging? _injected;
   final Stream<RemoteMessage>? _injectedForeground;
+  final Stream<RemoteMessage>? _injectedOpenedApp;
 
   FirebaseMessaging? _resolved;
   bool _tried = false;
@@ -70,29 +94,6 @@ class PushNotificationService {
     }
   }
 
-  /// Reads the existing permission without showing a prompt.
-  Future<PushPermissionResult> currentPermission() async {
-    final FirebaseMessaging? messaging = _messaging;
-    if (messaging == null) {
-      return PushPermissionResult.unavailable;
-    }
-
-    try {
-      final NotificationSettings settings = await messaging
-          .getNotificationSettings();
-
-      return switch (settings.authorizationStatus) {
-        AuthorizationStatus.authorized ||
-        AuthorizationStatus.provisional => PushPermissionResult.granted,
-        AuthorizationStatus.denied ||
-        AuthorizationStatus.notDetermined => PushPermissionResult.denied,
-      };
-    } catch (e) {
-      _log('Permission read failed: $e');
-      return PushPermissionResult.unavailable;
-    }
-  }
-
   /// Returns null on failure instead of making up a fake token.
   Future<String?> getToken() async {
     try {
@@ -109,41 +110,68 @@ class PushNotificationService {
 
   Stream<PushMessage> get onForegroundMessage {
     final Stream<RemoteMessage>? incoming =
-        _injectedForeground ?? _firebaseForeground();
+        _injectedForeground ??
+        _firebaseStream(() => FirebaseMessaging.onMessage);
     if (incoming == null) {
       return const Stream<PushMessage>.empty();
     }
 
     return incoming
-        .map(
-          (RemoteMessage m) => PushMessage(
-            title: m.notification?.title ?? '',
-            body: m.notification?.body ?? '',
-          ),
-        )
+        .map(PushMessage.fromRemote)
         .where((PushMessage m) => m.title.isNotEmpty || m.body.isNotEmpty);
   }
 
-  /// Wraps a static FCM stream getter so a missing Firebase does not crash.
-  Stream<RemoteMessage>? _firebaseForeground() {
+  /// Fires when a background notification is tapped; unlike the foreground one, this is not filtered.
+  Stream<PushMessage> get onNotificationTap {
+    final Stream<RemoteMessage>? incoming =
+        _injectedOpenedApp ??
+        _firebaseStream(() => FirebaseMessaging.onMessageOpenedApp);
+    if (incoming == null) {
+      return const Stream<PushMessage>.empty();
+    }
+    return incoming.map(PushMessage.fromRemote);
+  }
+
+  /// The notification that launched a killed app, if any; only answers once.
+  Future<PushMessage?> initialMessage() async {
+    final FirebaseMessaging? messaging = _messaging;
+    if (messaging == null) {
+      return null;
+    }
+
     try {
-      return FirebaseMessaging.onMessage;
+      final RemoteMessage? message = await messaging.getInitialMessage();
+      return message == null ? null : PushMessage.fromRemote(message);
     } catch (e) {
-      _log('Foreground stream unavailable: $e');
+      _log('Initial message lookup failed: $e');
       return null;
     }
   }
 
-  /// Returns 'android', 'ios', or 'web' — the values the backend accepts.
+  /// Wraps a static FCM stream getter so a missing Firebase does not crash.
+  Stream<RemoteMessage>? _firebaseStream(
+    Stream<RemoteMessage> Function() source,
+  ) {
+    try {
+      return source();
+    } catch (e) {
+      _log('Message stream unavailable: $e');
+      return null;
+    }
+  }
+
+  /// `'android'` or `'ios'` — the only two values the backend accepts.
   String? get platform {
     if (kIsWeb) {
-      return 'web';
+      return null;
     }
-    return switch (defaultTargetPlatform) {
-      TargetPlatform.android => 'android',
-      TargetPlatform.iOS => 'ios',
-      _ => null,
-    };
+    if (Platform.isAndroid) {
+      return 'android';
+    }
+    if (Platform.isIOS) {
+      return 'ios';
+    }
+    return null;
   }
 
   /// Logs only the error reason; the FCM token itself must never be logged.

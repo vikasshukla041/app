@@ -40,6 +40,11 @@ dependencies:
 
   # State management
   flutter_bloc: ^9.0.0
+
+  # Declarative routing. Officially recommended by the Flutter team, and
+  # the only router that makes the auth redirect a pure function of state
+  # rather than Navigator calls scattered across screens.
+  go_router: ^14.6.2
   equatable: ^2.0.5
 
   # Networking

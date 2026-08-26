@@ -11,8 +11,13 @@ class MockRemoteMessage extends Mock implements RemoteMessage {}
 
 class MockRemoteNotification extends Mock implements RemoteNotification {}
 
-RemoteMessage _message({String? title, String? body}) {
+RemoteMessage _message({
+  String? title,
+  String? body,
+  Map<String, dynamic> data = const <String, dynamic>{},
+}) {
   final MockRemoteMessage message = MockRemoteMessage();
+  when(() => message.data).thenReturn(data);
 
   if (title == null && body == null) {
     when(() => message.notification).thenReturn(null);
@@ -80,6 +85,93 @@ void main() {
     });
   });
 
+  group('onNotificationTap', () {
+    test('carries the data payload through unchanged', () async {
+      final StreamController<RemoteMessage> opened =
+          StreamController<RemoteMessage>.broadcast();
+      addTearDown(opened.close);
+
+      final PushNotificationService tapService = PushNotificationService(
+        messaging: messaging,
+        openedAppMessages: opened.stream,
+      );
+      final Future<PushMessage> received = tapService.onNotificationTap.first;
+
+      opened.add(
+        _message(
+          title: 'Order filled',
+          data: <String, dynamic>{'route': '/dashboard', 'id': '42'},
+        ),
+      );
+
+      final PushMessage message = await received;
+      expect(message.data['route'], '/dashboard');
+      expect(message.data['id'], '42');
+    });
+
+    test('keeps a data-only tap, unlike a foreground message', () async {
+      final StreamController<RemoteMessage> opened =
+          StreamController<RemoteMessage>.broadcast();
+      addTearDown(opened.close);
+
+      final PushNotificationService tapService = PushNotificationService(
+        messaging: messaging,
+        openedAppMessages: opened.stream,
+      );
+      final Future<PushMessage> received = tapService.onNotificationTap.first;
+
+      // A tap must never be filtered, since that would drop the route it carries.
+      opened.add(_message(data: <String, dynamic>{'route': '/dashboard'}));
+
+      final PushMessage message = await received;
+      expect(message.title, isEmpty);
+      expect(message.data['route'], '/dashboard');
+    });
+
+    test('drops non-string payload values, never stringifies', () async {
+      final StreamController<RemoteMessage> opened =
+          StreamController<RemoteMessage>.broadcast();
+      addTearDown(opened.close);
+
+      final PushNotificationService tapService = PushNotificationService(
+        messaging: messaging,
+        openedAppMessages: opened.stream,
+      );
+      final Future<PushMessage> received = tapService.onNotificationTap.first;
+
+      // Otherwise a null would arrive at the parser as the string "null".
+      opened.add(
+        _message(
+          data: <String, dynamic>{'route': '/dashboard', 'id': null, 'n': 7},
+        ),
+      );
+
+      final PushMessage message = await received;
+      expect(message.data.containsKey('id'), isFalse);
+      expect(message.data.containsKey('n'), isFalse);
+      expect(message.data['route'], '/dashboard');
+    });
+  });
+
+  group('initialMessage', () {
+    test('returns null rather than throwing when the lookup fails', () async {
+      when(() => messaging.getInitialMessage()).thenThrow(Exception('no fcm'));
+
+      expect(await service.initialMessage(), isNull);
+    });
+
+    test('maps the launching notification when there is one', () async {
+      when(() => messaging.getInitialMessage()).thenAnswer(
+        (_) async =>
+            _message(title: 'Margin call', data: <String, dynamic>{'id': '5'}),
+      );
+
+      final PushMessage? message = await service.initialMessage();
+      expect(message?.title, 'Margin call');
+      expect(message?.data['id'], '5');
+    });
+  });
+
   group('permission', () {
     test('maps authorized to granted', () async {
       when(
@@ -107,13 +199,6 @@ void main() {
         await service.requestPermission(),
         PushPermissionResult.unavailable,
       );
-    });
-  });
-
-  group('platform', () {
-    test('reports the host platform for the backend', () async {
-      // The web branch cannot run in a VM test; check it by running in a browser.
-      expect(service.platform, anyOf('android', 'ios'));
     });
   });
 

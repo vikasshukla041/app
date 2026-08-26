@@ -56,6 +56,14 @@ class AppAuthCubit extends Cubit<AppAuthState> {
     emit(AppAuthenticated(user));
   }
 
+  /// Parks the session on the biometric opt-in screen.
+  ///
+  /// The tokens are already saved; this only tells the router that one more
+  /// question stands between the user and the dashboard.
+  void requireBiometricOptIn(User user) {
+    emit(AppAuthPendingBiometricOptIn(user));
+  }
+
   /// Clears secure storage and sets state to unauthenticated.
   Future<void> logOut() async {
     await _storageService.clear();

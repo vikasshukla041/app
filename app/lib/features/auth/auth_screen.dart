@@ -5,12 +5,12 @@ import '../../l10n/app_localizations.dart';
 import 'auth_cubit.dart';
 import 'auth_failure_presenter.dart';
 import 'auth_state.dart';
-import 'widgets/biometric_opt_in_panel.dart';
 import 'widgets/brand_header.dart';
 import 'widgets/login_form.dart';
 
-/// Assembly only: reacts to state changes (auto biometric trigger, errors)
-/// and lays out either the login form or the biometric opt-in panel.
+/// Assembly only: lays out the login form and surfaces failures.
+///
+/// Where a successful login goes is the router's decision, not this screen's.
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -45,12 +45,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   final TextTheme text = Theme.of(context).textTheme;
                   final ColorScheme colors = Theme.of(context).colorScheme;
 
-                  // Inline rather than a pushed dialog route: a route pushed
-                  // from a listener can be dropped mid-build.
-                  if (state is AuthRequireBiometricPrompt) {
-                    return BiometricOptInPanel(user: state.user);
-                  }
-
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,11 +74,12 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _onStateChanged(BuildContext context, AuthState state) {
     switch (state) {
-      // unlocking a saved session belongs to LockedScreen this screen is only
-      // ever shown when there is nothing to unlock
+      // Unlocking a saved session is LockedScreen's job; this screen only
+      // ever appears when there is nothing to unlock.
       case AuthInitial():
         break;
 
+      // The router redirects this state to its own screen.
       case AuthRequireBiometricPrompt():
         break;
 

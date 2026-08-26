@@ -81,6 +81,7 @@ app/
     │   │   ├── theme.dart                  light/dark + semantic colour tokens
     │   │   └── widgets/app_snack_bar.dart  shared UI components
     │   ├── di/service_locator.dart         every registration, one file
+    │   ├── routing/                        GoRouter · routes · deep links
     │   ├── network/
     │   │   ├── api_service.dart            transport only — no endpoint paths
     │   │   └── auth_interceptor.dart       Bearer token on every request
@@ -100,7 +101,10 @@ app/
 ```
 
 **`core/` vs `features/`:** would two features both use it? Yes → `core/`.
-`core/` must never import from `features/`.
+`core/` must never import from `features/` — with exactly two exceptions, both
+composition roots whose entire job is to name every feature once:
+`di/service_locator.dart` and `routing/app_router.dart`. A router has to know
+the screens it routes to. Nothing else in `core/` may import a feature.
 
 **Why `ApiConstants` stays in `core/`.** The senior's objection was that
 `ApiService` exposed `login()`, `balance()` and `registerDevice()` — core held
