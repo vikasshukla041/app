@@ -12,6 +12,7 @@ import 'core/routing/app_router.dart';
 import 'features/auth/auth_cubit.dart';
 import 'features/notifications/data/services/foreground_push_handler.dart';
 import 'features/notifications/data/services/notification_tap_handler.dart';
+import 'features/notifications/widgets/notification_resume_listener.dart';
 import 'features/notifications/widgets/notification_session_listener.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
@@ -68,11 +69,17 @@ class ActivoTradeApp extends StatelessWidget {
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router.config,
-        // MaterialApp.router has no `home`, so the session listener wraps every
-        // route from here. Dropping it stops the push token being re-claimed on
-        // sign-in, which is silent — no error, just the wrong user's alerts.
+        // MaterialApp.router has no `home`, so these wrap every route from
+        // here. Dropping the session listener stops the push token being
+        // re-claimed on sign-in, which is silent — no error, just the wrong
+        // user's alerts. The resume listener catches the user coming back from
+        // the OS settings page with notifications newly enabled.
         builder: (BuildContext context, Widget? child) =>
-            NotificationSessionListener(child: child ?? const SizedBox.shrink()),
+            NotificationSessionListener(
+              child: NotificationResumeListener(
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
       ),
     );
   }

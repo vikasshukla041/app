@@ -422,6 +422,30 @@ abstract class AppLocalizations {
   /// **'Notifications stay off. You can enable them any time from the bell.'**
   String get notificationDeniedMessage;
 
+  /// No description provided for @notificationBlockedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are blocked in your device settings.'**
+  String get notificationBlockedMessage;
+
+  /// No description provided for @notificationBlockedWebMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are blocked in your browser. Use the lock icon in the address bar to allow them.'**
+  String get notificationBlockedWebMessage;
+
+  /// No description provided for @notificationOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get notificationOpenSettings;
+
+  /// No description provided for @errorNotificationSettingsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This device cannot open the notification settings. Please turn notifications on for this app yourself.'**
+  String get errorNotificationSettingsUnavailable;
+
   /// No description provided for @errorNotificationUnavailable.
   ///
   /// In en, this message translates to:

@@ -12,6 +12,11 @@ const NotifySendRequestSchema = z.object({
   username: z.string().openapi({ example: 'demo' }),
   title: z.string().openapi({ example: 'Market Alert' }),
   body: z.string().openapi({ example: 'EUR/USD has broken through resistance!' }),
+  // Deep-link payload. FCM only carries strings here, so the client's parser
+  // takes a Map<String, String> and nothing else.
+  data: z.record(z.string()).optional().openapi({
+    example: { route: '/alerts', id: 'alert_987', title: 'Order filled' },
+  }),
 });
 
 // Routes Specifications
@@ -41,7 +46,7 @@ const sendNotificationRoute = createRoute({
 
 // Handlers
 notifyRouter.openapi(sendNotificationRoute, async (c) => {
-  const { username, title, body } = c.req.valid('json');
+  const { username, title, body, data } = c.req.valid('json');
 
   const user = await db.query.users.findFirst({
     where: eq(schema.users.username, username),
@@ -59,12 +64,13 @@ notifyRouter.openapi(sendNotificationRoute, async (c) => {
   }
 
   console.log(`\n--- Dispatching Push Notification to user "${username}" ---`);
-  console.log(`Payload: ${JSON.stringify({ notification: { title, body } }, null, 2)}`);
+  console.log(`Payload: ${JSON.stringify({ notification: { title, body }, data }, null, 2)}`);
 
   const result = await sendMulticastNotification({
     tokens: tokens.map(t => t.fcmToken),
     title,
-    body
+    body,
+    data
   });
 
   return c.json({

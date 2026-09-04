@@ -28,6 +28,14 @@ class NotificationDenied extends NotificationState {
   const NotificationDenied();
 }
 
+/// Denied to the point where the OS no longer shows its dialog.
+///
+/// Distinct from [NotificationDenied] because the way out is different: the
+/// bell can no longer do anything, and only the OS settings page can.
+class NotificationBlocked extends NotificationState {
+  const NotificationBlocked();
+}
+
 class NotificationFailure extends NotificationState {
   const NotificationFailure(this.reason);
 

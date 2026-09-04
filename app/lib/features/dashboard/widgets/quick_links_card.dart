@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/theme.dart';
+import '../../../core/design_system/widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Card component rendering a sleek List Menu for Holdings, Positions, Orders, Reports, and P&L statement.
@@ -109,16 +110,10 @@ class QuickLinksCard extends StatelessWidget {
                       Icons.chevron_right,
                       color: colorScheme.onSurfaceVariant,
                     ),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            l10n.quickLinkSelectedMessage(item.title),
-                          ),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
+                    onTap: () => AppSnackBar.success(
+                      context,
+                      l10n.quickLinkSelectedMessage(item.title),
+                    ),
                   ),
                 );
               },

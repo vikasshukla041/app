@@ -116,6 +116,19 @@ is bounded — a new endpoint adds one line here and one call in that feature's
 service, and nowhere else. Raise it if the senior disagrees; do not quietly
 scatter the paths again.
 
+**Routing and deep links.** `core/routing/` owns every path; screens never
+navigate themselves. A push payload is `{'route': ..., 'id': ...}`, and
+`DeepLinkParser` turns it into a location:
+
+- `AppRoutes.deepLinkable` — routes a payload may name. Anything else is
+  dropped, so a notification can never open a pre-auth screen.
+- `AppRoutes.idInPath` — routes declared `<path>/:id`. Their id becomes a path
+  segment and is validated first, because a segment is pasted into the URL.
+  Everything else takes its id as `?id=`, which `Uri` escapes for free.
+
+Adding a `:id` route means adding it to **both** sets. Miss `idInPath` and the
+router silently fails to match — the tap opens nothing, with no error.
+
 **Where a type belongs inside a feature.** `data/services/` is the only place
 that may name a transport type; `domain/` holds the vocabulary both sides
 share; the Cubit sits above both and knows neither Dio nor JSON. The tell that
@@ -196,8 +209,10 @@ This file is loaded into every session, so it stays short. The detail sits in
 | `docs/SENIOR_REVIEW_SOURCE.md` | the senior's 40 PR comments + architecture verdict, verbatim, with a status column |
 | `docs/reference/06_ENGINEERING_STANDARDS.md` | §1–10 plus the mistakes log M1–M7 |
 | `docs/BACKEND_ASKS_FRIDAY.md` | open requests for the backend team |
-| `docs/DOCS.html` | the docs SPA — Learn, Reference and Source tracks |
-| `docs/STUDY_GUIDE.md` / `.pdf` | 28-chapter walkthrough of the whole app |
+| `docs/DOCS.html` | the docs SPA — Learn, Reference and Source tracks. Built by `docs/build-docs.py`; never edit it by hand |
+| `docs/STUDY_GUIDE.md` / `.pdf` | 28-chapter walkthrough of the whole app, and the Learn track's source |
+| `docs/ROUTER_INTERACTIVE_GUIDE.html` | routing + deep-linking only, annotated line by line, with a call script |
+| `docs/archive/` | superseded one-off write-ups. **Do not cite these** — they predate the `features/*/data/services/` move and still name `core/notifications/` |
 
 Do not paraphrase `SENIOR_REVIEW_SOURCE.md` — it is a record of what was said,
 not a working document. Edit the status column only.
@@ -300,9 +315,18 @@ they are ready.
 | POST | `/api/user/register-device` | `{fcmToken, deviceId, platform, deviceName}`. Replaced `/api/user/register-token`, which now 404s |
 | POST | `/api/notify/send` | `{username, title, body}` — push trigger |
 
-Tokens are HMAC-SHA256 JWTs: access lives 1 hour, refresh 30 days, and **both
-rotate on every refresh** — persisting only the new access token breaks the
-next refresh. Treat them as opaque anyway: never parse one client-side.
+**Both tokens rotate on every refresh** — persisting only the new access token
+breaks the next refresh. Treat them as opaque: never parse one client-side.
+
+⚠️ **The mock does not issue real JWTs.** The senior's note describes
+HMAC-SHA256 signed tokens with 1-hour / 30-day lifetimes, but
+`mock_api/middleware/auth.js` returns `activotrade_mock_jwt_token_for_<userId>`
+— a prefix, no signature, no expiry — and `package.json` has no JWT library.
+`routes/auth.js` also compares `user.passwordHash === password` in plaintext.
+
+Consequence: the access token never expires locally, so **AuthInterceptor's
+refresh-on-401 path is never exercised against the mock.** That code is covered
+by unit tests only. Ask before assuming the mock behaves like production.
 
 ## Current state
 

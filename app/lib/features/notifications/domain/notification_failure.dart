@@ -7,6 +7,9 @@ enum NotificationFailureReason {
   noToken,
   registrationFailed,
   network,
+
+  /// No OS settings page could be opened — the web, or a device without one.
+  settingsUnavailable,
   generic,
 }
 

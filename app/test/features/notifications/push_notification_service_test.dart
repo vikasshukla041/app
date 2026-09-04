@@ -202,6 +202,13 @@ void main() {
     });
   });
 
+  group('platform', () {
+    test('reports the host platform for the backend', () async {
+      // The web branch cannot run in a VM test; check it by running in a browser.
+      expect(service.platform, anyOf('android', 'ios'));
+    });
+  });
+
   group('getToken', () {
     test('returns null rather than fabricating a token on failure', () async {
       when(() => messaging.getToken()).thenThrow(Exception('fcm unreachable'));

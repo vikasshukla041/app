@@ -10,7 +10,9 @@ void main() {
       );
     });
 
-    test('an id, carried as a query parameter', () {
+    test('an id as a query parameter when the route has no :id', () {
+      // /dashboard is declared as a plain path, so /dashboard/123 would match
+      // nothing. This is the shape the ClickUp task's own example asks for.
       expect(
         DeepLinkParser.parse(<String, String>{
           'route': '/dashboard',
@@ -20,46 +22,59 @@ void main() {
       );
     });
 
-    test('extra payload keys, forwarded as query parameters', () {
-      final String? location = DeepLinkParser.parse(<String, String>{
-        'route': '/dashboard',
-        'id': '123',
-        'title': 'Order filled',
-      });
-
-      // Asserted through Uri rather than against a literal, so the test pins
-      // the behaviour and not Dart's choice of escape for a space.
-      final Uri uri = Uri.parse(location!);
-      expect(uri.path, '/dashboard');
-      expect(uri.queryParameters['id'], '123');
-      expect(uri.queryParameters['title'], 'Order filled');
+    test('an id as a path segment when the route declares :id', () {
+      expect(
+        DeepLinkParser.parse(<String, String>{
+          'route': '/alerts',
+          'id': 'alert_987',
+        }),
+        '/alerts/alert_987',
+      );
     });
 
-    test('the alerts route, with its id as a query parameter', () {
-      // The alert id deliberately does not live in the path. A path parameter
-      // would have to be validated before being pasted in; a query parameter
-      // is escaped by Uri and needs no such check.
+    test('a path id alongside other keys, which stay in the query', () {
       final String? location = DeepLinkParser.parse(<String, String>{
         'route': '/alerts',
         'id': 'alert_987',
         'title': 'Order filled',
       });
 
+      // Asserted through Uri rather than against a literal, so the test pins
+      // the behaviour and not Dart's choice of escape for a space.
       final Uri uri = Uri.parse(location!);
-      expect(uri.path, '/alerts');
-      expect(uri.queryParameters['id'], 'alert_987');
+      expect(uri.path, '/alerts/alert_987');
+      expect(uri.queryParameters['title'], 'Order filled');
+      expect(
+        uri.queryParameters.containsKey('id'),
+        isFalse,
+        reason: 'the id moved into the path, so it must not also be a query',
+      );
+    });
+
+    test('extra payload keys, forwarded as query parameters', () {
+      final Uri uri = Uri.parse(
+        DeepLinkParser.parse(<String, String>{
+          'route': '/dashboard',
+          'id': '123',
+          'title': 'Order filled',
+        })!,
+      );
+
+      expect(uri.path, '/dashboard');
+      expect(uri.queryParameters['id'], '123');
       expect(uri.queryParameters['title'], 'Order filled');
     });
 
-    test('escapes a value that would otherwise change the route', () {
-      // The whole reason extra keys are safe as query parameters: Uri encodes
-      // them, so nothing in a payload can climb out of the route it named.
-      final String? location = DeepLinkParser.parse(<String, String>{
-        'route': '/dashboard',
-        'id': '../../login',
-      });
+    test('escapes a query value that would otherwise change the route', () {
+      // Why extra keys are safe as query parameters: Uri encodes them, so
+      // nothing in a payload can climb out of the route it named.
+      final Uri uri = Uri.parse(
+        DeepLinkParser.parse(<String, String>{
+          'route': '/dashboard',
+          'id': '../../login',
+        })!,
+      );
 
-      final Uri uri = Uri.parse(location!);
       expect(uri.path, '/dashboard');
       expect(uri.queryParameters['id'], '../../login');
     });
@@ -87,9 +102,7 @@ void main() {
       );
     });
 
-    test('an alert id smuggled into the path instead of a query', () {
-      // '/alerts/987' is not on the whitelist; only the bare path is. This is
-      // what stops a payload inventing route shapes the router never declared.
+    test('a route already carrying its id, since only the bare path is listed', () {
       expect(
         DeepLinkParser.parse(<String, String>{'route': '/alerts/987'}),
         isNull,
@@ -98,6 +111,41 @@ void main() {
 
     test('an empty payload', () {
       expect(DeepLinkParser.parse(const <String, String>{}), isNull);
+    });
+  });
+
+  group('rejects an unsafe path id', () {
+    // A path segment is pasted into the URL, so unlike a query parameter it
+    // has to be checked. Each of these would otherwise reshape the route.
+    for (final String id in <String>[
+      '../login',
+      'a/b',
+      '..',
+      '.',
+      'a?b',
+      'a#b',
+    ]) {
+      test('"$id"', () {
+        expect(
+          DeepLinkParser.parse(<String, String>{'route': '/alerts', 'id': id}),
+          isNull,
+        );
+      });
+    }
+  });
+
+  group('rejects a route that needs an id but was not given one', () {
+    // /alerts is declared /alerts/:id, so the bare path matches no route.
+    // Returning it would strand the tap on the not-found screen.
+    test('no id key at all', () {
+      expect(DeepLinkParser.parse(<String, String>{'route': '/alerts'}), isNull);
+    });
+
+    test('an empty id', () {
+      expect(
+        DeepLinkParser.parse(<String, String>{'route': '/alerts', 'id': ''}),
+        isNull,
+      );
     });
   });
 

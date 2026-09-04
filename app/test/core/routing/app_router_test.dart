@@ -1,6 +1,7 @@
 import 'package:activotrade_app/core/auth/app_auth_cubit.dart';
 import 'package:activotrade_app/core/auth/app_auth_state.dart';
 import 'package:activotrade_app/core/auth/domain/user.dart';
+import 'package:activotrade_app/core/design_system/theme.dart';
 import 'package:activotrade_app/core/routing/app_router.dart';
 import 'package:activotrade_app/core/routing/deep_link_controller.dart';
 import 'package:activotrade_app/core/storage/secure_storage_service.dart';
@@ -72,13 +73,18 @@ void main() {
           ),
         ],
         child: MaterialApp.router(
+          // DashboardScreen reads AppSemanticColors off the theme; the
+          // default ThemeData does not have it.
+          theme: ActivoTradeTheme.lightTheme,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           routerConfig: router.config,
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    // Not pumpAndSettle(): the initial state renders SplashScreen, whose
+    // CircularProgressIndicator animates forever and would time it out.
+    await tester.pump();
   }
 
   group('auth gate', () {
@@ -266,12 +272,14 @@ void main() {
       authCubit.setState(const AppAuthenticated(user));
       await tester.pumpAndSettle();
 
-      deepLinks.push('/alerts?id=alert_987&title=Order+filled');
+      deepLinks.push('/alerts/alert_987?title=Order+filled');
       await tester.pumpAndSettle();
 
       expect(find.byType(AlertDetailScreen), findsOneWidget);
       expect(find.byType(DashboardScreen), findsNothing);
 
+      // The id comes from the path, the title from the query — the split
+      // DeepLinkParser produces.
       final AlertDetailScreen screen = tester.widget<AlertDetailScreen>(
         find.byType(AlertDetailScreen),
       );
@@ -286,7 +294,7 @@ void main() {
       authCubit.setState(const AppUnauthenticated());
       await tester.pumpAndSettle();
 
-      deepLinks.push('/alerts?id=alert_987');
+      deepLinks.push('/alerts/alert_987');
       await tester.pumpAndSettle();
 
       // The gate wins; the link waits for a session rather than leaking it.

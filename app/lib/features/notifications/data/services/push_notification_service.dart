@@ -73,6 +73,7 @@ class PushNotificationService {
   Future<PushPermissionResult> requestPermission() async {
     final FirebaseMessaging? messaging = _messaging;
     if (messaging == null) {
+      _log('No FirebaseMessaging instance; Firebase never started');
       return PushPermissionResult.unavailable;
     }
 
@@ -90,6 +91,29 @@ class PushNotificationService {
       return PushPermissionResult.unavailable;
     } catch (e) {
       _log('Permission request failed: $e');
+      return PushPermissionResult.unavailable;
+    }
+  }
+
+  /// Reads the existing permission without showing a prompt.
+  Future<PushPermissionResult> currentPermission() async {
+    final FirebaseMessaging? messaging = _messaging;
+    if (messaging == null) {
+      return PushPermissionResult.unavailable;
+    }
+
+    try {
+      final NotificationSettings settings = await messaging
+          .getNotificationSettings();
+
+      return switch (settings.authorizationStatus) {
+        AuthorizationStatus.authorized ||
+        AuthorizationStatus.provisional => PushPermissionResult.granted,
+        AuthorizationStatus.denied ||
+        AuthorizationStatus.notDetermined => PushPermissionResult.denied,
+      };
+    } catch (e) {
+      _log('Permission read failed: $e');
       return PushPermissionResult.unavailable;
     }
   }
@@ -160,10 +184,16 @@ class PushNotificationService {
     }
   }
 
-  /// `'android'` or `'ios'` — the only two values the backend accepts.
+  /// The value the backend's platform enum expects.
+  ///
+  /// Null means this host cannot register at all — a desktop build. The
+  /// backend knows `android`, `ios` and `web`, nothing else, so returning
+  /// anything outside that set would fail registration with a 400.
   String? get platform {
+    // Checked before Platform, which throws on web — dart:io has no
+    // implementation there, and the failure is at the call, not the import.
     if (kIsWeb) {
-      return null;
+      return 'web';
     }
     if (Platform.isAndroid) {
       return 'android';

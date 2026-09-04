@@ -45,5 +45,29 @@
 
   <!-- firebase-messaging-sw.js is not registered here; firebase_messaging registers it itself. -->
 
+  <script>
+    // A notification tap lands in firebase-messaging-sw.js, which is registered
+    // under /firebase-cloud-messaging-push-scope and so never controls this
+    // page — client.navigate() rejects. The worker posts the location instead
+    // and this moves the tab, which go_router picks up from the hash.
+    navigator.serviceWorker?.addEventListener('message', (event) => {
+      const link = event.data && event.data.deepLink;
+      if (!link) {
+        return;
+      }
+      if (window.location.href === link) {
+        // Same tap twice, or the tab is already showing it. Assigning an
+        // unchanged href is a no-op, so there is nothing to do.
+        return;
+      }
+      window.location.href = link;
+      // A hash-only change does not reach Flutter's router: it listens for
+      // popstate, which the browser does not fire for a programmatic hash
+      // assignment. Reload so the app boots at the new location instead —
+      // AppRouter parks that URL and opens it once the session is restored.
+      window.location.reload();
+    });
+  </script>
+
 </body>
 </html>

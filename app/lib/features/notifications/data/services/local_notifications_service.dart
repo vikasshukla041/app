@@ -34,6 +34,16 @@ class LocalNotificationsService {
   Future<void> init() => _initialisation ??= _initialise();
 
   Future<void> _initialise() async {
+    // flutter_local_notifications_web registers its own
+    // `notifications_service_worker.js`, a file this project does not ship, so
+    // the attempt fails and logs "An unknown error occurred when fetching the
+    // script". Nothing is lost by skipping it: on web a background push is
+    // drawn by firebase-messaging-sw.js, and a foreground one is already
+    // visible in the open tab.
+    if (kIsWeb) {
+      return;
+    }
+
     const InitializationSettings settings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
@@ -84,6 +94,12 @@ class LocalNotificationsService {
     required String body,
     Map<String, String> payload = const <String, String>{},
   }) async {
+    // See _initialise(): the plugin is never started on web, so calling it
+    // here would only throw into the catch below on every push.
+    if (kIsWeb) {
+      return;
+    }
+
     try {
       await _plugin.show(
         id: _nextId++,

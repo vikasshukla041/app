@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -52,6 +53,32 @@ class NotificationPermissionDialog extends StatelessWidget {
           case NotificationDenied():
             Navigator.of(context).pop();
             AppSnackBar.warning(context, l10n.notificationDeniedMessage);
+
+          case NotificationBlocked():
+            // Read the cubit before popping: the dialog's own context is gone
+            // by the time the action runs.
+            final NotificationCubit cubit = context.read<NotificationCubit>();
+            Navigator.of(context).pop();
+
+            if (kIsWeb) {
+              // No browser lets a page open its own settings, so an action
+              // here could only lead to a second message saying so. Tell the
+              // user where the switch actually is instead.
+              AppSnackBar.warning(
+                context,
+                l10n.notificationBlockedWebMessage,
+              );
+            } else {
+              // The bell cannot help from here, so the message comes with the
+              // one thing that can.
+              AppSnackBar.show(
+                context,
+                l10n.notificationBlockedMessage,
+                AppSnackBarSeverity.warning,
+                actionLabel: l10n.notificationOpenSettings,
+                onAction: cubit.openSettings,
+              );
+            }
 
           case NotificationFailure(:final NotificationFailureReason reason):
             Navigator.of(context).pop();

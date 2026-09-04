@@ -193,6 +193,21 @@ class AppLocalizationsEs extends AppLocalizations {
       'Las notificaciones siguen desactivadas. Puedes activarlas cuando quieras desde la campana.';
 
   @override
+  String get notificationBlockedMessage =>
+      'Las notificaciones están bloqueadas en los ajustes del dispositivo.';
+
+  @override
+  String get notificationBlockedWebMessage =>
+      'Las notificaciones están bloqueadas en el navegador. Usa el icono del candado en la barra de direcciones para permitirlas.';
+
+  @override
+  String get notificationOpenSettings => 'Abrir ajustes';
+
+  @override
+  String get errorNotificationSettingsUnavailable =>
+      'Este dispositivo no puede abrir los ajustes de notificaciones. Actívalas manualmente para esta aplicación.';
+
+  @override
   String get errorNotificationUnavailable =>
       'Este dispositivo no puede recibir notificaciones push.';
 

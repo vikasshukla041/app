@@ -17,12 +17,15 @@ try {
   );
 }
 
-export async function sendMulticastNotification({ tokens, title, body }) {
+export async function sendMulticastNotification({ tokens, title, body, data }) {
   if (firebaseApp) {
     const messaging = admin.messaging();
     const result = await messaging.sendEachForMulticast({
       tokens,
-      notification: { title, body }
+      notification: { title, body },
+      // Omitted when empty: FCM rejects a data block whose values are not
+      // all strings, and an empty object is pointless anyway.
+      ...(data && Object.keys(data).length ? { data } : {})
     });
     return {
       success: true,

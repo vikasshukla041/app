@@ -188,6 +188,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Notifications stay off. You can enable them any time from the bell.';
 
   @override
+  String get notificationBlockedMessage =>
+      'Notifications are blocked in your device settings.';
+
+  @override
+  String get notificationBlockedWebMessage =>
+      'Notifications are blocked in your browser. Use the lock icon in the address bar to allow them.';
+
+  @override
+  String get notificationOpenSettings => 'Open settings';
+
+  @override
+  String get errorNotificationSettingsUnavailable =>
+      'This device cannot open the notification settings. Please turn notifications on for this app yourself.';
+
+  @override
   String get errorNotificationUnavailable =>
       'This device cannot receive push notifications.';
 

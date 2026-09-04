@@ -19,6 +19,8 @@ extension NotificationFailurePresenter on NotificationFailureReason {
       NotificationFailureReason.registrationFailed =>
         l10n.errorNotificationRegistrationFailed,
       NotificationFailureReason.network => l10n.errorNetwork,
+      NotificationFailureReason.settingsUnavailable =>
+        l10n.errorNotificationSettingsUnavailable,
       NotificationFailureReason.generic => l10n.errorGeneric,
     };
   }
@@ -28,6 +30,8 @@ extension NotificationFailurePresenter on NotificationFailureReason {
   AppSnackBarSeverity get severity => switch (this) {
     NotificationFailureReason.network ||
     NotificationFailureReason.registrationFailed => AppSnackBarSeverity.warning,
+    // A warning too: the user still has a way out, it is just manual.
+    NotificationFailureReason.settingsUnavailable => AppSnackBarSeverity.warning,
     NotificationFailureReason.unavailable ||
     NotificationFailureReason.noToken ||
     NotificationFailureReason.generic => AppSnackBarSeverity.error,

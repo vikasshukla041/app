@@ -22,11 +22,22 @@ abstract final class AppSnackBar {
   /// Dispatches on a severity computed elsewhere — the failure presenters map
   /// a reason to a severity and hand it straight here, so adding a case to the
   /// enum never breaks them.
+  ///
+  /// [actionLabel] and [onAction] must be given together, and are for the case
+  /// where the message alone leaves the user stuck — "notifications are
+  /// blocked" is only useful next to a way to unblock them.
   static void show(
     BuildContext context,
     String message,
-    AppSnackBarSeverity severity,
-  ) {
+    AppSnackBarSeverity severity, {
+    String? actionLabel,
+    VoidCallback? onAction,
+  }) {
+    assert(
+      (actionLabel == null) == (onAction == null),
+      'An action needs both a label and a callback',
+    );
+
     final ThemeData theme = Theme.of(context);
     final ColorScheme colors = theme.colorScheme;
     final AppSemanticColors semantic = theme.extension<AppSemanticColors>()!;
@@ -58,6 +69,18 @@ abstract final class AppSnackBar {
       ..showSnackBar(
         SnackBar(
           backgroundColor: background,
+          // Long enough to read a sentence and reach for the action; the
+          // default four seconds is not.
+          duration: onAction == null
+              ? const Duration(seconds: 4)
+              : const Duration(seconds: 8),
+          action: onAction == null
+              ? null
+              : SnackBarAction(
+                  label: actionLabel!,
+                  textColor: foreground,
+                  onPressed: onAction,
+                ),
           content: Row(
             children: <Widget>[
               Icon(icon, color: foreground),

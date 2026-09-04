@@ -37,6 +37,10 @@ lerna-debug.log*
 .dev.env
 .stage.env
 
+# Firebase service account — a real private key. Needed locally to send real
+# push from mock_api; must never reach the repo.
+**/firebase-service-account.json
+
 # Flutter / App Build artifacts & temporary files
 **/build/
 **/.dart_tool/

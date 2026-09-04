@@ -16,7 +16,9 @@ const userRouter = new OpenAPIHono();
 const RegisterDeviceRequestSchema = z.object({
   fcmToken: z.string().openapi({ example: 'fcm_registration_token_123456789' }),
   deviceId: z.string().openapi({ example: 'a1b2c3d4e5f60718' }),
-  platform: z.enum(['android', 'ios']).openapi({ example: 'android' }),
+  // 'web' is not optional: the Flutter web build sends it, and leaving it out
+  // makes web device registration fail with a 400 that says nothing useful.
+  platform: z.enum(['android', 'ios', 'web']).openapi({ example: 'android' }),
   deviceName: z.string().openapi({ example: 'Google Pixel 8' }),
 });
 

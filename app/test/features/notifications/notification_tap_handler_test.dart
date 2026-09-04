@@ -95,6 +95,30 @@ void main() {
 
       expect(deepLinks.consume(), '/dashboard?id=9');
     });
+
+    test('puts the id in the path for a route that declares one', () async {
+      // The demo path end to end: /alerts is declared as /alerts/:id, so the
+      // id becomes a segment rather than a query parameter.
+      await handler.start();
+
+      openedApp.add(
+        _message(<String, String>{'route': '/alerts', 'id': 'alert_987'}),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(deepLinks.consume(), '/alerts/alert_987');
+    });
+
+    test('parks nothing when a path id would reshape the route', () async {
+      await handler.start();
+
+      openedApp.add(
+        _message(<String, String>{'route': '/alerts', 'id': '../login'}),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(deepLinks.hasPending, isFalse);
+    });
   });
 
   group('foreground tap', () {

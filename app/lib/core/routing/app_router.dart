@@ -28,8 +28,11 @@ class AppRouter {
       // Re-check the route when either the session or a notification tap changes.
       refreshListenable: Listenable.merge(<Listenable>[_refresh, deepLinks]),
       redirect: _redirect,
+      // A location nothing matches — a payload naming a route that has since
+      // changed shape, or a stale link. Falling back to the splash would strand
+      // the user on a spinner with no way out, so bounce them home instead.
       errorBuilder: (BuildContext context, GoRouterState state) =>
-          const SplashScreen(),
+          const _RouteNotFound(),
       routes: <RouteBase>[
         GoRoute(
           path: AppRoutes.splash,
@@ -57,12 +60,12 @@ class AppRouter {
               const DashboardScreen(),
         ),
         GoRoute(
-          path: AppRoutes.alerts,
-          // The id arrives as a query parameter rather than a path segment, so
-          // an untrusted payload can never reshape the route it landed on.
+          // Listed in AppRoutes.idInPath, so DeepLinkParser puts the id here
+          // rather than in the query — and validates it before doing so.
+          path: '${AppRoutes.alerts}/:id',
           builder: (BuildContext context, GoRouterState state) =>
               AlertDetailScreen(
-                alertId: state.uri.queryParameters['id'] ?? '',
+                alertId: state.pathParameters['id'] ?? '',
                 title: state.uri.queryParameters['title'],
               ),
         ),
@@ -93,6 +96,22 @@ class AppRouter {
     };
 
     if (gate != null) {
+      // On web a notification tap arrives as a URL, not through
+      // DeepLinkController — the tap is handled by a service worker that
+      // cannot reach Dart. Sending the user to the gate now would throw that
+      // URL away, so park it first and let the consume() below honour it once
+      // the session is sorted out. Same for a bookmark or a manual refresh.
+      //
+      // Only while the session is still unknown. A gate reached any other way
+      // is a sign-out — and parking there would replay the previous session's
+      // location to whoever signs in next, on a shared browser a different
+      // person entirely.
+      if (_authCubit.state is AppAuthInitial &&
+          !AppRoutes.preAuth.contains(location) &&
+          !_deepLinks.hasPending) {
+        _deepLinks.hold(state.uri.toString());
+      }
+
       // Already on this screen, so do not redirect again.
       return location == gate ? null : gate;
     }
@@ -114,4 +133,30 @@ class AppRouter {
     _refresh.dispose();
     _config.dispose();
   }
+}
+
+/// Shown for one frame when no route matches, then leaves for [AppRoutes.home].
+///
+/// The redirect happens after the frame because go_router is still building
+/// this widget when it is created; navigating during build is not allowed.
+class _RouteNotFound extends StatefulWidget {
+  const _RouteNotFound();
+
+  @override
+  State<_RouteNotFound> createState() => _RouteNotFoundState();
+}
+
+class _RouteNotFoundState extends State<_RouteNotFound> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        GoRouter.of(context).go(AppRoutes.home);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const SplashScreen();
 }

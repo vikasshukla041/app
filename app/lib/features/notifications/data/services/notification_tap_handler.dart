@@ -46,12 +46,14 @@ class NotificationTapHandler {
           .initialMessage()
           .then<PushMessage?>((PushMessage? message) => message)
           .timeout(_coldBootBudget, onTimeout: () => null);
+
       if (launch != null) {
         _route(launch.data);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (kDebugMode) {
-        debugPrint('[NotificationTapHandler] Could not start: $e');
+        debugPrint('[tapHandler] Could not start: $e');
+        debugPrintStack(stackTrace: stackTrace);
       }
     } finally {
       _starting = false;
@@ -60,6 +62,7 @@ class NotificationTapHandler {
 
   void _route(Map<String, String> data) {
     final String? location = DeepLinkParser.parse(data);
+
     if (location == null) {
       // No matching route, so just open the app normally.
       return;

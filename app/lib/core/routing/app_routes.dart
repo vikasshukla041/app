@@ -21,8 +21,13 @@ abstract final class AppRoutes {
   /// Routes a push notification is allowed to open; anything else is blocked.
   ///
   /// Add a route here only after it exists in the router's route table,
-  /// otherwise a payload naming it will resolve to nothing. Every entry must
-  /// be a plain path: [alerts] takes its id as `?id=`, not as a path segment,
-  /// so no payload value is ever pasted into the path itself.
+  /// otherwise a payload naming it will resolve to nothing.
   static const Set<String> deepLinkable = <String>{dashboard, alerts};
+
+  /// Routes declared with a `:id` path parameter, so a payload's id becomes a
+  /// path segment rather than a query parameter.
+  ///
+  /// Anything not listed here takes its id as `?id=`. Getting this wrong is
+  /// silent: the router simply fails to match and the tap opens nothing.
+  static const Set<String> idInPath = <String>{alerts};
 }

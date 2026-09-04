@@ -13,6 +13,16 @@ class DeepLinkController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Saves a route without telling the router.
+  ///
+  /// Called from inside the redirect itself, where notifying would re-enter
+  /// the redirect that is still running. The redirect it was called from
+  /// returns the auth gate, and the state change that later opens the gate
+  /// runs it again — which is when this gets consumed.
+  void hold(String location) {
+    _pending = location;
+  }
+
   /// Returns the pending route and clears it so it is not opened twice.
   String? consume() {
     final String? location = _pending;

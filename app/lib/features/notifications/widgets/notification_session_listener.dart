@@ -11,9 +11,17 @@ import '../notification_cubit.dart';
 /// Notifications watches auth rather than auth calling notifications, so the
 /// auth feature never has to know this one exists.
 class NotificationSessionListener extends StatelessWidget {
-  const NotificationSessionListener({super.key, required this.child});
+  const NotificationSessionListener({
+    super.key,
+    required this.child,
+    this.notifications,
+  });
 
   final Widget child;
+
+  /// Injected by tests. Production leaves this null and the singleton is
+  /// resolved at the point of use, not on every rebuild.
+  final NotificationCubit? notifications;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +31,7 @@ class NotificationSessionListener extends StatelessWidget {
       listenWhen: (AppAuthState previous, AppAuthState current) =>
           current is AppAuthenticated && previous is! AppAuthenticated,
       listener: (BuildContext context, AppAuthState state) {
-        getIt<NotificationCubit>().claimForCurrentUser();
+        (notifications ?? getIt<NotificationCubit>()).claimForCurrentUser();
       },
       child: child,
     );
