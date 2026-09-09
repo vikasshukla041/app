@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/auth/domain/user.dart';
+import '../../../core/design_system/tokens/app_sizing.dart';
+import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
 import '../auth_cubit.dart';
 
@@ -20,7 +22,6 @@ class BiometricOptInPanel extends StatefulWidget {
 }
 
 class _BiometricOptInPanelState extends State<BiometricOptInPanel> {
-  static const double _spinnerSize = 20;
 
   bool _busy = false;
 
@@ -51,20 +52,20 @@ class _BiometricOptInPanelState extends State<BiometricOptInPanel> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(Icons.fingerprint, size: 72, color: colors.primary),
-        const SizedBox(height: 24),
+        Icon(Icons.fingerprint, size: AppSizing.iconLg, color: colors.primary),
+        const SizedBox(height: AppSpacing.xl2),
         Text(
           l10n.biometricOptInDialogTitle,
           style: text.headlineSmall,
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Text(
           l10n.biometricOptInDialogBody,
           style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: AppSpacing.xl3),
         Semantics(
           label: l10n.biometricOptInDialogEnable,
           button: true,
@@ -74,15 +75,15 @@ class _BiometricOptInPanelState extends State<BiometricOptInPanel> {
               onPressed: _busy ? null : _enable,
               child: _busy
                   ? const SizedBox(
-                      width: _spinnerSize,
-                      height: _spinnerSize,
+                      width: AppSizing.spinnerSm,
+                      height: AppSizing.spinnerSm,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : Text(l10n.biometricOptInDialogEnable),
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
         Semantics(
           label: l10n.biometricOptInDialogSkip,
           button: true,

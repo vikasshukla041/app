@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/design_system/tokens/app_spacing.dart';
 import '../auth_cubit.dart';
 import '../auth_state.dart';
 import 'login_button.dart';
@@ -51,7 +52,7 @@ class _LoginFormState extends State<LoginForm> {
                 enabled: !isLoading,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               PasswordTextField(
                 controller: _passwordController,
@@ -59,7 +60,7 @@ class _LoginFormState extends State<LoginForm> {
                 onSubmitted: (_) => _onLoginPressed(),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl2),
 
               LoginButton(onPressed: _onLoginPressed, isLoading: isLoading),
             ],

@@ -160,7 +160,11 @@ means work is happening one layer too high.
    `jsonEncode`/`jsonDecode` pair lives there and not in a Cubit.
 10. Trailing commas everywhere; `dart format` clean.
 11. `debugPrint` only inside `if (kDebugMode)`. Never `print`.
-12. Comments explain **why**, never what. Max ~2 lines. Use `///` for public APIs.
+12. Comments explain **why**, never what. **One line. Two only if one truly
+    cannot hold it.** Write them in plain, simple English — short words, short
+    sentences, no jargon. Anyone on the team should get it on the first read.
+    Use `///` for public APIs. If a comment needs a paragraph, the explanation
+    belongs in `docs/`, not in the code.
 13. A feature never reaches into another feature. If signing in has to trigger
     something in notifications, the *listener* lives in notifications and
     watches `AppAuthCubit` — auth must not know notifications exists.

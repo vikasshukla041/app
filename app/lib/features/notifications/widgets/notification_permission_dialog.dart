@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/design_system/tokens/app_sizing.dart';
+import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../core/design_system/widgets/app_snack_bar.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../l10n/app_localizations.dart';
@@ -32,10 +34,6 @@ class NotificationPermissionDialog extends StatelessWidget {
           ),
     );
   }
-
-  static const double _iconPadding = 16;
-  static const double _iconSize = 36;
-  static const double _spinnerSize = 20;
 
   @override
   Widget build(BuildContext context) {
@@ -92,19 +90,17 @@ class NotificationPermissionDialog extends StatelessWidget {
       builder: (BuildContext context, NotificationState state) {
         final bool busy = state is NotificationRequesting;
 
+        // No shape: dialogTheme supplies it, so every dialog matches.
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
           icon: Container(
-            padding: const EdgeInsets.all(_iconPadding),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               color: colors.primaryContainer.withValues(alpha: 0.5),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.notifications_active_rounded,
-              size: _iconSize,
+              size: AppSizing.iconSm,
               color: colors.primary,
             ),
           ),
@@ -137,8 +133,8 @@ class NotificationPermissionDialog extends StatelessWidget {
                     : () => context.read<NotificationCubit>().subscribe(),
                 child: busy
                     ? const SizedBox(
-                        width: _spinnerSize,
-                        height: _spinnerSize,
+                        width: AppSizing.spinnerSm,
+                        height: AppSizing.spinnerSm,
                         // No colour: inherits onPrimary from the button.
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )

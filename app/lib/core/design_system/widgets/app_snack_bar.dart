@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
+import '../tokens/app_spacing.dart';
 
 /// How loudly a snackbar should speak.
 ///
@@ -84,7 +85,7 @@ abstract final class AppSnackBar {
           content: Row(
             children: <Widget>[
               Icon(icon, color: foreground),
-              const SizedBox(width: 12),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Text(
                   message,

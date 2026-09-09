@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/app_auth_state.dart';
+import '../../core/design_system/tokens/app_spacing.dart';
 import '../../l10n/app_localizations.dart';
 import '../notifications/widgets/notification_permission_dialog.dart';
 import 'widgets/portfolio_summary_card.dart';
@@ -49,7 +50,7 @@ class DashboardScreen extends StatelessWidget {
           }
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -59,16 +60,16 @@ class DashboardScreen extends StatelessWidget {
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.xs),
                 Text(
                   state.user.fullname,
                   style: textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.xl2),
                 const _PlaceholderSummaryCard(),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppSpacing.xl),
                 const QuickLinksCard(),
               ],
             ),

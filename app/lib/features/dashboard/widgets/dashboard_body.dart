@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
 import '../models/portfolio_summary.dart';
 import 'portfolio_summary_card.dart';
@@ -30,7 +31,7 @@ class DashboardBody extends StatelessWidget {
     final String sign = summary.dailyReturnAmount >= 0 ? '+' : '';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(AppSpacing.xl),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -41,14 +42,14 @@ class DashboardBody extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             userFullName,
             style: textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: AppSpacing.xl2),
 
           // Portfolio Summary Card (Total Amount, Green Returns & Gain)
           PortfolioSummaryCard(
@@ -60,7 +61,7 @@ class DashboardBody extends StatelessWidget {
             totalGain:
                 '$sign${currencyFormat.format(summary.dailyReturnAmount)}',
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AppSpacing.xl),
 
           // Quick Action Links Card (Holdings, Positions, Orders, Reports, P&L)
           const QuickLinksCard(),

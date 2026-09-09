@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/design_system/tokens/app_sizing.dart';
+import '../../core/design_system/tokens/app_spacing.dart';
 import '../../core/routing/app_routes.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -30,31 +32,36 @@ class AlertDetailScreen extends StatelessWidget {
           child: IconButton(
             icon: const Icon(Icons.arrow_back),
             tooltip: l10n.backSemantics,
-            onPressed: () => context.canPop()
-                ? context.pop()
-                : context.go(AppRoutes.dashboard),
+            // VIKAS — copy this whole onPressed.
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go(AppRoutes.dashboard);
+              }
+            },
           ),
         ),
         title: Text(title ?? l10n.alertDetailTitle),
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(AppSpacing.xl2),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(
                 Icons.notifications_active_outlined,
-                size: 64,
+                size: AppSizing.iconMd,
                 color: colors.primary,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl2),
               Text(
                 l10n.alertDetailHeading,
                 style: text.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 l10n.alertDetailPlaceholder(alertId),
                 style: text.bodyMedium?.copyWith(

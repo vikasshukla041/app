@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../core/design_system/tokens/app_sizing.dart';
+import '../../core/design_system/tokens/app_spacing.dart';
 import '../../l10n/app_localizations.dart';
 import 'auth_cubit.dart';
 import 'auth_failure_presenter.dart';
@@ -19,7 +21,6 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  static const double _maxContentWidth = 420;
 
   @override
   void initState() {
@@ -35,9 +36,9 @@ class _AuthScreenState extends State<AuthScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.xl2),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+              constraints: const BoxConstraints(maxWidth: AppSizing.maxContentWidth),
               child: BlocConsumer<AuthCubit, AuthState>(
                 listener: _onStateChanged,
                 builder: (BuildContext context, AuthState state) {
@@ -50,16 +51,16 @@ class _AuthScreenState extends State<AuthScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       const BrandHeader(),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: AppSpacing.xl4),
                       Text(l10n.welcomeBack, style: text.headlineMedium),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: AppSpacing.sm),
                       Text(
                         l10n.loginSubtitle,
                         style: text.bodyMedium?.copyWith(
                           color: colors.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: AppSpacing.xl3),
                       const LoginForm(),
                     ],
                   );

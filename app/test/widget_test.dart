@@ -12,24 +12,15 @@ import 'package:flutter_test/flutter_test.dart';
 // Real flutter_secure_storage has no test-mode implementation, so an unmocked
 // call on this channel never replies and checkSession() hangs forever on
 // AppAuthInitial — the splash's indeterminate spinner then keeps scheduling
-// frames and pumpAndSettle() never settles. Mocking the channel gives
-// checkSession() a fast, defined "nothing stored" answer.
+// frames and pumpAndSettle() never settles. Mocking the channel answers it
+// instead, gated by a Completer so the test controls exactly when
+// checkSession() resolves rather than racing it against pumpWidget().
 const MethodChannel _secureStorageChannel = MethodChannel(
   'plugins.it_nomads.com/flutter_secure_storage',
 );
 
 void main() {
   setUp(() async {
-    // ensureInitialized() hands back the binding, so the messenger is reached
-    // through it rather than a static getter.
-    final TestWidgetsFlutterBinding binding =
-        TestWidgetsFlutterBinding.ensureInitialized();
-
-    binding.defaultBinaryMessenger.setMockMethodCallHandler(
-      _secureStorageChannel,
-      (MethodCall call) async => null,
-    );
-
     // Registrations are singletons, so a second setupServiceLocator() would
     // throw. Awaited, not fire-and-forget: reset() disposes singletons
     // asynchronously, and a discarded future would let the next test call
@@ -38,6 +29,17 @@ void main() {
   });
 
   testWidgets('app boots to the login screen', (WidgetTester tester) async {
+    final Completer<void> storageGate = Completer<void>();
+    // ensureInitialized() hands back the binding, so the messenger is reached
+    // through it rather than a static getter.
+    TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger
+        .setMockMethodCallHandler(_secureStorageChannel, (
+          MethodCall call,
+        ) async {
+          await storageGate.future;
+          return null;
+        });
+
     setupServiceLocator();
     // main() kicks this off before runApp; the test has to do the same, since
     // the router's first redirect reads whatever state it has settled on.
@@ -45,13 +47,14 @@ void main() {
 
     await tester.pumpWidget(ActivoTradeApp(router: getIt<AppRouter>()));
 
-    // checkSession() has not answered yet, so the first frame must be the
-    // splash — never the login form, which would flash and be replaced.
+    // checkSession() is blocked on storageGate, so the first frame must be
+    // the splash — never the login form, which would flash and be replaced.
     expect(find.byType(LoginForm), findsNothing);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
-    // Localization delegates load asynchronously; the first frame renders
-    // before AppLocalizations is ready.
+    // Let checkSession() finish, and let the localization delegates (which
+    // load asynchronously) catch up before the login screen is asserted.
+    storageGate.complete();
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginForm), findsOneWidget);

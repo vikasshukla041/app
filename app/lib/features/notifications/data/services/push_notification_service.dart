@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 // FirebaseException lives in firebase_core, not firebase_messaging.
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -190,15 +188,16 @@ class PushNotificationService {
   /// backend knows `android`, `ios` and `web`, nothing else, so returning
   /// anything outside that set would fail registration with a 400.
   String? get platform {
-    // Checked before Platform, which throws on web — dart:io has no
-    // implementation there, and the failure is at the call, not the import.
+    // VIKAS — copy this whole getter. The if/else shape is the same as
+    // DeviceInfoService.deviceName(); only the source of the platform changed.
+    // Use defaultTargetPlatform since dart:io does not exist on web.
     if (kIsWeb) {
       return 'web';
     }
-    if (Platform.isAndroid) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
       return 'android';
     }
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       return 'ios';
     }
     return null;

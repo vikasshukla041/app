@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/theme.dart';
+import '../../../core/design_system/tokens/app_radius.dart';
+import '../../../core/design_system/tokens/app_sizing.dart';
+import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// Card component displaying the total portfolio balance, daily returns in green,
@@ -31,11 +34,10 @@ class PortfolioSummaryCard extends StatelessWidget {
       context,
     ).extension<AppSemanticColors>()!.positive;
 
+    // No elevation or shape: cardTheme supplies both.
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -45,36 +47,33 @@ class PortfolioSummaryCard extends StatelessWidget {
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               totalBalance,
-              style: textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: textTheme.headlineLarge,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Row(
               children: <Widget>[
                 // Returns badge in green
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
-                    vertical: 4,
+                    vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
                     color: positiveGreen.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      Icon(Icons.trending_up, size: 16, color: positiveGreen),
-                      const SizedBox(width: 4),
+                      Icon(Icons.trending_up, size: AppSizing.iconXxs, color: positiveGreen),
+                      const SizedBox(width: AppSpacing.xs),
                       Text(
                         '$dailyReturnPercentage ($dailyReturnAmount)',
                         style: textTheme.labelMedium?.copyWith(
                           color: positiveGreen,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],

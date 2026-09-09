@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/app_auth_state.dart';
+import '../../core/design_system/tokens/app_sizing.dart';
+import '../../core/design_system/tokens/app_spacing.dart';
 import '../../l10n/app_localizations.dart';
 import 'auth_cubit.dart';
 import 'auth_failure_presenter.dart';
@@ -22,7 +24,6 @@ class LockedScreen extends StatefulWidget {
 }
 
 class _LockedScreenState extends State<LockedScreen> {
-  static const double _maxContentWidth = 420;
 
   @override
   void initState() {
@@ -57,9 +58,9 @@ class _LockedScreenState extends State<LockedScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.xl2),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _maxContentWidth),
+              constraints: const BoxConstraints(maxWidth: AppSizing.maxContentWidth),
               child: BlocConsumer<AuthCubit, AuthState>(
                 listener: (BuildContext context, AuthState state) {
                   if (state is AuthFailure) {
@@ -73,16 +74,16 @@ class _LockedScreenState extends State<LockedScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       const BrandHeader(),
-                      const SizedBox(height: 48),
-                      Icon(Icons.lock_outline, size: 64, color: colors.primary),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.xl5),
+                      Icon(Icons.lock_outline, size: AppSizing.iconMd, color: colors.primary),
+                      const SizedBox(height: AppSpacing.xl2),
                       Text(
                         l10n.dashboardWelcomeLabel,
                         style: text.bodyLarge?.copyWith(
                           color: colors.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xs),
                       Text(
                         session.user.fullname,
                         style: text.headlineSmall?.copyWith(
@@ -90,7 +91,7 @@ class _LockedScreenState extends State<LockedScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: AppSpacing.xl4),
                       Semantics(
                         label: l10n.useBiometricsSemantics,
                         button: true,
@@ -103,7 +104,7 @@ class _LockedScreenState extends State<LockedScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppSpacing.md),
                       Semantics(
                         label: l10n.signOutSemantics,
                         button: true,
