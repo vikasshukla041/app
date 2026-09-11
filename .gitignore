@@ -41,6 +41,12 @@ lerna-debug.log*
 # push from mock_api; must never reach the repo.
 **/firebase-service-account.json
 
+# VIKAS — copy these 5 lines. iOS signing material is a private key.
+*.p12
+*.p8
+*.mobileprovision
+*.certSigningRequest
+
 # Flutter / App Build artifacts & temporary files
 **/build/
 **/.dart_tool/

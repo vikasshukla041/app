@@ -1,0 +1,86 @@
+# VIKAS — this whole file is new. Create it at the same path on the other laptop.
+name: iOS build
+
+# macOS runners bill 10x, so 2,000 free minutes are only ~200 macOS minutes.
+# Neither trigger fires on a normal push or a pull request.
+on:
+  # The Actions tab only shows a Run button once this file reaches the default
+  # branch, so until then a tag is the way to start a run from any branch.
+  workflow_dispatch:
+  push:
+    tags:
+      - 'ios-test-*'
+
+# A newer run cancels the older one, so no minutes go to a build nobody waits for.
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Compile and run on the simulator
+    runs-on: macos-latest
+    # A hung job bills 10x too, so 20 minutes caps the damage at 200.
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Localizations are generated, so a stale commit cannot hide a missing key.
+      - name: Generate localizations
+        run: flutter gen-l10n
+
+      # No signing certificate exists yet, so this only proves the code builds:
+      # the Swift, every plugin, and the Dart ahead-of-time step.
+      - name: Build for a device, unsigned
+        run: flutter build ios --release --no-codesign
+
+      # A simulator build is the only one that can be launched without a paid
+      # Apple Developer account.
+      - name: Build for the simulator
+        run: flutter build ios --simulator --debug
+
+      - name: Start a simulator
+        run: |
+          # This boots the default device, so every later command can say
+          # "booted" and no device id has to be found or passed around.
+          open -a Simulator
+          # `open` returns before the device is up, so wait for it.
+          for _ in $(seq 1 60); do
+            xcrun simctl list devices booted | grep -q Booted && break
+            sleep 2
+          done
+          # Prints the device, and fails the step if none ever booted.
+          xcrun simctl list devices booted | grep Booted
+
+      - name: Install and launch the app
+        run: |
+          # Listed first so a wrong path shows what the build really produced.
+          ls build/ios/iphonesimulator
+          xcrun simctl install booted build/ios/iphonesimulator/Runner.app
+          xcrun simctl launch booted com.activotrade.activotradeApp
+
+      - name: Screenshot the first screen
+        run: |
+          # The splash screen holds while the saved session is read.
+          sleep 20
+          xcrun simctl io booted screenshot first-screen.png
+
+      # Uploaded even on failure: a crash screenshot is the whole point.
+      - name: Upload the screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-first-screen
+          path: app/first-screen.png
