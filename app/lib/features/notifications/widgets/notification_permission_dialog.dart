@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/design_system/tokens/app_opacity.dart';
 import '../../../core/design_system/tokens/app_sizing.dart';
 import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../core/design_system/widgets/app_snack_bar.dart';
@@ -11,19 +12,11 @@ import '../notification_cubit.dart';
 import '../notification_failure_presenter.dart';
 import '../notification_state.dart';
 
-/// Asks the user to enable push notifications, then hands the work to
-/// [NotificationCubit].
-///
-/// Owns no decisions: it renders state and forwards one intent. Whether the
-/// attempt succeeded, and what to say about it, is the Cubit's and the
-/// presenter's job.
+/// Asks the user to enable push notifications, then lets [NotificationCubit] do the work.
 class NotificationPermissionDialog extends StatelessWidget {
   const NotificationPermissionDialog({super.key});
 
-  /// `.value`, not `create`: the cubit is an app-lifetime singleton holding the
-  /// FCM token-rotation subscription. `create` hands it ownership, so popping
-  /// the dialog closes it — the next bell tap would emit on a closed cubit and
-  /// rotation would be dead for the rest of the process.
+  /// .value, not create: create would close this cubit when the dialog closes.
   static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
@@ -59,16 +52,10 @@ class NotificationPermissionDialog extends StatelessWidget {
             Navigator.of(context).pop();
 
             if (kIsWeb) {
-              // No browser lets a page open its own settings, so an action
-              // here could only lead to a second message saying so. Tell the
-              // user where the switch actually is instead.
-              AppSnackBar.warning(
-                context,
-                l10n.notificationBlockedWebMessage,
-              );
+              // A web page can't open its own settings, so just tell the user where to look.
+              AppSnackBar.warning(context, l10n.notificationBlockedWebMessage);
             } else {
-              // The bell cannot help from here, so the message comes with the
-              // one thing that can.
+              // On mobile we can open settings directly, so add that as a button.
               AppSnackBar.show(
                 context,
                 l10n.notificationBlockedMessage,
@@ -95,7 +82,7 @@ class NotificationPermissionDialog extends StatelessWidget {
           icon: Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.5),
+              color: colors.primaryContainer.withValues(alpha: AppOpacity.wash),
               shape: BoxShape.circle,
             ),
             child: Icon(

@@ -4,20 +4,24 @@ import 'package:intl/intl.dart';
 
 import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/app_auth_state.dart';
+import '../../core/design_system/responsive/adaptive_two_column.dart';
+import '../../core/design_system/responsive/app_window_class.dart';
+import '../../core/design_system/tokens/app_sizing.dart';
 import '../../core/design_system/tokens/app_spacing.dart';
 import '../../l10n/app_localizations.dart';
 import '../notifications/widgets/notification_permission_dialog.dart';
-import 'widgets/portfolio_summary_card.dart';
+import 'widgets/funds_breakdown.dart';
+import 'widgets/net_worth_card.dart';
 import 'widgets/quick_links_card.dart';
 
-/// Builds the dashboard UI with welcome, portfolio summary, and quick actions.
+/// Assembly only: the greeting, then the console's cards in their two groups.
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
-    final TextTheme textTheme = Theme.of(context).textTheme;
+    final ThemeData theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -49,29 +53,44 @@ class DashboardScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  l10n.dashboardWelcomeLabel,
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+          // The app bar owns the top inset; this keeps the rest clear of cutouts.
+          return SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppWindowClass.of(context).pick(
+                  compact: AppSpacing.xl,
+                  medium: AppSpacing.xl3,
+                  expanded: AppSpacing.xl3,
+                ),
+                vertical: AppSpacing.xl,
+              ),
+              // Centred and capped, or the cards stretch the full width of a monitor.
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppSizing.maxConsoleWidth,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        l10n.dashboardWelcomeLabel,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        state.user.fullname,
+                        style: theme.textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: AppSpacing.xl2),
+                      const _PlaceholderConsoleBody(),
+                    ],
                   ),
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  state.user.fullname,
-                  style: textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl2),
-                const _PlaceholderSummaryCard(),
-                const SizedBox(height: AppSpacing.xl),
-                const QuickLinksCard(),
-              ],
+              ),
             ),
           );
         },
@@ -80,33 +99,42 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-/// Sample figures shown until the balance API contract is signed off; wiring
-/// instructions live in docs/reference/03_DASHBOARD_FEATURE.md.
-///
-/// Formatted through NumberFormat rather than hardcoded, so the placeholder
-/// exercises the same locale rules the real data will.
-class _PlaceholderSummaryCard extends StatelessWidget {
-  const _PlaceholderSummaryCard();
+/// Sample figures, formatted the same way real data will be.
+class _PlaceholderConsoleBody extends StatelessWidget {
+  const _PlaceholderConsoleBody();
 
-  static const double _totalBalance = 124580.50;
-  static const double _dailyReturnAmount = 1845.20;
-  static const double _dailyReturnPercentage = 1.48;
-  static const double _totalGain = 14850.20;
+  // Placeholder currency, until the real balance endpoint sends one per account.
+  static const String _accountCurrency = 'EUR';
+
+  static const double _netWorth = 142850.20;
+  static const double _yearReturn = 18420.50;
+  static const double _availableCash = 24320.00;
+  static const double _unsettled = 1850.00;
+  static const double _collateral = 116680.00;
 
   @override
   Widget build(BuildContext context) {
-    final String locale = Localizations.localeOf(context).toString();
-    final NumberFormat currency = NumberFormat.simpleCurrency(locale: locale);
-    final NumberFormat percent = NumberFormat.decimalPercentPattern(
-      locale: locale,
-      decimalDigits: 2,
+    // The account is held in euros whatever the language; only the format follows it.
+    final NumberFormat currency = NumberFormat.simpleCurrency(
+      locale: Localizations.localeOf(context).toString(),
+      name: _accountCurrency,
     );
 
-    return PortfolioSummaryCard(
-      totalBalance: currency.format(_totalBalance),
-      dailyReturnPercentage: '+${percent.format(_dailyReturnPercentage / 100)}',
-      dailyReturnAmount: '+${currency.format(_dailyReturnAmount)}',
-      totalGain: '+${currency.format(_totalGain)}',
+    return AdaptiveTwoColumn(
+      primary: <Widget>[
+        NetWorthCard(
+          totalValue: currency.format(_netWorth),
+          yearReturn: '+${currency.format(_yearReturn)}',
+        ),
+      ],
+      secondary: <Widget>[
+        FundsBreakdown(
+          availableCash: currency.format(_availableCash),
+          unsettled: currency.format(_unsettled),
+          collateral: currency.format(_collateral),
+        ),
+        const QuickLinksCard(),
+      ],
     );
   }
 }

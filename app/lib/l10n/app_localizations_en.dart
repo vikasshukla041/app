@@ -145,6 +145,42 @@ class AppLocalizationsEn extends AppLocalizations {
       'Realized & unrealized profit/loss breakdown';
 
   @override
+  String get netWorthLabel => 'Total net worth';
+
+  @override
+  String get netWorthAggregated => 'Aggregated';
+
+  @override
+  String get netWorthReturnCaption => '1Y realized & unrealized return';
+
+  @override
+  String get performanceChartPending => 'Performance chart is on the way';
+
+  @override
+  String get fundsBreakdownTitle => 'Funds & margin breakdown';
+
+  @override
+  String get fundsBreakdownSettlement => 'Settlement: T+1';
+
+  @override
+  String get fundsAvailableCashLabel => 'Available cash';
+
+  @override
+  String get fundsAvailableCashStatus => 'Ready to trade';
+
+  @override
+  String get fundsUnsettledLabel => 'Unsettled';
+
+  @override
+  String get fundsUnsettledStatus => 'Clearing T+1';
+
+  @override
+  String get fundsCollateralLabel => 'Collateral';
+
+  @override
+  String get fundsCollateralStatus => 'Pledged equity';
+
+  @override
   String quickLinkSelectedMessage(String title) {
     return '$title selected';
   }

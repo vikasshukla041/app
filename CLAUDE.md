@@ -78,15 +78,17 @@ app/
     │   ├── config/app_config.dart          baseUrl · environment · timeouts
     │   ├── constants/api_constant.dart     every path, grouped by feature
     │   ├── design_system/
-    │   │   ├── theme.dart                  light/dark + semantic colour tokens
-    │   │   └── widgets/app_snack_bar.dart  shared UI components
+    │   │   ├── tokens/                     colour, type, spacing, radius, sizing
+    │   │   ├── responsive/                 breakpoints, window class, two-column reflow
+    │   │   ├── theme.dart                  turns tokens into light/dark themes
+    │   │   └── widgets/                    badge · status dot · section header · snackbar
     │   ├── di/service_locator.dart         every registration, one file
     │   ├── routing/                        GoRouter · routes · deep links
     │   ├── network/
     │   │   ├── api_service.dart            transport only — no endpoint paths
     │   │   └── auth_interceptor.dart       Bearer token on every request
     │   └── storage/secure_storage_service.dart  Keychain / Keystore
-    ├── features/
+    ├── features/            auth · dashboard · notifications · alerts · splash
     │   └── <feature>/
     │       ├── <feature>_cubit.dart    business logic, no transport types
     │       ├── <feature>_state.dart    states; re-exports the failure reason
@@ -143,7 +145,9 @@ means work is happening one layer too high.
 4. Prefer `StatelessWidget`; use `StatefulWidget` only to own disposable
    resources, and always dispose them.
 5. No hardcoded `Color(...)`, `Colors.x` or `TextStyle(...)` outside
-   `theme.dart` — use `Theme.of(context)`.
+   `design_system/` — use `Theme.of(context)`. Colours live only in
+   `tokens/app_colors.dart` and text styles only in `tokens/app_typography.dart`;
+   `theme.dart` is the one file that reads them.
 6. No hardcoded user-visible strings — everything through `AppLocalizations`.
 7. `Semantics` goes *inside* each interactive widget, so no call site can omit it.
 8. Constructor injection with production defaults:
@@ -161,10 +165,14 @@ means work is happening one layer too high.
 10. Trailing commas everywhere; `dart format` clean.
 11. `debugPrint` only inside `if (kDebugMode)`. Never `print`.
 12. Comments explain **why**, never what. **One line. Two only if one truly
-    cannot hold it.** Write them in plain, simple English — short words, short
-    sentences, no jargon. Anyone on the team should get it on the first read.
-    Use `///` for public APIs. If a comment needs a paragraph, the explanation
-    belongs in `docs/`, not in the code.
+    cannot hold it.** This project is being learned from by students in grades
+    7–10 alongside being built, so write for that reader: plain, simple
+    English, short words, short sentences, no jargon, nothing that reads like
+    a generated summary. Use `///` for public APIs. If a comment needs a
+    paragraph, the explanation belongs in `docs/`, not in the code.
+    **Naming (variables, functions, classes) should be natural and specific —
+    the way a person describes what something does — not generic placeholders
+    like `data1`, `temp`, or `handleThing`.**
 13. A feature never reaches into another feature. If signing in has to trigger
     something in notifications, the *listener* lives in notifications and
     watches `AppAuthCubit` — auth must not know notifications exists.
@@ -181,11 +189,22 @@ means work is happening one layer too high.
 grep -rn "Widget _build" lib/                      # rule 2  → expect nothing
 wc -l lib/features/*/[a-z]*screen.dart             # rule 3  → each under ~150
 grep -rn "Color(0x\|Colors\.\|TextStyle(" lib/ \
-  | grep -v design_system/theme.dart               # rule 5  → expect nothing
+  | grep -v design_system/                         # rule 5  → expect nothing
 grep -rn "Text('" lib/ --include=*.dart | grep -v l10n   # rule 6  → expect nothing
 grep -rn "debugPrint" lib/ -B2 | grep -c kDebugMode      # rule 11 → matches count
 grep -rln "package:dio\|dart:convert" lib/features/*/*cubit.dart  # rule 9 → nothing
+awk '/^[ \t]*\/\/\//{n=0; next} /^[ \t]*\/\//{n++; if(n>1) print FILENAME": "FNR; next} {n=0}' \
+  $(find lib test -name '*.dart' ! -name 'app_localizations*.dart' \
+    ! -name 'firebase_options.dart')               # rule 12 → 84 today
 ```
+
+That last one prints every `//` comment that runs past one line. It skips `///`
+doc comments, which the rule allows, and the two generated files, which are
+never hand-edited — without those two exclusions it printed several hundred
+false hits and was useless in practice. It stands at **84 today**, all in
+`auth/`, `notifications/` and `routing/`; `core/design_system/` and
+`features/dashboard/` are clean. Run it before every commit and make sure your
+own files add nothing to that number.
 
 For rule 13, a Cubit constructor taking another Cubit from a different feature
 is the smell. For rule 14, cross-check `service_locator.dart` registrations
@@ -203,23 +222,134 @@ they need a decision first:
 - **`freezed` / required dependencies.** Also from that review, also in
   tension — with the no-code-generation rule under *Testing*, and with rule 8.
 
-## Where the rest of the history lives
+## The docs, and the rules that keep them honest
 
-This file is loaded into every session, so it stays short. The detail sits in
-`docs/` and should be read when the work touches it:
+This file is loaded into every session, so it stays short. Everything else sits
+in `docs/`.
 
-| File | What it holds |
+**Only two things are ever the truth: the code, and this file.** Every other
+document describes them, and a description goes stale. This file is the one
+that must never be wrong, because it is trusted before the code is read.
+
+### What exists, and who reads it
+
+| File | Reader | Rule |
+|---|---|---|
+| `CLAUDE.md` | every AI session, every new contributor | must be true; update it in the same change |
+| `docs/STUDY_GUIDE.md` | learners, start to finish | teaches **why**. Plain words — the readers are beginners |
+| `docs/STUDY_GUIDE.pdf` | the same learners, offline | generated by `docs/build-pdf.sh` |
+| `docs/INTERACTIVE_GUIDE.html` | someone with the code already open | code and explanation side by side, with line numbers |
+| `docs/DOCS.html` | anyone searching across everything | generated by `docs/build-docs.py` |
+| `docs/SENIOR_REVIEW_SOURCE.md` | nobody routinely — it is a record | **never paraphrase.** Edit the status column only |
+| `docs/reference/01`–`05`, `07` | someone looking up one class or method | per-file API reference |
+| `docs/BACKEND_ASKS_FRIDAY.md` | the Friday meeting | delete after the meeting |
+
+### Four rules
+
+**1. One *fact*, one home. Formats may repeat.**
+The responsive layer is explained in both the study guide and the interactive
+guide, on purpose — two readers, two ways of reading. That is fine. What is not
+fine is a *number or decision* living in two places, because one will change and
+the other will not. When a fact changes, say out loud which documents hold it.
+
+**2. Generated files are regenerated, never hand-edited — but not on every change.**
+`STUDY_GUIDE.pdf` and `DOCS.html` are built from `STUDY_GUIDE.md`,
+`docs/reference/` and `docs/source/`.
+
+**Neither is in git, and nor is anything else under `docs/`.** `.gitignore` has
+carried a bare `docs` line since the first commit, so a clone gets no
+documentation at all and the only copy of any document is on the machine that
+wrote it. That is why code once travelled between laptops as root-level
+markdown. Whether to track `docs/` is a team decision; until it is made, treat
+every document here as local to this checkout.
+
+Rebuilding after every edit is waste. Rebuild on a trigger instead:
+
+| Rebuild | Do not rebuild |
 |---|---|
-| `docs/SENIOR_REVIEW_SOURCE.md` | the senior's 40 PR comments + architecture verdict, verbatim, with a status column |
-| `docs/reference/06_ENGINEERING_STANDARDS.md` | §1–10 plus the mistakes log M1–M7 |
-| `docs/BACKEND_ASKS_FRIDAY.md` | open requests for the backend team |
-| `docs/DOCS.html` | the docs SPA — Learn, Reference and Source tracks. Built by `docs/build-docs.py`; never edit it by hand |
-| `docs/STUDY_GUIDE.md` / `.pdf` | 28-chapter walkthrough of the whole app, and the Learn track's source |
-| `docs/ROUTER_INTERACTIVE_GUIDE.html` | routing + deep-linking only, annotated line by line, with a call script |
-| `docs/archive/` | superseded one-off write-ups. **Do not cite these** — they predate the `features/*/data/services/` move and still name `core/notifications/` |
+| Before anyone reads it — a session with the students, sending it to the senior or the CTO | a typo or a reworded sentence |
+| A chapter or tab was added, or a whole feature changed | one line moved |
+| A **fact** changed — a number, a file path, a decision | formatting |
 
-Do not paraphrase `SENIOR_REVIEW_SOURCE.md` — it is a record of what was said,
-not a working document. Edit the status column only.
+```bash
+cd docs && ./build-pdf.sh      # needs pandoc + xelatex; Git Bash or WSL on Windows
+cd docs && python3 build-docs.py
+```
+
+**The condition that makes this safe: the build must stamp itself.** Neither
+script does yet — checked, October 2026. Without a stamp, "rebuild when it
+matters" quietly becomes "never rebuild", and a reader cannot tell a current
+document from one that predates three features. That is how `STUDY_GUIDE.pdf`
+fell two generations behind with nobody noticing.
+
+So each build should print, on its first page or header:
+
+> *Built from STUDY_GUIDE.md on 2026-10-14 · covers Chapters 1–29*
+
+`build-pdf.sh` already pipes the markdown through Python before pandoc, so the
+line can be injected there. `build-docs.py` needs the same in its header. Until
+that exists, **rebuild on every content change**, because a silent stale doc is
+worse than a wasted build.
+
+The interactive guide is different: it is written by hand, not generated, so it
+is current the moment it is saved. It needs no rebuild — only the discipline of
+rule 1 when a fact it holds changes elsewhere.
+
+**3. A document with no reader is deleted, not archived.**
+An archive is a place where wrong things stay alive. If nobody reads it, remove
+it.
+
+**4. Before removing or merging a doc, ask who reads it.**
+This was got wrong three times in one session — the PDF, the interactive guide
+and `DOCS.html` were each proposed for deletion on the assumption nobody used
+them. All three had readers. If the answer is not known, ask; do not advise.
+
+### Pending — decided, not yet done
+
+- **`docs/source/` is not complete.** The build prints how many notes are
+  missing; it is 19 of 78 today, all of them under `features/auth/` and
+  `features/notifications/`. Every file in `core/`, `design_system/` and
+  `features/dashboard/` is annotated.
+- **`01_CORE.md` still lists `BiometricService` under `core/security/`.** It
+  moved to `features/auth/data/services/`. `00_INDEX.md` is fixed; §12 of
+  `01_CORE.md` is not.
+- **Never ship code between machines as a markdown file.** Two root-level
+  documents did exactly that, holding whole copies of `theme.dart` and the
+  token files as "select all, delete, paste" instructions. The review caught
+  them and they are gone. Use a branch.
+- **Decide whether `docs/` should be tracked.** It is ignored today, so none of
+  the readers in the table above can actually reach what they are listed as
+  reading. Ask the senior; changing `.gitignore` binds the whole team, so
+  rule 15 applies.
+
+### `docs/source/` — kept, and how it actually works
+
+Decided: it stays. Learners read it, and the per-file format is the one they say
+they follow most easily.
+
+Two things about it were stated wrongly earlier and are worth correcting, because
+they change what "keeping it up to date" means:
+
+- **The code is never stale.** `build_source()` in `build-docs.py` reads every
+  `.dart` file under `app/lib/` at build time, numbers the lines, and prints
+  them. A page can never show a version of a file that no longer exists.
+- **A page exists for every file, annotated or not.** Where
+  `docs/source/<path>.md` is missing, the page still builds and says *"Line-by-line
+  notes for this file have not been written yet."* The build prints how many are
+  missing. So nothing is invisible — it is only unexplained.
+
+**Only the notes can go stale, and only a missing note is a gap.** Adding a file
+to `lib/` therefore means adding one note here, and the build tells you if you
+forgot.
+
+Naming: replace `/` with `__` and `.dart` with `.md`. So
+`core/design_system/responsive/app_window_class.dart` →
+`docs/source/core__design_system__responsive__app_window_class.md`. Getting this
+wrong produces a file the build silently ignores.
+
+Format: a `**Job:**` line, a short intro, then `## Line X–Y — heading` sections,
+each with the code quoted and then explained. Explain the **syntax** as well as
+the intent — the readers are learning Dart from this code.
 
 ## Things that have bitten us
 
@@ -244,6 +374,22 @@ Each of these cost real time. Read before touching the same area.
   `setupBiometricsPostLogin`; emitting it made the test green and put the login
   form on screen behind the OS fingerprint sheet. Ask which of the two is wrong
   before editing either. This is entry M2 in the standards doc.
+- **Guessing a width instead of measuring one.** The funds cards were given a
+  hardcoded "a card needs 120px" threshold. It was wrong twice — once on a real
+  tablet, once in the tests — because the width a card needs depends on the
+  font, the locale (`142.850,20 €` is longer than `€142,850.20`) and the
+  reader's text-size setting, none of which a constant can know. It now measures
+  the real strings with a `TextPainter`, so overflow is arithmetically
+  impossible rather than merely unlikely. Prefer measuring over guessing
+  anywhere text drives layout.
+- **Widget-test fonts are not device fonts.** Every glyph in a widget test is a
+  fixed-width box, far wider than real type. A test that asserts a layout turns
+  over at a specific pixel width is asserting the test font, not the device.
+  Assert the rule and the invariant instead — here, that no amount is ever cut.
+- **Overflowing text raises nothing.** A `RenderFlex` overflow throws in debug,
+  so `expect(tester.takeException(), isNull)` catches it. Text that spills past
+  its box does not throw, and `find.text()` still finds a clipped string in
+  full. Assert `RenderParagraph.didExceedMaxLines`, or compare painted bounds.
 - **Mock Mode is easy to miss.** `mock_api/services/firebase.js` returns
   `realFcm: false` when `firebase-service-account.json` is absent, and push
   "works" in a way that does not match production. Check which mode you are in
@@ -285,6 +431,25 @@ Each of these cost real time. Read before touching the same area.
   a mismatch returns HTTP 400, not 401).
 - **Android:** `MainActivity` extends `FlutterFragmentActivity` and the launch
   themes are `Theme.AppCompat.*` — both required by `local_auth`. minSdk 24.
+- **Config:** no full URLs in endpoint constants. `AppConfig` owns the base URL;
+  `ApiConstants` holds relative paths. Environments are compile-time, via
+  `--dart-define-from-file=config/env_*.json`, never a hardcoded host.
+
+### What is and is not a secret
+
+| File | Contains | Commit? |
+|---|---|---|
+| `firebase_options.dart` | project identifiers | ✅ yes |
+| `firebase-messaging-sw.js` | the same identifiers, for the browser | ✅ yes |
+| `google-services.json` / `GoogleService-Info.plist` | the same, for mobile | ✅ yes |
+| `firebase-service-account.json` | **Admin SDK private key** | 🔴 **never** |
+
+Firebase's own documentation is explicit that API keys restricted to Firebase
+services are not secrets. Protection comes from Security Rules and App Check,
+not from hiding an identifier that ships inside every client bundle.
+
+The service account key is different in kind: it can send to every device in the
+project. It stays on the server, gitignored, always.
 
 ## Testing
 
@@ -308,6 +473,13 @@ test/
 Widget tests must `await tester.pumpAndSettle()` after `pumpWidget` — the
 localization delegates resolve asynchronously and the first frame renders before
 they are ready.
+
+A plugin with no test-mode implementation must have its method channel mocked,
+or the test **hangs** rather than fails — `flutter_secure_storage` is the one
+that has caught us.
+
+**A behaviour worth fixing is worth a test.** A fix shipped without one is a fix
+the next refactor will quietly undo.
 
 ## Backend endpoints
 
@@ -334,32 +506,62 @@ by unit tests only. Ask before assuming the mock behaves like production.
 
 ## Current state
 
-Implemented: password login, secure token storage, Bearer interceptor,
-biometric unlock with explicit opt-in, EN/ES localization, Material 3 light/dark
-theming, accessibility labels, unit + widget tests.
+Keep this section true. A stale entry here is worse than no entry: it is loaded
+into every session and is trusted before the code is read.
 
-Not built: session management and token refresh, auto-login, dashboard data,
-push notifications, declarative routing, release signing and minification.
+**Built and wired:**
+
+- **Auth** — password login, secure token storage, `AuthInterceptor` with
+  refresh-on-401 behind a retry lock, `TokenRefresher`, auto-login from a stored
+  session, biometric unlock with explicit opt-in (`biometric_onboarding_screen`,
+  `locked_screen`).
+- **Session + routing** — `AppAuthCubit` lives above `MaterialApp`; `go_router`
+  redirects off it. Deep links parse a push payload into a location, with
+  `/alerts/:id` as the one id route.
+- **Push** — `firebase_core` + `firebase_messaging` +
+  `flutter_local_notifications`. Foreground banner, tap handling from all three
+  entry points, permission dialog, permanently-denied state with an **Open
+  settings** MethodChannel, and a re-check on app resume. Android, iOS and web.
+- **Design system** — `tokens/` (colour, type, spacing, radius, sizing,
+  opacity), `responsive/` (breakpoints, window class, `AdaptiveTwoColumn`),
+  `theme.dart` (explicit light and dark `ColorScheme`s), and the shared widgets
+  `AppBadge`, `StatusDot`, `SectionHeader`, `SpacedColumn`/`EqualWidthRow`,
+  `AppSnackBar`. A test asserts WCAG AA contrast on every pair and every tone.
+- **Dashboard console** — `NetWorthCard`, chart placeholder, `FundsBreakdown`
+  (three `StatCard`s that reflow from their own measured width), `QuickLinksCard`.
+  **The figures are hardcoded placeholders**, though `DashboardCubit` and
+  `DashboardService.balance()` exist and work.
+- **iOS CI** — `.github/workflows/ios-build.yml` compiles on a macOS runner,
+  launches the app on a simulator, and uploads a screenshot. Manual trigger or
+  an `ios-test-*` tag only; macOS minutes bill at 10x.
+- EN/ES localization throughout, unit + widget tests.
+
+**Not built:** the nav shell (bottom bar ↔ sidebar) and its Tax & Fiscal and
+Settings routes; real data in the console cards; the performance chart; release
+signing and minification. No Apple Developer account yet, so no device install,
+no TestFlight, no real iOS push.
+
+The old `DashboardBody` and `PortfolioSummaryCard` have been removed; the console
+cards are the only dashboard presentation.
 
 ## Roadmap
 
 Build in this order — each step unblocks the next.
 
-1. **Session layer.** A long-lived `SessionCubit` above `MaterialApp`, plus an
-   `onError` handler in `AuthInterceptor` (401 → clear storage, force logout).
-   Everything below depends on it; building the dashboard first means building
-   it twice.
-2. **Declarative routing** with [`go_router`](https://pub.dev/packages/go_router)
-   (officially recommended), with session-driven redirects replacing
-   `Navigator.pushReplacement`.
-3. **Data layer.** Introduce repositories between Cubits and services once a
+1. **Nav shell.** A bottom bar under the compact breakpoint and a side rail
+   above it, driven by `AppWindowClass`, with Tax & Fiscal and Settings behind
+   the top-right profile on a phone. Every screen below needs somewhere to live.
+2. **Real console data.** Replace the placeholder figures with `DashboardCubit`
+   state, and add an error state the user can act on. The cards already take
+   pre-formatted strings, so this is a wiring change, not a layout one.
+3. **Performance chart** in place of `PerformanceChartPlaceholder`. Decide
+   `fl_chart` versus a `CustomPainter` first — rule 15 applies.
+4. **Data layer.** Introduce repositories between Cubits and services once a
    second data source or caching appears — Flutter's guidance recommends
    abstract repository classes so environments can swap implementations. Today
    they would be pass-through classes, so they are deliberately deferred.
-4. **Dashboard** with real data — `DashboardService.balance()` is wired; what
-   remains is replacing `_PlaceholderSummaryCard` and adding an error state
-   the user can act on.
-5. **Push notifications** (`firebase_core` + `firebase_messaging`).
+5. **Release** — signing, minification, and the Apple Developer enrolment that
+   device testing depends on.
 
 ## Before proposing changes
 
@@ -367,3 +569,23 @@ Build in this order — each step unblocks the next.
 - Only add a package with a stated engineering reason.
 - Do not restructure the architecture without a measurable benefit.
 - Validate against `flutter analyze` and `flutter test` before claiming success.
+
+### Checked, or assumed?
+
+Every wrong answer this project has produced came from the same place: an
+answer given from memory when verification was one step away. The fix is not to
+think harder, it is to look.
+
+- **Say which one it is.** Label a claim *checked* or *assumed*. The reader
+  needs to know what to trust.
+- **A claim about a relationship needs both sides read.** "These two overlap",
+  "this is dead", "nothing uses this" — open both files first. Grep is not a
+  reading.
+- **A number that describes rendered text is measured, not chosen.** Entry M8.
+- **A claim about behaviour needs an observation.** Entry M3.
+- **Ask for output rather than guessing at it.** `flutter analyze`, `git status`
+  and a browser console have settled more questions here than any amount of
+  reasoning, and they settle them in one round instead of three.
+
+One question catches most of this before it costs anything: **"is that checked,
+or assumed?"**

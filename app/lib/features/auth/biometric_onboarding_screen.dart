@@ -30,7 +30,9 @@ class BiometricOnboardingScreen extends StatelessWidget {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.xl2),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: AppSizing.maxContentWidth),
+              constraints: const BoxConstraints(
+                maxWidth: AppSizing.maxContentWidth,
+              ),
               child: BiometricOptInPanel(user: session.user),
             ),
           ),

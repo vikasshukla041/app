@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/theme.dart';
+import '../../../core/design_system/tokens/app_opacity.dart';
 import '../../../core/design_system/tokens/app_radius.dart';
 import '../../../core/design_system/tokens/app_sizing.dart';
 import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../core/design_system/widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Card component rendering a sleek List Menu for Holdings, Positions, Orders, Reports, and P&L statement.
+/// A card with links to Holdings, Positions, Orders, Reports, and the P&L statement.
 class QuickLinksCard extends StatelessWidget {
   const QuickLinksCard({super.key});
-
-  /// Not on the AppSpacing scale — 10 sits between sm (8) and md (12). Kept as
-  /// a named constant so the odd value is visible rather than buried; snap it
-  /// once design confirms the tile still looks right.
-  static const double _tileIconPadding = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -66,11 +62,11 @@ class QuickLinksCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
-              child: Text(
-                l10n.quickLinksHeader,
-                style: textTheme.titleMedium,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.xl,
+                vertical: AppSpacing.sm,
               ),
+              child: Text(l10n.quickLinksHeader, style: textTheme.titleMedium),
             ),
             const Divider(),
             ListView.separated(
@@ -78,7 +74,10 @@ class QuickLinksCard extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: menuItems.length,
               separatorBuilder: (BuildContext context, int index) =>
-                  const Divider(indent: AppSizing.iconMd, endIndent: AppSpacing.xl),
+                  const Divider(
+                    indent: AppSizing.iconMd,
+                    endIndent: AppSpacing.xl,
+                  ),
               itemBuilder: (BuildContext context, int index) {
                 final _QuickMenuItem item = menuItems[index];
 
@@ -89,25 +88,19 @@ class QuickLinksCard extends StatelessWidget {
                   // No contentPadding: listTileTheme supplies it.
                   child: ListTile(
                     leading: Container(
-                      padding: const EdgeInsets.all(_tileIconPadding),
+                      padding: const EdgeInsets.all(AppSpacing.sm),
                       decoration: BoxDecoration(
-                        color: item.color.withValues(alpha: 0.12),
+                        color: item.color.withValues(alpha: AppOpacity.tint),
                         borderRadius: BorderRadius.circular(AppRadius.sm),
                       ),
-                      child: Icon(item.icon, color: item.color, size: AppSizing.iconXs),
-                    ),
-                    title: Text(
-                      item.title,
-                      style: textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
+                      child: Icon(
+                        item.icon,
+                        color: item.color,
+                        size: AppSizing.iconXs,
                       ),
                     ),
-                    subtitle: Text(
-                      item.subtitle,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                    title: Text(item.title),
+                    subtitle: Text(item.subtitle),
                     trailing: Icon(
                       Icons.chevron_right,
                       color: colorScheme.onSurfaceVariant,

@@ -149,6 +149,44 @@ class AppLocalizationsEs extends AppLocalizations {
       'Desglose de ganancias y pérdidas realizadas y no realizadas';
 
   @override
+  String get netWorthLabel => 'Patrimonio neto total';
+
+  @override
+  String get netWorthAggregated => 'Agregado';
+
+  @override
+  String get netWorthReturnCaption =>
+      'Rentabilidad realizada y no realizada a 1 año';
+
+  @override
+  String get performanceChartPending =>
+      'El gráfico de rentabilidad está en camino';
+
+  @override
+  String get fundsBreakdownTitle => 'Desglose de fondos y margen';
+
+  @override
+  String get fundsBreakdownSettlement => 'Liquidación: T+1';
+
+  @override
+  String get fundsAvailableCashLabel => 'Efectivo disponible';
+
+  @override
+  String get fundsAvailableCashStatus => 'Listo para operar';
+
+  @override
+  String get fundsUnsettledLabel => 'Sin liquidar';
+
+  @override
+  String get fundsUnsettledStatus => 'Compensando T+1';
+
+  @override
+  String get fundsCollateralLabel => 'Garantía';
+
+  @override
+  String get fundsCollateralStatus => 'Capital pignorado';
+
+  @override
   String quickLinkSelectedMessage(String title) {
     return '$title seleccionado';
   }

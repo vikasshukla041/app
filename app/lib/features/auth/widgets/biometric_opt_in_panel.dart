@@ -22,7 +22,6 @@ class BiometricOptInPanel extends StatefulWidget {
 }
 
 class _BiometricOptInPanelState extends State<BiometricOptInPanel> {
-
   bool _busy = false;
 
   Future<void> _enable() async {

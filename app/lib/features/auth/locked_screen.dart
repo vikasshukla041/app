@@ -24,7 +24,6 @@ class LockedScreen extends StatefulWidget {
 }
 
 class _LockedScreenState extends State<LockedScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -60,7 +59,9 @@ class _LockedScreenState extends State<LockedScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.xl2),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: AppSizing.maxContentWidth),
+              constraints: const BoxConstraints(
+                maxWidth: AppSizing.maxContentWidth,
+              ),
               child: BlocConsumer<AuthCubit, AuthState>(
                 listener: (BuildContext context, AuthState state) {
                   if (state is AuthFailure) {
@@ -75,7 +76,11 @@ class _LockedScreenState extends State<LockedScreen> {
                     children: <Widget>[
                       const BrandHeader(),
                       const SizedBox(height: AppSpacing.xl5),
-                      Icon(Icons.lock_outline, size: AppSizing.iconMd, color: colors.primary),
+                      Icon(
+                        Icons.lock_outline,
+                        size: AppSizing.iconMd,
+                        color: colors.primary,
+                      ),
                       const SizedBox(height: AppSpacing.xl2),
                       Text(
                         l10n.dashboardWelcomeLabel,

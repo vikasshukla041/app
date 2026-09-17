@@ -344,6 +344,78 @@ abstract class AppLocalizations {
   /// **'Realized & unrealized profit/loss breakdown'**
   String get quickLinkPnlSubtitle;
 
+  /// No description provided for @netWorthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Total net worth'**
+  String get netWorthLabel;
+
+  /// No description provided for @netWorthAggregated.
+  ///
+  /// In en, this message translates to:
+  /// **'Aggregated'**
+  String get netWorthAggregated;
+
+  /// No description provided for @netWorthReturnCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'1Y realized & unrealized return'**
+  String get netWorthReturnCaption;
+
+  /// No description provided for @performanceChartPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance chart is on the way'**
+  String get performanceChartPending;
+
+  /// No description provided for @fundsBreakdownTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Funds & margin breakdown'**
+  String get fundsBreakdownTitle;
+
+  /// No description provided for @fundsBreakdownSettlement.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement: T+1'**
+  String get fundsBreakdownSettlement;
+
+  /// No description provided for @fundsAvailableCashLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Available cash'**
+  String get fundsAvailableCashLabel;
+
+  /// No description provided for @fundsAvailableCashStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to trade'**
+  String get fundsAvailableCashStatus;
+
+  /// No description provided for @fundsUnsettledLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsettled'**
+  String get fundsUnsettledLabel;
+
+  /// No description provided for @fundsUnsettledStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Clearing T+1'**
+  String get fundsUnsettledStatus;
+
+  /// No description provided for @fundsCollateralLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Collateral'**
+  String get fundsCollateralLabel;
+
+  /// No description provided for @fundsCollateralStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Pledged equity'**
+  String get fundsCollateralStatus;
+
   /// No description provided for @quickLinkSelectedMessage.
   ///
   /// In en, this message translates to:

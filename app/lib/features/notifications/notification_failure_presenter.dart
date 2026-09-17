@@ -31,7 +31,8 @@ extension NotificationFailurePresenter on NotificationFailureReason {
     NotificationFailureReason.network ||
     NotificationFailureReason.registrationFailed => AppSnackBarSeverity.warning,
     // A warning too: the user still has a way out, it is just manual.
-    NotificationFailureReason.settingsUnavailable => AppSnackBarSeverity.warning,
+    NotificationFailureReason.settingsUnavailable =>
+      AppSnackBarSeverity.warning,
     NotificationFailureReason.unavailable ||
     NotificationFailureReason.noToken ||
     NotificationFailureReason.generic => AppSnackBarSeverity.error,

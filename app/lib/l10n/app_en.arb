@@ -48,6 +48,18 @@
   "quickLinkReportsSubtitle": "Account tax reports & activity summaries",
   "quickLinkPnlTitle": "P&L Statement",
   "quickLinkPnlSubtitle": "Realized & unrealized profit/loss breakdown",
+  "netWorthLabel": "Total net worth",
+  "netWorthAggregated": "Aggregated",
+  "netWorthReturnCaption": "1Y realized & unrealized return",
+  "performanceChartPending": "Performance chart is on the way",
+  "fundsBreakdownTitle": "Funds & margin breakdown",
+  "fundsBreakdownSettlement": "Settlement: T+1",
+  "fundsAvailableCashLabel": "Available cash",
+  "fundsAvailableCashStatus": "Ready to trade",
+  "fundsUnsettledLabel": "Unsettled",
+  "fundsUnsettledStatus": "Clearing T+1",
+  "fundsCollateralLabel": "Collateral",
+  "fundsCollateralStatus": "Pledged equity",
   "quickLinkSelectedMessage": "{title} selected",
   "@quickLinkSelectedMessage": {
     "placeholders": {

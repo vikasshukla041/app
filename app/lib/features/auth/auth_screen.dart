@@ -21,7 +21,6 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -38,7 +37,9 @@ class _AuthScreenState extends State<AuthScreen> {
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.xl2),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: AppSizing.maxContentWidth),
+              constraints: const BoxConstraints(
+                maxWidth: AppSizing.maxContentWidth,
+              ),
               child: BlocConsumer<AuthCubit, AuthState>(
                 listener: _onStateChanged,
                 builder: (BuildContext context, AuthState state) {

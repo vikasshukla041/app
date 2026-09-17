@@ -1,47 +1,51 @@
-// The single source of truth for the app's look.
-// No fontFamily yet, so type uses the platform default.
+// The single source of truth for the app's look; every value comes from tokens/.
 import 'package:flutter/material.dart';
 
+import 'tokens/app_colors.dart';
 import 'tokens/app_radius.dart';
 import 'tokens/app_spacing.dart';
+import 'tokens/app_typography.dart';
 
 class ActivoTradeTheme {
   ActivoTradeTheme._();
 
-  static const Color _seedColor = Color(0xFF2B7FFF);
-  static const double _cardElevation = 2;
-
   /// Taller than Material's default, so buttons are easy to tap.
   static const double _minButtonHeight = 50;
 
-  static ThemeData get lightTheme => _build(Brightness.light);
-  static ThemeData get darkTheme => _build(Brightness.dark);
+  static ThemeData get lightTheme => _build(_lightScheme);
+  static ThemeData get darkTheme => _build(_darkScheme);
 
-  static ThemeData _build(Brightness brightness) {
-    final bool isLight = brightness == Brightness.light;
-    final ColorScheme colors = ColorScheme.fromSeed(
-      seedColor: _seedColor,
-      brightness: brightness,
-    );
+  static ThemeData _build(ColorScheme colors) {
+    final bool isLight = colors.brightness == Brightness.light;
 
     return ThemeData(
       useMaterial3: true,
-      brightness: brightness,
+      brightness: colors.brightness,
       colorScheme: colors,
-      textTheme: _textTheme,
+      textTheme: AppTypography.textTheme,
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(),
       ),
+      // elevation: 0 gives a thin border instead of a heavy shadow.
       cardTheme: CardThemeData(
-        elevation: _cardElevation,
+        elevation: 0,
+        // Gaps come from AppSpacing, so Material's own 4px margin only blurs them.
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
+          side: BorderSide(color: colors.outlineVariant),
         ),
       ),
       // Hairline. Material's default 16 would push list rows apart.
       dividerTheme: const DividerThemeData(space: 1, thickness: 1),
-      listTileTheme: const ListTileThemeData(
-        contentPadding: EdgeInsets.symmetric(
+      listTileTheme: ListTileThemeData(
+        titleTextStyle: AppTypography.listTileTitle.copyWith(
+          color: colors.onSurface,
+        ),
+        subtitleTextStyle: AppTypography.textTheme.bodySmall?.copyWith(
+          color: colors.onSurfaceVariant,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.xl,
           vertical: AppSpacing.xs,
         ),
@@ -74,18 +78,80 @@ class ActivoTradeTheme {
         ),
       ),
       extensions: <ThemeExtension<dynamic>>[
+        AppFigureText.standard,
         isLight ? AppSemanticColors.light : AppSemanticColors.dark,
         isLight ? AppCategoryColors.light : AppCategoryColors.dark,
       ],
     );
   }
 
-  /// Only the roles that are bold everywhere. The rest differ by screen, so
-  /// design has to decide before they move here.
-  static const TextTheme _textTheme = TextTheme(
-    headlineLarge: TextStyle(fontWeight: FontWeight.bold),
-    titleMedium: TextStyle(fontWeight: FontWeight.bold),
-    labelMedium: TextStyle(fontWeight: FontWeight.bold),
+  // Colors are set by hand here; fromSeed can't produce this exact palette.
+  static const ColorScheme _lightScheme = ColorScheme(
+    brightness: Brightness.light,
+    primary: AppColors.brand,
+    onPrimary: AppColors.white,
+    primaryContainer: AppColors.brandContainer,
+    onPrimaryContainer: AppColors.brand,
+    secondary: AppColors.slate600,
+    onSecondary: AppColors.white,
+    secondaryContainer: AppColors.slate100,
+    onSecondaryContainer: AppColors.slate800,
+    tertiary: AppColors.emerald700,
+    onTertiary: AppColors.white,
+    tertiaryContainer: AppColors.emerald50,
+    onTertiaryContainer: AppColors.emerald900,
+    error: AppColors.errorLight,
+    onError: AppColors.white,
+    errorContainer: AppColors.errorLightContainer,
+    onErrorContainer: AppColors.onErrorLightContainer,
+    surface: AppColors.canvas,
+    onSurface: AppColors.slate900,
+    onSurfaceVariant: AppColors.slate500,
+    outline: AppColors.slate300,
+    outlineVariant: AppColors.slate200,
+    // Cards live one step above the page, so they are white while the page is not.
+    surfaceContainerLowest: AppColors.white,
+    surfaceContainerLow: AppColors.white,
+    surfaceContainer: AppColors.slate50,
+    surfaceContainerHigh: AppColors.slate100,
+    surfaceContainerHighest: AppColors.slate200,
+    inverseSurface: AppColors.slate900,
+    onInverseSurface: AppColors.slate50,
+    inversePrimary: AppColors.brandBright,
+  );
+
+  /// The design ships no dark palette, so this inverts the same ramp.
+  static const ColorScheme _darkScheme = ColorScheme(
+    brightness: Brightness.dark,
+    primary: AppColors.brandBright,
+    onPrimary: AppColors.slate900,
+    primaryContainer: AppColors.brandDark,
+    onPrimaryContainer: AppColors.brandContainer,
+    secondary: AppColors.slate400,
+    onSecondary: AppColors.slate900,
+    secondaryContainer: AppColors.slate700,
+    onSecondaryContainer: AppColors.slate200,
+    tertiary: AppColors.emerald400,
+    onTertiary: AppColors.slate900,
+    tertiaryContainer: AppColors.emerald900,
+    onTertiaryContainer: AppColors.emerald50,
+    error: AppColors.errorDark,
+    onError: AppColors.onErrorDark,
+    errorContainer: AppColors.onErrorLightContainer,
+    onErrorContainer: AppColors.errorLightContainer,
+    surface: AppColors.slate900,
+    onSurface: AppColors.slate50,
+    onSurfaceVariant: AppColors.slate400,
+    outline: AppColors.slate600,
+    outlineVariant: AppColors.slate700,
+    surfaceContainerLowest: AppColors.slate900,
+    surfaceContainerLow: AppColors.slate800,
+    surfaceContainer: AppColors.slate800,
+    surfaceContainerHigh: AppColors.slate700,
+    surfaceContainerHighest: AppColors.slate700,
+    inverseSurface: AppColors.slate50,
+    onInverseSurface: AppColors.slate900,
+    inversePrimary: AppColors.brand,
   );
 }
 
@@ -94,6 +160,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   const AppSemanticColors({
     required this.warningContainer,
     required this.onWarningContainer,
+    required this.warning,
     required this.successContainer,
     required this.onSuccessContainer,
     required this.positive,
@@ -101,6 +168,10 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
 
   final Color warningContainer;
   final Color onWarningContainer;
+
+  /// The warning colour on its own, for a dot or a stroke with no container.
+  final Color warning;
+
   final Color successContainer;
   final Color onSuccessContainer;
 
@@ -108,28 +179,29 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   final Color positive;
 
   static const AppSemanticColors light = AppSemanticColors(
-    warningContainer: Color(0xFFFFEFC9),
-    onWarningContainer: Color(0xFF564500),
-    successContainer: Color(0xFFD1FAE5),
-    onSuccessContainer: Color(0xFF064E3B),
-    // Emerald 700. The lighter green failed WCAG AA at 2.47:1; this is 5.35:1.
-    positive: Color(0xFF047857),
+    warningContainer: AppColors.amber100,
+    onWarningContainer: AppColors.amber900,
+    warning: AppColors.amber700,
+    successContainer: AppColors.emerald50,
+    onSuccessContainer: AppColors.emerald900,
+    positive: AppColors.emerald700,
   );
 
   static const AppSemanticColors dark = AppSemanticColors(
-    warningContainer: Color(0xFF564500),
-    onWarningContainer: Color(0xFFFFEFC9),
+    warningContainer: AppColors.amber900,
+    onWarningContainer: AppColors.amber100,
+    warning: AppColors.amber400,
     // Swapped, not reused: light values would look pale on a dark surface.
-    successContainer: Color(0xFF064E3B),
-    onSuccessContainer: Color(0xFFD1FAE5),
-    // Emerald 400, already 8.91:1 on dark.
-    positive: Color(0xFF34D399),
+    successContainer: AppColors.emerald900,
+    onSuccessContainer: AppColors.emerald50,
+    positive: AppColors.emerald400,
   );
 
   @override
   AppSemanticColors copyWith({
     Color? warningContainer,
     Color? onWarningContainer,
+    Color? warning,
     Color? successContainer,
     Color? onSuccessContainer,
     Color? positive,
@@ -137,6 +209,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     return AppSemanticColors(
       warningContainer: warningContainer ?? this.warningContainer,
       onWarningContainer: onWarningContainer ?? this.onWarningContainer,
+      warning: warning ?? this.warning,
       positive: positive ?? this.positive,
       successContainer: successContainer ?? this.successContainer,
       onSuccessContainer: onSuccessContainer ?? this.onSuccessContainer,
@@ -159,6 +232,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
         other.onWarningContainer,
         t,
       )!,
+      warning: Color.lerp(warning, other.warning, t)!,
       successContainer: Color.lerp(
         successContainer,
         other.successContainer,
@@ -174,34 +248,32 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   }
 }
 
-/// Accent colors that tell the dashboard quick-link icons apart.
-/// They mean nothing on their own, so they do not come from the seed.
+/// Accents that carry no meaning of their own; they only tell tiles apart.
 @immutable
 class AppCategoryColors extends ThemeExtension<AppCategoryColors> {
   const AppCategoryColors({required this.accents});
 
   final List<Color> accents;
 
-  /// 3.47:1 to 6.13:1 on the light surface — all above the 3:1 an icon needs.
+  // These colors all stay clearly visible on a light background.
   static const AppCategoryColors light = AppCategoryColors(
     accents: <Color>[
-      Color(0xFF2563EB), // blue 600
-      Color(0xFF9333EA), // purple 600
-      Color(0xFFEA580C), // orange 600
-      Color(0xFF0D9488), // teal 600
-      Color(0xFF4F46E5), // indigo 600
+      AppColors.blue600,
+      AppColors.purple600,
+      AppColors.orange600,
+      AppColors.teal600,
+      AppColors.indigo600,
     ],
   );
 
-  /// Lighter shades. Indigo above was 2.72:1 on dark and vanished; these
-  /// are 5.74:1 and up.
+  // Lighter shades so these colors stay visible on a dark background.
   static const AppCategoryColors dark = AppCategoryColors(
     accents: <Color>[
-      Color(0xFF60A5FA), // blue 400
-      Color(0xFFC084FC), // purple 400
-      Color(0xFFFB923C), // orange 400
-      Color(0xFF2DD4BF), // teal 400
-      Color(0xFF818CF8), // indigo 400
+      AppColors.blue400,
+      AppColors.purple400,
+      AppColors.orange400,
+      AppColors.teal400,
+      AppColors.indigo400,
     ],
   );
 
