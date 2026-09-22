@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mock-api",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server.js"],
+      "cwd": "mock_api",
+      "port": 3000
+    },
+    {
+      "name": "flutter-web",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "web-server", "--web-port", "8080", "--dart-define=BASE_URL=http://localhost:3000", "--dart-define=ENVIRONMENT=development"],
+      "cwd": "app",
+      "port": 8080
+    }
+  ]
+}

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../tokens/app_spacing.dart';
 import '../widgets/spaced_flow.dart';
-import 'app_window_class.dart';
+import 'screen_size.dart';
 
-/// Stacks two card groups on a narrow window; sets them side by side on a wide one.
+/// Stacks cards on a narrow screen, side by side on a wide one.
 class AdaptiveTwoColumn extends StatelessWidget {
   const AdaptiveTwoColumn({
     super.key,
@@ -12,22 +12,22 @@ class AdaptiveTwoColumn extends StatelessWidget {
     required this.secondary,
   });
 
-  /// What the screen is mainly about; takes the wider column.
+  /// The main content — gets the wider column.
   final List<Widget> primary;
 
-  /// Supporting cards, which sit under [primary] until there is room beside it.
+  /// Extra cards — sit below [primary] until there is room beside it.
   final List<Widget> secondary;
 
   // Primary gets 7 parts, secondary gets 5, so primary is wider.
   static const int _primaryFlex = 7;
   static const int _secondaryFlex = 5;
 
-  /// The gap between cards, and between the two columns once they separate.
+  /// Space between cards and between the two columns.
   static const double _gap = AppSpacing.xl2;
 
   @override
   Widget build(BuildContext context) {
-    if (!AppWindowClass.of(context).hasTwoColumns) {
+    if (!ScreenSize.of(context).hasTwoColumns) {
       return SpacedColumn(
         gap: _gap,
         children: <Widget>[...primary, ...secondary],

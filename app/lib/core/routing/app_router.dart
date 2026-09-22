@@ -7,14 +7,22 @@ import '../../features/auth/auth_screen.dart';
 import '../../features/auth/biometric_onboarding_screen.dart';
 import '../../features/auth/locked_screen.dart';
 import '../../features/dashboard/dashboard_screen.dart';
+import '../../features/education/education_screen.dart';
+import '../../features/holdings/holdings_screen.dart';
+import '../../features/notifications/widgets/notification_bell.dart';
+import '../../features/orders/orders_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../../features/splash/splash_screen.dart';
+import '../../features/tax/tax_screen.dart';
 import '../auth/app_auth_cubit.dart';
 import '../auth/app_auth_state.dart';
+import '../navigation/app_frame.dart';
+import '../navigation/app_section.dart';
 import 'app_routes.dart';
 import 'deep_link_controller.dart';
 import 'go_router_refresh_stream.dart';
 
-/// Owns the app's single GoRouter; screens never navigate on their own.
+/// The app's one router. No screen navigates on its own.
 class AppRouter {
   AppRouter({
     required AppAuthCubit authCubit,
@@ -25,12 +33,10 @@ class AppRouter {
     _config = GoRouter(
       initialLocation: AppRoutes.splash,
       debugLogDiagnostics: kDebugMode,
-      // Re-check the route when either the session or a notification tap changes.
+      // Recheck the screen when login changes or a notification is tapped.
       refreshListenable: Listenable.merge(<Listenable>[_refresh, deepLinks]),
       redirect: _redirect,
-      // A location nothing matches — a payload naming a route that has since
-      // changed shape, or a stale link. Falling back to the splash would strand
-      // the user on a spinner with no way out, so bounce them home instead.
+      // No matching route — send the user home instead.
       errorBuilder: (BuildContext context, GoRouterState state) =>
           const _RouteNotFound(),
       routes: <RouteBase>[
@@ -54,14 +60,33 @@ class AppRouter {
           builder: (BuildContext context, GoRouterState state) =>
               const BiometricOnboardingScreen(),
         ),
-        GoRoute(
-          path: AppRoutes.dashboard,
-          builder: (BuildContext context, GoRouterState state) =>
-              const DashboardScreen(),
+        // Every signed-in screen lives inside the app frame.
+        StatefulShellRoute.indexedStack(
+          builder:
+              (
+                BuildContext context,
+                GoRouterState state,
+                StatefulNavigationShell shell,
+              ) => AppFrame(
+                shell: shell,
+                actions: const <Widget>[NotificationBell()],
+              ),
+          branches: <StatefulShellBranch>[
+            // Same order as the enum, so a number maps back to a section.
+            for (final AppSection section in AppSection.values)
+              StatefulShellBranch(
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: section.route,
+                    builder: (BuildContext context, GoRouterState state) =>
+                        _screenFor(section),
+                  ),
+                ],
+              ),
+          ],
         ),
         GoRoute(
-          // Listed in AppRoutes.idInPath, so DeepLinkParser puts the id here
-          // rather than in the query — and validates it before doing so.
+          // Listed in idInPath, so the id goes in the path here, not the query.
           path: '${AppRoutes.alerts}/:id',
           builder: (BuildContext context, GoRouterState state) =>
               AlertDetailScreen(
@@ -81,64 +106,66 @@ class AppRouter {
 
   GoRouter get config => _config;
 
-  /// Decides where to send the user; returns null if the location is already allowed.
+  /// The compiler checks this — every section must have a screen.
+  static Widget _screenFor(AppSection section) {
+    return switch (section) {
+      AppSection.console => const DashboardScreen(),
+      AppSection.holdings => const HoldingsScreen(),
+      AppSection.orders => const OrdersScreen(),
+      AppSection.education => const EducationScreen(),
+      AppSection.taxFiscal => const TaxScreen(),
+      AppSection.settings => const SettingsScreen(),
+    };
+  }
+
+  /// Picks where to send the user. Null means stay here.
   String? _redirect(BuildContext context, GoRouterState state) {
     final String location = state.matchedLocation;
 
-    // Wait for checkSession() to finish before picking a gate screen.
+    // Wait for checkSession() before picking a screen.
     final String? gate = switch (_authCubit.state) {
       AppAuthInitial() => AppRoutes.splash,
       AppUnauthenticated() => AppRoutes.login,
       AppAuthLocked() => AppRoutes.unlock,
       AppAuthPendingBiometricOptIn() => AppRoutes.biometricOnboarding,
-      // Authenticated: no gate, the user may be anywhere.
+      // Logged in — no block, go anywhere.
       AppAuthenticated() => null,
     };
 
     if (gate != null) {
-      // On web a notification tap arrives as a URL, not through
-      // DeepLinkController — the tap is handled by a service worker that
-      // cannot reach Dart. Sending the user to the gate now would throw that
-      // URL away, so park it first and let the consume() below honour it once
-      // the session is sorted out. Same for a bookmark or a manual refresh.
-      //
-      // Only while the session is still unknown. A gate reached any other way
-      // is a sign-out — and parking there would replay the previous session's
-      // location to whoever signs in next, on a shared browser a different
-      // person entirely.
+      // Save this link before sending to login, so it is not lost.
+      // Only before login — saving it after sign-out could show this page to the next user.
       if (_authCubit.state is AppAuthInitial &&
           !AppRoutes.preAuth.contains(location) &&
           !_deepLinks.hasPending) {
         _deepLinks.hold(state.uri.toString());
       }
 
-      // Already on this screen, so do not redirect again.
+      // Already here — do not redirect again.
       return location == gate ? null : gate;
     }
 
-    // Authenticated from here down.
+    // Below this: user is logged in.
 
-    // Send the user to a pending notification tap now that they are logged in.
+    // Open the saved notification link, now that they are logged in.
     final String? pending = _deepLinks.consume();
     if (pending != null) {
       return pending;
     }
 
-    // Move the user off the login screen once they are signed in.
+    // Leave the login screen once signed in.
     return AppRoutes.preAuth.contains(location) ? AppRoutes.home : null;
   }
 
-  /// Only reached in tests — the router is an app-lifetime singleton.
+  /// Used only in tests. The real app never disposes this.
   void dispose() {
     _refresh.dispose();
     _config.dispose();
   }
 }
 
-/// Shown for one frame when no route matches, then leaves for [AppRoutes.home].
-///
-/// The redirect happens after the frame because go_router is still building
-/// this widget when it is created; navigating during build is not allowed.
+/// Shows for one frame, then redirects to home.
+/// Waits for the frame first — go_router blocks a redirect during build.
 class _RouteNotFound extends StatefulWidget {
   const _RouteNotFound();
 

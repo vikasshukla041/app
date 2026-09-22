@@ -44,9 +44,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Botón para iniciar sesión con biometría';
 
   @override
-  String get dashboardTitle => 'Panel';
-
-  @override
   String dashboardWelcome(String name) {
     return 'Bienvenido de nuevo, $name';
   }
@@ -89,6 +86,33 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get signOutTooltip => 'Cerrar sesión';
+
+  @override
+  String get navConsole => 'Consola';
+
+  @override
+  String get navHoldings => 'Participaciones';
+
+  @override
+  String get navOrders => 'Órdenes';
+
+  @override
+  String get navEducation => 'Formación';
+
+  @override
+  String get navTaxFiscal => 'Fiscalidad';
+
+  @override
+  String get navSettings => 'Ajustes';
+
+  @override
+  String get profileMenuTooltip => 'Cuenta';
+
+  @override
+  String get profileMenuSemantics => 'Botón del menú de cuenta';
+
+  @override
+  String get comingSoonBody => 'Esta pantalla todavía está en construcción.';
 
   @override
   String get biometricOptInDialogTitle =>

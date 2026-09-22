@@ -5,96 +5,41 @@ import 'package:intl/intl.dart';
 import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/app_auth_state.dart';
 import '../../core/design_system/responsive/adaptive_two_column.dart';
-import '../../core/design_system/responsive/app_window_class.dart';
+import '../../core/design_system/responsive/screen_size.dart';
 import '../../core/design_system/tokens/app_sizing.dart';
 import '../../core/design_system/tokens/app_spacing.dart';
-import '../../l10n/app_localizations.dart';
-import '../notifications/widgets/notification_permission_dialog.dart';
 import 'widgets/funds_breakdown.dart';
 import 'widgets/net_worth_card.dart';
 import 'widgets/quick_links_card.dart';
 
-/// Assembly only: the greeting, then the console's cards in their two groups.
+/// The console body — just the cards. The app frame owns the title row.
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final AppLocalizations l10n = AppLocalizations.of(context);
-    final ThemeData theme = Theme.of(context);
+    return BlocBuilder<AppAuthCubit, AppAuthState>(
+      builder: (BuildContext context, AppAuthState state) {
+        if (state is! AppAuthenticated) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.dashboardTitle),
-        actions: <Widget>[
-          Semantics(
-            label: l10n.notificationBellSemantics,
-            button: true,
-            child: IconButton(
-              icon: const Icon(Icons.notifications_none_rounded),
-              tooltip: l10n.notificationBellTooltip,
-              onPressed: () => NotificationPermissionDialog.show(context),
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(
+            horizontal: ScreenSize.of(context).pageGap,
+            vertical: AppSpacing.xl,
+          ),
+          // Centered with a max width, so cards do not stretch on a big screen.
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: AppSizing.maxConsoleWidth,
+              ),
+              child: const _PlaceholderConsoleBody(),
             ),
           ),
-          Semantics(
-            label: l10n.signOutTooltip,
-            button: true,
-            child: IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: l10n.signOutTooltip,
-              onPressed: () => context.read<AppAuthCubit>().logOut(),
-            ),
-          ),
-        ],
-      ),
-      body: BlocBuilder<AppAuthCubit, AppAuthState>(
-        builder: (BuildContext context, AppAuthState state) {
-          if (state is! AppAuthenticated) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          // The app bar owns the top inset; this keeps the rest clear of cutouts.
-          return SafeArea(
-            top: false,
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppWindowClass.of(context).pick(
-                  compact: AppSpacing.xl,
-                  medium: AppSpacing.xl3,
-                  expanded: AppSpacing.xl3,
-                ),
-                vertical: AppSpacing.xl,
-              ),
-              // Centred and capped, or the cards stretch the full width of a monitor.
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: AppSizing.maxConsoleWidth,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        l10n.dashboardWelcomeLabel,
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        state.user.fullname,
-                        style: theme.textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: AppSpacing.xl2),
-                      const _PlaceholderConsoleBody(),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+        );
+      },
     );
   }
 }
@@ -103,7 +48,7 @@ class DashboardScreen extends StatelessWidget {
 class _PlaceholderConsoleBody extends StatelessWidget {
   const _PlaceholderConsoleBody();
 
-  // Placeholder currency, until the real balance endpoint sends one per account.
+  // Placeholder currency until the real balance API sends one.
   static const String _accountCurrency = 'EUR';
 
   static const double _netWorth = 142850.20;
@@ -114,7 +59,7 @@ class _PlaceholderConsoleBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The account is held in euros whatever the language; only the format follows it.
+    // Account is always in euros — only the number format changes with language.
     final NumberFormat currency = NumberFormat.simpleCurrency(
       locale: Localizations.localeOf(context).toString(),
       name: _accountCurrency,

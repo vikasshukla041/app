@@ -42,9 +42,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get useBiometricsSemantics => 'Log in with biometrics button';
 
   @override
-  String get dashboardTitle => 'Dashboard';
-
-  @override
   String dashboardWelcome(String name) {
     return 'Welcome back, $name';
   }
@@ -86,6 +83,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOutTooltip => 'Sign out';
+
+  @override
+  String get navConsole => 'Console';
+
+  @override
+  String get navHoldings => 'Holdings';
+
+  @override
+  String get navOrders => 'Orders';
+
+  @override
+  String get navEducation => 'Education';
+
+  @override
+  String get navTaxFiscal => 'Tax & Fiscal';
+
+  @override
+  String get navSettings => 'Settings';
+
+  @override
+  String get profileMenuTooltip => 'Account';
+
+  @override
+  String get profileMenuSemantics => 'Account menu button';
+
+  @override
+  String get comingSoonBody => 'This screen is still being built.';
 
   @override
   String get biometricOptInDialogTitle => 'Enable Biometric Login?';

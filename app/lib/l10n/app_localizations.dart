@@ -164,12 +164,6 @@ abstract class AppLocalizations {
   /// **'Log in with biometrics button'**
   String get useBiometricsSemantics;
 
-  /// No description provided for @dashboardTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Dashboard'**
-  String get dashboardTitle;
-
   /// No description provided for @dashboardWelcome.
   ///
   /// In en, this message translates to:
@@ -241,6 +235,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign out'**
   String get signOutTooltip;
+
+  /// No description provided for @navConsole.
+  ///
+  /// In en, this message translates to:
+  /// **'Console'**
+  String get navConsole;
+
+  /// No description provided for @navHoldings.
+  ///
+  /// In en, this message translates to:
+  /// **'Holdings'**
+  String get navHoldings;
+
+  /// No description provided for @navOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders'**
+  String get navOrders;
+
+  /// No description provided for @navEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get navEducation;
+
+  /// No description provided for @navTaxFiscal.
+  ///
+  /// In en, this message translates to:
+  /// **'Tax & Fiscal'**
+  String get navTaxFiscal;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
+
+  /// No description provided for @profileMenuTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
+  String get profileMenuTooltip;
+
+  /// No description provided for @profileMenuSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Account menu button'**
+  String get profileMenuSemantics;
+
+  /// No description provided for @comingSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This screen is still being built.'**
+  String get comingSoonBody;
 
   /// No description provided for @biometricOptInDialogTitle.
   ///
