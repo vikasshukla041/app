@@ -174,9 +174,7 @@ void main() {
       stubSession(state);
       await handler.start();
 
-      messages.add(
-        const PushMessage(title: 'Order filled', body: '500 AAPL'),
-      );
+      messages.add(const PushMessage(title: 'Order filled', body: '500 AAPL'));
       await Future<void>.delayed(Duration.zero);
 
       verifyNever(
@@ -218,7 +216,9 @@ void main() {
       // Same subscription, new session: the gate is read per message, so
       // signing in must not require restarting the handler.
       stubSession(const AppAuthenticated(demoUser));
-      messages.add(const PushMessage(title: 'Market Alert', body: 'EUR/USD up'));
+      messages.add(
+        const PushMessage(title: 'Market Alert', body: 'EUR/USD up'),
+      );
       await Future<void>.delayed(Duration.zero);
 
       verify(

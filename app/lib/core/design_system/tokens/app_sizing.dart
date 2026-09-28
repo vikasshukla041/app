@@ -14,6 +14,9 @@ abstract final class AppSizing {
   /// The brand logo tile on the auth screens.
   static const double logo = 40;
 
+  /// Fixed so the menu does not grow or shrink with the label that is showing.
+  static const double sideMenuWidth = 256;
+
   /// The avatar size in the app bar.
   static const double avatar = 32;
 

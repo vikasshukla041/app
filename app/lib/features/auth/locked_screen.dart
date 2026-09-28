@@ -5,11 +5,11 @@ import '../../core/auth/app_auth_cubit.dart';
 import '../../core/auth/app_auth_state.dart';
 import '../../core/design_system/tokens/app_sizing.dart';
 import '../../core/design_system/tokens/app_spacing.dart';
+import '../../core/design_system/widgets/brand_header.dart';
 import '../../l10n/app_localizations.dart';
 import 'auth_cubit.dart';
 import 'auth_failure_presenter.dart';
 import 'auth_state.dart';
-import 'widgets/brand_header.dart';
 
 /// Shown when a valid session exists but is locked behind biometrics.
 ///

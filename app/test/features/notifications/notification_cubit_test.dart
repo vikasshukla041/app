@@ -58,9 +58,9 @@ void main() {
     appSettings = MockAppSettingsService();
 
     when(() => pushService.platform).thenReturn('android');
-    when(() => pushService.onTokenRefresh).thenAnswer(
-      (_) => const Stream<String>.empty(),
-    );
+    when(
+      () => pushService.onTokenRefresh,
+    ).thenAnswer((_) => const Stream<String>.empty());
   });
 
   group('subscribe tells a fresh denial from a blocked one', () {
@@ -72,12 +72,12 @@ void main() {
       'denied after being undecided is NotificationDenied — the bell can '
       'still ask again',
       setUp: () {
-        when(() => pushService.currentPermission()).thenAnswer(
-          (_) async => PushPermissionResult.granted,
-        );
-        when(() => pushService.requestPermission()).thenAnswer(
-          (_) async => PushPermissionResult.denied,
-        );
+        when(
+          () => pushService.currentPermission(),
+        ).thenAnswer((_) async => PushPermissionResult.granted);
+        when(
+          () => pushService.requestPermission(),
+        ).thenAnswer((_) async => PushPermissionResult.denied);
       },
       build: buildCubit,
       act: (NotificationCubit cubit) => cubit.subscribe(),
@@ -92,12 +92,12 @@ void main() {
       'denied before and after is NotificationBlocked — only settings can '
       'help now',
       setUp: () {
-        when(() => pushService.currentPermission()).thenAnswer(
-          (_) async => PushPermissionResult.denied,
-        );
-        when(() => pushService.requestPermission()).thenAnswer(
-          (_) async => PushPermissionResult.denied,
-        );
+        when(
+          () => pushService.currentPermission(),
+        ).thenAnswer((_) async => PushPermissionResult.denied);
+        when(
+          () => pushService.requestPermission(),
+        ).thenAnswer((_) async => PushPermissionResult.denied);
       },
       build: buildCubit,
       act: (NotificationCubit cubit) => cubit.subscribe(),
@@ -113,9 +113,9 @@ void main() {
     blocTest<NotificationCubit, NotificationState>(
       'stays silent when the settings page opened',
       setUp: () {
-        when(() => appSettings.openNotificationSettings()).thenAnswer(
-          (_) async => true,
-        );
+        when(
+          () => appSettings.openNotificationSettings(),
+        ).thenAnswer((_) async => true);
       },
       build: buildCubit,
       act: (NotificationCubit cubit) => cubit.openSettings(),
@@ -125,9 +125,9 @@ void main() {
     blocTest<NotificationCubit, NotificationState>(
       'reports a failure when nothing opened, rather than a dead button',
       setUp: () {
-        when(() => appSettings.openNotificationSettings()).thenAnswer(
-          (_) async => false,
-        );
+        when(
+          () => appSettings.openNotificationSettings(),
+        ).thenAnswer((_) async => false);
       },
       build: buildCubit,
       act: (NotificationCubit cubit) => cubit.openSettings(),
@@ -145,9 +145,9 @@ void main() {
     // on screen, so an emitted state would have nobody listening.
 
     test('returns unchanged when the permission is still denied', () async {
-      when(() => pushService.currentPermission()).thenAnswer(
-        (_) async => PushPermissionResult.denied,
-      );
+      when(
+        () => pushService.currentPermission(),
+      ).thenAnswer((_) async => PushPermissionResult.denied);
 
       final NotificationCubit cubit = buildCubit();
 
@@ -158,21 +158,39 @@ void main() {
       verifyNever(() => pushService.getToken());
     });
 
-    test('returns enabled once the user turned it on in settings', () async {
-      when(() => pushService.currentPermission()).thenAnswer(
-        (_) async => PushPermissionResult.granted,
-      );
+    // Denied once, then granted — the shape of a real Open settings trip.
+    void answerDeniedThenGranted() {
+      int reads = 0;
+      when(() => pushService.currentPermission()).thenAnswer((_) async {
+        reads++;
+        return reads == 1
+            ? PushPermissionResult.denied
+            : PushPermissionResult.granted;
+      });
+    }
+
+    void answerRegistrationWorks() {
       when(() => pushService.getToken()).thenAnswer((_) async => 'token_1');
-      when(() => storage.getOrCreateDeviceId()).thenAnswer(
-        (_) async => 'device_1',
-      );
+      when(
+        () => storage.getOrCreateDeviceId(),
+      ).thenAnswer((_) async => 'device_1');
       when(() => deviceInfo.deviceName()).thenAnswer((_) async => 'Pixel');
-      when(() => notificationService.registerDevice(any())).thenAnswer(
-        (_) async {},
-      );
+      when(
+        () => notificationService.registerDevice(any()),
+      ).thenAnswer((_) async {});
+    }
+
+    test('returns enabled once the user turned it on in settings', () async {
+      answerDeniedThenGranted();
+      answerRegistrationWorks();
 
       final NotificationCubit cubit = buildCubit();
 
+      // Still blocked, so this resume only records what it found.
+      expect(
+        await cubit.refreshAfterResume(),
+        NotificationResumeOutcome.unchanged,
+      );
       expect(
         await cubit.refreshAfterResume(),
         NotificationResumeOutcome.enabled,
@@ -180,20 +198,12 @@ void main() {
     });
 
     test('does not register again when nothing changed', () async {
-      when(() => pushService.currentPermission()).thenAnswer(
-        (_) async => PushPermissionResult.granted,
-      );
-      when(() => pushService.getToken()).thenAnswer((_) async => 'token_1');
-      when(() => storage.getOrCreateDeviceId()).thenAnswer(
-        (_) async => 'device_1',
-      );
-      when(() => deviceInfo.deviceName()).thenAnswer((_) async => 'Pixel');
-      when(() => notificationService.registerDevice(any())).thenAnswer(
-        (_) async {},
-      );
+      answerDeniedThenGranted();
+      answerRegistrationWorks();
 
       final NotificationCubit cubit = buildCubit();
 
+      await cubit.refreshAfterResume();
       expect(
         await cubit.refreshAfterResume(),
         NotificationResumeOutcome.enabled,
@@ -207,13 +217,11 @@ void main() {
     });
 
     test('returns failed when registering the device did not work', () async {
-      when(() => pushService.currentPermission()).thenAnswer(
-        (_) async => PushPermissionResult.granted,
-      );
+      answerDeniedThenGranted();
       when(() => pushService.getToken()).thenAnswer((_) async => 'token_1');
-      when(() => storage.getOrCreateDeviceId()).thenAnswer(
-        (_) async => 'device_1',
-      );
+      when(
+        () => storage.getOrCreateDeviceId(),
+      ).thenAnswer((_) async => 'device_1');
       when(() => deviceInfo.deviceName()).thenAnswer((_) async => 'Pixel');
       when(() => notificationService.registerDevice(any())).thenThrow(
         const NotificationException(NotificationFailureReason.network),
@@ -221,10 +229,48 @@ void main() {
 
       final NotificationCubit cubit = buildCubit();
 
+      await cubit.refreshAfterResume();
       expect(
         await cubit.refreshAfterResume(),
         NotificationResumeOutcome.failed,
       );
     });
+
+    test('stays quiet when a cold start finds it already granted', () async {
+      // The regression: an earlier run's permission is not a change today.
+      when(
+        () => pushService.currentPermission(),
+      ).thenAnswer((_) async => PushPermissionResult.granted);
+      answerRegistrationWorks();
+
+      final NotificationCubit cubit = buildCubit();
+
+      expect(
+        await cubit.refreshAfterResume(),
+        NotificationResumeOutcome.unchanged,
+      );
+      verifyNever(() => notificationService.registerDevice(any()));
+    });
+
+    test(
+      'a sign-in records the permission, so a later resume is quiet',
+      () async {
+        // The sign-in claim is what gives the first resume something to compare.
+        when(
+          () => pushService.currentPermission(),
+        ).thenAnswer((_) async => PushPermissionResult.granted);
+        answerRegistrationWorks();
+
+        final NotificationCubit cubit = buildCubit();
+        await cubit.claimForCurrentUser();
+
+        expect(
+          await cubit.refreshAfterResume(),
+          NotificationResumeOutcome.unchanged,
+        );
+        // Once for the sign-in claim, and not again for the resume.
+        verify(() => notificationService.registerDevice(any())).called(1);
+      },
+    );
   });
 }

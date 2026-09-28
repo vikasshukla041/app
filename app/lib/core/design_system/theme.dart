@@ -221,29 +221,22 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     if (other == null) {
       return this;
     }
+    // Each ?? keeps the colour we already show if a blend ever comes back empty.
     return AppSemanticColors(
-      warningContainer: Color.lerp(
-        warningContainer,
-        other.warningContainer,
-        t,
-      )!,
-      onWarningContainer: Color.lerp(
-        onWarningContainer,
-        other.onWarningContainer,
-        t,
-      )!,
-      warning: Color.lerp(warning, other.warning, t)!,
-      successContainer: Color.lerp(
-        successContainer,
-        other.successContainer,
-        t,
-      )!,
-      onSuccessContainer: Color.lerp(
-        onSuccessContainer,
-        other.onSuccessContainer,
-        t,
-      )!,
-      positive: Color.lerp(positive, other.positive, t)!,
+      warningContainer:
+          Color.lerp(warningContainer, other.warningContainer, t) ??
+          warningContainer,
+      onWarningContainer:
+          Color.lerp(onWarningContainer, other.onWarningContainer, t) ??
+          onWarningContainer,
+      warning: Color.lerp(warning, other.warning, t) ?? warning,
+      successContainer:
+          Color.lerp(successContainer, other.successContainer, t) ??
+          successContainer,
+      onSuccessContainer:
+          Color.lerp(onSuccessContainer, other.onSuccessContainer, t) ??
+          onSuccessContainer,
+      positive: Color.lerp(positive, other.positive, t) ?? positive,
     );
   }
 }
@@ -289,8 +282,9 @@ class AppCategoryColors extends ThemeExtension<AppCategoryColors> {
     }
     return AppCategoryColors(
       accents: <Color>[
+        // Falls back to the accent already on screen if a blend comes back empty.
         for (int i = 0; i < accents.length; i++)
-          Color.lerp(accents[i], other.accents[i], t)!,
+          Color.lerp(accents[i], other.accents[i], t) ?? accents[i],
       ],
     );
   }

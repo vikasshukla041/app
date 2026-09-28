@@ -11,12 +11,12 @@ enum ScreenSize {
   /// Small tablet — nav moves to the side, still one column.
   medium,
 
-  /// Big tablet or desktop — side nav, two columns.
+  /// Big tablet or desktop — side nav, more room.
   expanded;
 
   /// Separate from [of] so tests do not need a widget tree.
   static ScreenSize forWidth(double width) {
-    if (width >= AppBreakpoints.twoColumn) {
+    if (width >= AppBreakpoints.expanded) {
       return ScreenSize.expanded;
     }
     if (width >= AppBreakpoints.sidebar) {
@@ -32,12 +32,12 @@ enum ScreenSize {
   /// True once nav has moved from the bottom to the side.
   bool get hasSidebar => this != ScreenSize.compact;
 
-  /// True once there is room for a second column.
-  bool get hasTwoColumns => this == ScreenSize.expanded;
-
   /// Side gap for a page's header and its body, so the two line up.
-  double get pageGap =>
-      pick(compact: AppSpacing.xl, medium: AppSpacing.xl3, expanded: AppSpacing.xl3);
+  double get pageGap => pick(
+    compact: AppSpacing.xl,
+    medium: AppSpacing.xl3,
+    expanded: AppSpacing.xl3,
+  );
 
   /// Picks the right value, so a widget never reads pixels itself.
   T pick<T>({required T compact, required T medium, required T expanded}) {

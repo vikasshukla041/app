@@ -93,33 +93,35 @@ void main() {
       expect(dto.user.username, 'demo');
     });
 
-    test('posts the DTO payload with the lowercase keys the backend wants',
-        () async {
-      // A mismatch here returns 400, not 401, and looks nothing like a wrong
-      // password — worth pinning.
-      stubPost(
-        responseWith(<String, dynamic>{
-          'accessToken': 'tok_123',
-          'refreshToken': 'ref_123',
-          'user': <String, dynamic>{'id': 'u', 'username': 'demo'},
-        }),
-      );
+    test(
+      'posts the DTO payload with the lowercase keys the backend wants',
+      () async {
+        // A mismatch here returns 400, not 401, and looks nothing like a wrong
+        // password — worth pinning.
+        stubPost(
+          responseWith(<String, dynamic>{
+            'accessToken': 'tok_123',
+            'refreshToken': 'ref_123',
+            'user': <String, dynamic>{'id': 'u', 'username': 'demo'},
+          }),
+        );
 
-      await service.login(request);
+        await service.login(request);
 
-      final List<dynamic> captured = verify(
-        () => apiService.post(
-          '/api/auth/login',
-          data: captureAny(named: 'data'),
-          skipAuth: any(named: 'skipAuth'),
-        ),
-      ).captured;
+        final List<dynamic> captured = verify(
+          () => apiService.post(
+            '/api/auth/login',
+            data: captureAny(named: 'data'),
+            skipAuth: any(named: 'skipAuth'),
+          ),
+        ).captured;
 
-      expect(captured.single, <String, dynamic>{
-        'username': 'demo',
-        'password': 'password123',
-      });
-    });
+        expect(captured.single, <String, dynamic>{
+          'username': 'demo',
+          'password': 'password123',
+        });
+      },
+    );
 
     test('maps 401 to credentials', () async {
       stubPost(dioError(DioExceptionType.badResponse, statusCode: 401));
@@ -178,8 +180,8 @@ void main() {
         }),
       );
 
-      final ({String accessToken, String refreshToken}) pair =
-          await service.refreshTokenExchange(refreshToken: 'ref_old');
+      final ({String accessToken, String refreshToken}) pair = await service
+          .refreshTokenExchange(refreshToken: 'ref_old');
 
       expect(pair.accessToken, 'tok_new');
       expect(pair.refreshToken, 'ref_new');

@@ -36,11 +36,7 @@ void main() {
           foreground: colors.onTertiary,
           background: colors.tertiary,
         ),
-        (
-          name: 'onError',
-          foreground: colors.onError,
-          background: colors.error,
-        ),
+        (name: 'onError', foreground: colors.onError, background: colors.error),
         (
           name: 'onPrimaryContainer',
           foreground: colors.onPrimaryContainer,

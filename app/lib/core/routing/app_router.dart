@@ -122,6 +122,11 @@ class AppRouter {
   String? _redirect(BuildContext context, GoRouterState state) {
     final String location = state.matchedLocation;
 
+    // A tap with nobody signed in belongs to no one, so it is dropped.
+    if (_authCubit.state is AppUnauthenticated && _deepLinks.hasPending) {
+      _deepLinks.consume();
+    }
+
     // Wait for checkSession() before picking a screen.
     final String? gate = switch (_authCubit.state) {
       AppAuthInitial() => AppRoutes.splash,

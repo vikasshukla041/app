@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../tokens/app_spacing.dart';
 import '../widgets/spaced_flow.dart';
-import 'screen_size.dart';
+import 'app_breakpoints.dart';
 
 /// Stacks cards on a narrow screen, side by side on a wide one.
 class AdaptiveTwoColumn extends StatelessWidget {
@@ -27,26 +27,31 @@ class AdaptiveTwoColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!ScreenSize.of(context).hasTwoColumns) {
-      return SpacedColumn(
-        gap: _gap,
-        children: <Widget>[...primary, ...secondary],
-      );
-    }
+    // Measures its own width, since the side menu takes part of the window.
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        if (constraints.maxWidth < AppBreakpoints.twoColumnBody) {
+          return SpacedColumn(
+            gap: _gap,
+            children: <Widget>[...primary, ...secondary],
+          );
+        }
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Expanded(
-          flex: _primaryFlex,
-          child: SpacedColumn(gap: _gap, children: primary),
-        ),
-        const SizedBox(width: _gap),
-        Expanded(
-          flex: _secondaryFlex,
-          child: SpacedColumn(gap: _gap, children: secondary),
-        ),
-      ],
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Expanded(
+              flex: _primaryFlex,
+              child: SpacedColumn(gap: _gap, children: primary),
+            ),
+            const SizedBox(width: _gap),
+            Expanded(
+              flex: _secondaryFlex,
+              child: SpacedColumn(gap: _gap, children: secondary),
+            ),
+          ],
+        );
+      },
     );
   }
 }

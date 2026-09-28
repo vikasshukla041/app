@@ -213,22 +213,21 @@ void main() {
       expect(find.byType(DashboardScreen), findsOneWidget);
     });
 
-    testWidgets('survives a login before it is honoured', (
+    testWidgets('is dropped once the session resolves to signed out', (
       WidgetTester tester,
     ) async {
       deepLinks.push('/dashboard?id=123');
       await pumpApp(tester);
 
-      // Signed out: the gate wins and the link must still be waiting after.
+      // Held through login before; a tap with no user belongs to no one.
       authCubit.setState(const AppUnauthenticated());
       await tester.pumpAndSettle();
       expect(find.byType(AuthScreen), findsOneWidget);
-      expect(deepLinks.hasPending, isTrue);
+      expect(deepLinks.hasPending, isFalse);
 
       authCubit.setState(const AppAuthenticated(user));
       await tester.pumpAndSettle();
 
-      expect(deepLinks.hasPending, isFalse);
       expect(find.byType(DashboardScreen), findsOneWidget);
     });
 
@@ -287,7 +286,7 @@ void main() {
       expect(screen.title, 'Order filled');
     });
 
-    testWidgets('a signed-out user never reaches the alert', (
+    testWidgets('a tap while signed out never reaches the next user', (
       WidgetTester tester,
     ) async {
       await pumpApp(tester);
@@ -297,10 +296,16 @@ void main() {
       deepLinks.push('/alerts/alert_987');
       await tester.pumpAndSettle();
 
-      // The gate wins; the link waits for a session rather than leaking it.
       expect(find.byType(AuthScreen), findsOneWidget);
       expect(find.byType(AlertDetailScreen), findsNothing);
-      expect(deepLinks.hasPending, isTrue);
+      expect(deepLinks.hasPending, isFalse);
+
+      // A signed-out device still gets push, so a held link would leak.
+      authCubit.setState(const AppAuthenticated(user));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AlertDetailScreen), findsNothing);
+      expect(find.byType(DashboardScreen), findsOneWidget);
     });
   });
 }

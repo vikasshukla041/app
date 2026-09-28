@@ -75,10 +75,11 @@ abstract final class AppSnackBar {
           duration: onAction == null
               ? const Duration(seconds: 4)
               : const Duration(seconds: 8),
-          action: onAction == null
+          // Release builds strip the assert, so both values are tested here.
+          action: actionLabel == null || onAction == null
               ? null
               : SnackBarAction(
-                  label: actionLabel!,
+                  label: actionLabel,
                   textColor: foreground,
                   onPressed: onAction,
                 ),

@@ -184,9 +184,9 @@ void main() {
       // The cubit never sees a DioException: AuthService maps the transport
       // error to a reason, which is the whole point of the boundary.
       build: () {
-        when(() => authService.login(any())).thenThrow(
-          const AuthException(AuthFailureReason.credentials),
-        );
+        when(
+          () => authService.login(any()),
+        ).thenThrow(const AuthException(AuthFailureReason.credentials));
         return buildCubit();
       },
       act: (AuthCubit cubit) =>

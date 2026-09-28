@@ -1,5 +1,8 @@
 /// The spacing scale; [xl] and [xl4] can fold away once design signs off.
 abstract final class AppSpacing {
+  /// The gap between side menu rows, where [xs] already looks too loose.
+  static const double xxs = 2;
+
   static const double xs = 4;
   static const double sm = 8;
   static const double md = 12;

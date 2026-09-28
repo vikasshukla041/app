@@ -26,10 +26,7 @@ void main() {
               child: const SingleChildScrollView(
                 child: SizedBox(
                   width: _phoneColumn,
-                  child: NetWorthCard(
-                    totalValue: _total,
-                    yearReturn: _return,
-                  ),
+                  child: NetWorthCard(totalValue: _total, yearReturn: _return),
                 ),
               ),
             ),

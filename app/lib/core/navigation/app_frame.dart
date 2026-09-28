@@ -37,6 +37,9 @@ class AppFrame extends StatelessWidget {
       shell.goBranch(section.index, initialLocation: section == current);
     }
 
+    // Fenced in, or the page's route hides the header and menu from screen readers.
+    final Widget page = Semantics(container: true, child: shell);
+
     // Android back button must act like the arrow, or it exits the app.
     final Widget phoneBody = onSubPage
         ? BackButtonListener(
@@ -46,14 +49,16 @@ class AppFrame extends StatelessWidget {
               open(AppSection.console);
               return true;
             },
-            child: shell,
+            child: page,
           )
-        : shell;
+        : page;
 
     // Side menu already shows extras, so only phones need them here.
     final Widget profileMenu = ProfileMenu(
       extras: sidebar ? const <AppSection>[] : AppSection.extras,
       onSectionSelected: open,
+      // At the foot of the side menu there is no room below the avatar.
+      overlapAvatar: sidebar,
     );
 
     final Widget header = PageHeader(
@@ -79,13 +84,19 @@ class AppFrame extends StatelessWidget {
                   const VerticalDivider(),
                   Expanded(
                     child: Column(
-                      children: <Widget>[header, Expanded(child: shell)],
+                      children: <Widget>[
+                        header,
+                        Expanded(child: page),
+                      ],
                     ),
                   ),
                 ],
               )
             : Column(
-                children: <Widget>[header, Expanded(child: phoneBody)],
+                children: <Widget>[
+                  header,
+                  Expanded(child: phoneBody),
+                ],
               ),
       ),
       bottomNavigationBar: sidebar || onSubPage

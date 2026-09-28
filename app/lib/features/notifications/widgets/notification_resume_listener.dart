@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/auth/app_auth_cubit.dart';
+import '../../../core/auth/app_auth_state.dart';
 import '../../../core/design_system/widgets/app_snack_bar.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../l10n/app_localizations.dart';
@@ -49,6 +52,11 @@ class _NotificationResumeListenerState
   }
 
   Future<void> _onResume() async {
+    // With nobody signed in there is no token to register with; sign-in claims it.
+    if (context.read<AppAuthCubit>().state is! AppAuthenticated) {
+      return;
+    }
+
     final NotificationCubit cubit =
         widget.notifications ?? getIt<NotificationCubit>();
 

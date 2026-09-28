@@ -14,11 +14,17 @@ class ProfileMenu extends StatelessWidget {
     super.key,
     required this.extras,
     required this.onSectionSelected,
+    this.overlapAvatar = false,
   });
 
   /// Sections the navigation has no room for, so they live here instead.
   final List<AppSection> extras;
   final ValueChanged<AppSection> onSectionSelected;
+
+  /// Set this where the avatar sits at the foot of the screen. There is no
+  /// "open upward" setting, so the menu opens over the avatar and Flutter
+  /// slides it up to keep it on screen.
+  final bool overlapAvatar;
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +38,10 @@ class ProfileMenu extends StatelessWidget {
       label: l10n.profileMenuSemantics,
       button: true,
       child: PopupMenuButton<_ProfileChoice>(
-        // Opens below the avatar, so it does not cover the bell icon.
-        position: PopupMenuPosition.under,
+        // In the header, under keeps it clear of the bell beside it.
+        position: overlapAvatar
+            ? PopupMenuPosition.over
+            : PopupMenuPosition.under,
         tooltip: l10n.profileMenuTooltip,
         onSelected: (_ProfileChoice choice) {
           switch (choice) {

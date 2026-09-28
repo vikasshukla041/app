@@ -111,10 +111,11 @@ class AppFigureText extends ThemeExtension<AppFigureText> {
     if (other == null) {
       return this;
     }
+    // Each ?? keeps the style we already show if a blend ever comes back empty.
     return AppFigureText(
-      large: TextStyle.lerp(large, other.large, t)!,
-      medium: TextStyle.lerp(medium, other.medium, t)!,
-      small: TextStyle.lerp(small, other.small, t)!,
+      large: TextStyle.lerp(large, other.large, t) ?? large,
+      medium: TextStyle.lerp(medium, other.medium, t) ?? medium,
+      small: TextStyle.lerp(small, other.small, t) ?? small,
     );
   }
 }

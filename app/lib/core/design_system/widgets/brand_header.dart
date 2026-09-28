@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/design_system/tokens/app_radius.dart';
-import '../../../core/design_system/tokens/app_sizing.dart';
-import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
+import '../tokens/app_radius.dart';
+import '../tokens/app_sizing.dart';
+import '../tokens/app_spacing.dart';
 
+/// The app's logo tile next to its name, shown on auth screens and the side menu.
 class BrandHeader extends StatelessWidget {
   const BrandHeader({super.key});
 
@@ -27,9 +28,12 @@ class BrandHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: AppSpacing.md),
-        Text(
-          AppLocalizations.of(context).appTitle,
-          style: Theme.of(context).textTheme.titleLarge,
+        // The side menu is a fixed width, so large text must wrap, not overflow.
+        Flexible(
+          child: Text(
+            AppLocalizations.of(context).appTitle,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
         ),
       ],
     );

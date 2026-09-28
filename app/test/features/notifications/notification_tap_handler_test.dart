@@ -56,7 +56,8 @@ void main() {
   group('cold boot', () {
     test('parks the route the launching notification asked for', () async {
       when(() => pushService.initialMessage()).thenAnswer(
-        (_) async => _message(<String, String>{'route': '/dashboard', 'id': '77'}),
+        (_) async =>
+            _message(<String, String>{'route': '/dashboard', 'id': '77'}),
       );
 
       await handler.start();
@@ -90,7 +91,9 @@ void main() {
     test('parks the route from onMessageOpenedApp', () async {
       await handler.start();
 
-      openedApp.add(_message(<String, String>{'route': '/dashboard', 'id': '9'}));
+      openedApp.add(
+        _message(<String, String>{'route': '/dashboard', 'id': '9'}),
+      );
       await Future<void>.delayed(Duration.zero);
 
       expect(deepLinks.consume(), '/dashboard?id=9');

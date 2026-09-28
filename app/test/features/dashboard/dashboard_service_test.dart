@@ -40,10 +40,7 @@ void main() {
       type: type,
       response: statusCode == null
           ? null
-          : Response<dynamic>(
-              requestOptions: options,
-              statusCode: statusCode,
-            ),
+          : Response<dynamic>(requestOptions: options, statusCode: statusCode),
     );
   }
 

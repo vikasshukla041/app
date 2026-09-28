@@ -143,7 +143,9 @@ class NotificationCubit extends Cubit<NotificationState> {
     final PushPermissionResult? previous = _lastKnownPermission;
     _lastKnownPermission = permission;
 
+    // A null previous is a cold start's first resume: nothing to compare with.
     if (permission != PushPermissionResult.granted ||
+        previous == null ||
         previous == PushPermissionResult.granted) {
       return NotificationResumeOutcome.unchanged;
     }
@@ -172,6 +174,8 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     final PushPermissionResult permission = await _pushService
         .currentPermission();
+    // Recorded even if the claim stops below, so a later resume can compare.
+    _lastKnownPermission = permission;
     if (permission != PushPermissionResult.granted) {
       return;
     }

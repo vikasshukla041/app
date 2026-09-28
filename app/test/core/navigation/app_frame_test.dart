@@ -4,6 +4,7 @@ import 'package:activotrade_app/core/auth/app_auth_cubit.dart';
 import 'package:activotrade_app/core/auth/app_auth_state.dart';
 import 'package:activotrade_app/core/auth/domain/user.dart';
 import 'package:activotrade_app/core/design_system/theme.dart';
+import 'package:activotrade_app/core/design_system/widgets/brand_header.dart';
 import 'package:activotrade_app/core/design_system/widgets/page_header.dart';
 import 'package:activotrade_app/core/navigation/app_frame.dart';
 import 'package:activotrade_app/core/navigation/app_section.dart';
@@ -121,12 +122,15 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  Finder sideMenuRow(String label) =>
+      find.descendant(of: find.byType(SideMenu), matching: find.text(label));
+
   group('which navigation shows', () {
     testWidgets('a phone gets the bottom bar', (WidgetTester tester) async {
       await pumpFrame(tester, _phone);
 
       expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.byType(NavigationRail), findsNothing);
+      expect(find.byType(SideMenu), findsNothing);
     });
 
     testWidgets('a small tablet already gets the side menu', (
@@ -134,8 +138,10 @@ void main() {
     ) async {
       await pumpFrame(tester, _smallTablet);
 
-      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.byType(SideMenu), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
+      // The menu really drew its rows, not just an empty shell of itself.
+      expect(sideMenuRow('Holdings'), findsOneWidget);
     });
 
     testWidgets('a large tablet gets the side menu too', (
@@ -143,8 +149,31 @@ void main() {
     ) async {
       await pumpFrame(tester, _largeTablet);
 
-      expect(find.byType(NavigationRail), findsOneWidget);
+      expect(find.byType(SideMenu), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
+      expect(sideMenuRow('Holdings'), findsOneWidget);
+    });
+
+    testWidgets('the side menu carries the brand mark', (
+      WidgetTester tester,
+    ) async {
+      await pumpFrame(tester, _smallTablet);
+
+      expect(
+        find.descendant(
+          of: find.byType(SideMenu),
+          matching: find.byType(BrandHeader),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a phone shows no brand mark — there is no menu to head', (
+      WidgetTester tester,
+    ) async {
+      await pumpFrame(tester, _phone);
+
+      expect(find.byType(BrandHeader), findsNothing);
     });
 
     // Wide enough for the menu, too short for six labels without scrolling.
@@ -183,6 +212,40 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(screen(AppSection.orders), findsOneWidget);
+    });
+
+    testWidgets('a screen reader can open a side menu entry', (
+      WidgetTester tester,
+    ) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await pumpFrame(tester, _smallTablet);
+
+      // The regression: hiding the row's children hid its tap action as well.
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Orders')),
+        isSemantics(label: 'Orders', isButton: true, hasTapAction: true),
+      );
+
+      tester.semantics.tap(find.semantics.byLabel('Orders'));
+      await tester.pumpAndSettle();
+
+      expect(screen(AppSection.orders), findsOneWidget);
+      semantics.dispose();
+    });
+
+    testWidgets('a screen reader can reach the header on a phone', (
+      WidgetTester tester,
+    ) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await pumpFrame(tester, _phone);
+
+      // The page's route once hid everything drawn before it, header included.
+      expect(
+        find.bySemanticsLabel('Welcome back, Alex Romero'),
+        findsOneWidget,
+      );
+      expect(find.bySemanticsLabel(RegExp('Account menu')), findsOneWidget);
+      semantics.dispose();
     });
 
     testWidgets('the header title follows the open screen', (
@@ -375,6 +438,36 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(authCubit.signedOut, isTrue);
+    });
+
+    testWidgets('opens clear of the avatar on a phone', (
+      WidgetTester tester,
+    ) async {
+      await pumpFrame(tester, _phone);
+      final double avatarBottom = tester
+          .getBottomLeft(find.byType(CircleAvatar))
+          .dy;
+
+      await openProfileMenu(tester);
+
+      // Covering the avatar and the bell beside it was the original bug.
+      expect(
+        tester.getTopLeft(find.text('Sign out')).dy,
+        greaterThanOrEqualTo(avatarBottom),
+      );
+    });
+
+    testWidgets('stays on screen from the foot of the side menu', (
+      WidgetTester tester,
+    ) async {
+      await pumpFrame(tester, _smallTablet);
+      await openProfileMenu(tester);
+
+      // The avatar sits at the bottom, so the menu has to rise to fit.
+      expect(
+        tester.getBottomLeft(find.text('Sign out')).dy,
+        lessThanOrEqualTo(tester.view.physicalSize.height),
+      );
     });
 
     testWidgets('sits in the page header on a phone', (

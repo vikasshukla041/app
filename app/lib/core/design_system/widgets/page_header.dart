@@ -29,9 +29,11 @@ class PageHeader extends StatelessWidget {
     final Widget? leading = this.leading;
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: ScreenSize.of(context).pageGap,
-        vertical: AppSpacing.md,
+      padding: EdgeInsets.fromLTRB(
+        ScreenSize.of(context).pageGap,
+        AppSpacing.xl,
+        ScreenSize.of(context).pageGap,
+        AppSpacing.md,
       ),
       child: Row(
         children: <Widget>[

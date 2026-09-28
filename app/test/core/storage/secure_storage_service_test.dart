@@ -35,7 +35,10 @@ void main() {
   group('saveUser', () {
     test('encodes the user so callers never do it themselves', () async {
       when(
-        () => storage.write(key: any(named: 'key'), value: any(named: 'value')),
+        () => storage.write(
+          key: any(named: 'key'),
+          value: any(named: 'value'),
+        ),
       ).thenAnswer((_) async {});
 
       await service.saveUser(user);

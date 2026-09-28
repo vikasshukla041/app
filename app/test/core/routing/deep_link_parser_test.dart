@@ -102,12 +102,15 @@ void main() {
       );
     });
 
-    test('a route already carrying its id, since only the bare path is listed', () {
-      expect(
-        DeepLinkParser.parse(<String, String>{'route': '/alerts/987'}),
-        isNull,
-      );
-    });
+    test(
+      'a route already carrying its id, since only the bare path is listed',
+      () {
+        expect(
+          DeepLinkParser.parse(<String, String>{'route': '/alerts/987'}),
+          isNull,
+        );
+      },
+    );
 
     test('an empty payload', () {
       expect(DeepLinkParser.parse(const <String, String>{}), isNull);
@@ -138,7 +141,10 @@ void main() {
     // /alerts is declared /alerts/:id, so the bare path matches no route.
     // Returning it would strand the tap on the not-found screen.
     test('no id key at all', () {
-      expect(DeepLinkParser.parse(<String, String>{'route': '/alerts'}), isNull);
+      expect(
+        DeepLinkParser.parse(<String, String>{'route': '/alerts'}),
+        isNull,
+      );
     });
 
     test('an empty id', () {
