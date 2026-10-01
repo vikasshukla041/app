@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import '../../../../core/constants/api_constant.dart';
 import '../../../../core/network/api_service.dart';
 import '../../domain/dashboard_failure.dart';
+import '../../domain/performance_range.dart';
+import '../../models/performance_history.dart';
 import '../../models/portfolio_summary.dart';
 
 /// The dashboard feature's only network entry point.
@@ -30,6 +32,29 @@ class DashboardService {
           return summary;
         }
       }
+      throw const DashboardException(DashboardFailureReason.malformed);
+    } on DioException catch (e) {
+      throw DashboardException(_reasonFor(e));
+    }
+  }
+
+  Future<PerformanceHistory> performance(PerformanceRange range) async {
+    try {
+      // The range codes are fixed words like 1D, so they need no escaping.
+      final Response<dynamic> response = await _apiService.get(
+        '${ApiConstants.performance}?range=${range.code}',
+      );
+
+      final dynamic data = response.data;
+      if (data is Map<String, dynamic>) {
+        final PerformanceHistory? history = PerformanceHistory.fromJson(
+          data['data'],
+        );
+        if (history != null) {
+          return history;
+        }
+      }
+
       throw const DashboardException(DashboardFailureReason.malformed);
     } on DioException catch (e) {
       throw DashboardException(_reasonFor(e));

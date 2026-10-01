@@ -5,9 +5,8 @@ import '../../../core/design_system/tokens/app_typography.dart';
 import '../../../core/design_system/widgets/app_tone.dart';
 import '../../../core/design_system/widgets/status_dot.dart';
 
-/// One figure with its live state: available cash, unsettled, collateral.
+/// display value with current value
 class StatCard extends StatelessWidget {
-  /// The figure arrives already formatted, as everywhere else money is shown.
   const StatCard({
     super.key,
     required this.label,
@@ -36,7 +35,7 @@ class StatCard extends StatelessWidget {
         : style;
   }
 
-  /// Uses the same font, padding and margin as the real card, for an accurate measurement.
+  /// return minimum width needed for value
   double minimumWidth(BuildContext context) {
     final TextPainter painter = TextPainter(
       text: TextSpan(text: value, style: _valueStyle(context)),
@@ -61,7 +60,6 @@ class StatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            // maxLines is spelled out so a test can tell a clipped label from a whole one.
             Text(
               label,
               maxLines: 1,

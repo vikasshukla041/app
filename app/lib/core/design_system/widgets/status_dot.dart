@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import '../tokens/app_spacing.dart';
 import 'app_tone.dart';
 
-/// A coloured dot with a short explanation, for the live state of a figure.
+/// coloured dot with a short explanation, for the live state of a figure.
 class StatusDot extends StatelessWidget {
   const StatusDot({super.key, required this.label, required this.tone});
 
   final String label;
   final AppTone tone;
 
-  // Kept small: it's a marker, not a button.
   static const double _diameter = 6;
 
   @override

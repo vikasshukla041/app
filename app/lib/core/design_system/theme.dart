@@ -1,4 +1,4 @@
-// The single source of truth for the app's look; every value comes from tokens/.
+// The single source of truth for app's look
 import 'package:flutter/material.dart';
 
 import 'tokens/app_colors.dart';
@@ -9,7 +9,6 @@ import 'tokens/app_typography.dart';
 class ActivoTradeTheme {
   ActivoTradeTheme._();
 
-  /// Taller than Material's default, so buttons are easy to tap.
   static const double _minButtonHeight = 50;
 
   static ThemeData get lightTheme => _build(_lightScheme);
@@ -26,17 +25,14 @@ class ActivoTradeTheme {
       inputDecorationTheme: const InputDecorationTheme(
         border: OutlineInputBorder(),
       ),
-      // elevation: 0 gives a thin border instead of a heavy shadow.
       cardTheme: CardThemeData(
         elevation: 0,
-        // Gaps come from AppSpacing, so Material's own 4px margin only blurs them.
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
           side: BorderSide(color: colors.outlineVariant),
         ),
       ),
-      // Hairline. Material's default 16 would push list rows apart.
       dividerTheme: const DividerThemeData(space: 1, thickness: 1),
       listTileTheme: ListTileThemeData(
         titleTextStyle: AppTypography.listTileTitle.copyWith(
@@ -60,7 +56,6 @@ class ActivoTradeTheme {
           minimumSize: const Size(0, _minButtonHeight),
         ),
       ),
-      // Was the only button type without a theme, so it ignored the height.
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(0, _minButtonHeight),
@@ -85,7 +80,7 @@ class ActivoTradeTheme {
     );
   }
 
-  // Colors are set by hand here; fromSeed can't produce this exact palette.
+  /// color set manually here
   static const ColorScheme _lightScheme = ColorScheme(
     brightness: Brightness.light,
     primary: AppColors.brand,
@@ -109,7 +104,7 @@ class ActivoTradeTheme {
     onSurfaceVariant: AppColors.slate500,
     outline: AppColors.slate300,
     outlineVariant: AppColors.slate200,
-    // Cards live one step above the page, so they are white while the page is not.
+    // Card color above the page
     surfaceContainerLowest: AppColors.white,
     surfaceContainerLow: AppColors.white,
     surfaceContainer: AppColors.slate50,
@@ -169,7 +164,6 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
   final Color warningContainer;
   final Color onWarningContainer;
 
-  /// The warning colour on its own, for a dot or a stroke with no container.
   final Color warning;
 
   final Color successContainer;
@@ -191,7 +185,6 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     warningContainer: AppColors.amber900,
     onWarningContainer: AppColors.amber100,
     warning: AppColors.amber400,
-    // Swapped, not reused: light values would look pale on a dark surface.
     successContainer: AppColors.emerald900,
     onSuccessContainer: AppColors.emerald50,
     positive: AppColors.emerald400,
@@ -221,7 +214,7 @@ class AppSemanticColors extends ThemeExtension<AppSemanticColors> {
     if (other == null) {
       return this;
     }
-    // Each ?? keeps the colour we already show if a blend ever comes back empty.
+
     return AppSemanticColors(
       warningContainer:
           Color.lerp(warningContainer, other.warningContainer, t) ??
@@ -248,7 +241,7 @@ class AppCategoryColors extends ThemeExtension<AppCategoryColors> {
 
   final List<Color> accents;
 
-  // These colors all stay clearly visible on a light background.
+  /// color for light background
   static const AppCategoryColors light = AppCategoryColors(
     accents: <Color>[
       AppColors.blue600,
@@ -259,7 +252,7 @@ class AppCategoryColors extends ThemeExtension<AppCategoryColors> {
     ],
   );
 
-  // Lighter shades so these colors stay visible on a dark background.
+  /// color for dark background
   static const AppCategoryColors dark = AppCategoryColors(
     accents: <Color>[
       AppColors.blue400,
@@ -282,7 +275,6 @@ class AppCategoryColors extends ThemeExtension<AppCategoryColors> {
     }
     return AppCategoryColors(
       accents: <Color>[
-        // Falls back to the accent already on screen if a blend comes back empty.
         for (int i = 0; i < accents.length; i++)
           Color.lerp(accents[i], other.accents[i], t) ?? accents[i],
       ],

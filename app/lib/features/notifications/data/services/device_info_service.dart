@@ -9,9 +9,9 @@ class DeviceInfoService {
 
   Future<String> deviceName() async {
     try {
-      // Use defaultTargetPlatform since dart:io does not exist on web.
+      // Use defaultTargetPlatform since dart:io does not exist on web
       if (kIsWeb) {
-        // A browser has no device model, so use the browser and OS name instead.
+        // a browser has no device model so use the browser and OS name
         final WebBrowserInfo info = await _plugin.webBrowserInfo;
         final String browser = info.browserName.name;
         final String os = info.platform ?? '';

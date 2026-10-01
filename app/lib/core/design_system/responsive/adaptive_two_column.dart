@@ -4,7 +4,7 @@ import '../tokens/app_spacing.dart';
 import '../widgets/spaced_flow.dart';
 import 'app_breakpoints.dart';
 
-/// Stacks cards on a narrow screen, side by side on a wide one.
+/// stack card on small screen n side by side on large
 class AdaptiveTwoColumn extends StatelessWidget {
   const AdaptiveTwoColumn({
     super.key,
@@ -12,22 +12,18 @@ class AdaptiveTwoColumn extends StatelessWidget {
     required this.secondary,
   });
 
-  /// The main content — gets the wider column.
+  /// wider column screen.
   final List<Widget> primary;
 
-  /// Extra cards — sit below [primary] until there is room beside it.
+  /// extra card stay below
   final List<Widget> secondary;
 
-  // Primary gets 7 parts, secondary gets 5, so primary is wider.
   static const int _primaryFlex = 7;
   static const int _secondaryFlex = 5;
-
-  /// Space between cards and between the two columns.
   static const double _gap = AppSpacing.xl2;
 
   @override
   Widget build(BuildContext context) {
-    // Measures its own width, since the side menu takes part of the window.
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         if (constraints.maxWidth < AppBreakpoints.twoColumnBody) {

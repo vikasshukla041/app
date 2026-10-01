@@ -1,4 +1,3 @@
-/// Corner radii already on screen, named; [xs] is used once, on the logo tile.
 abstract final class AppRadius {
   static const double xs = 10;
   static const double sm = 12;

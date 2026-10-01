@@ -34,7 +34,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signInButton => 'Iniciar sesión';
 
   @override
-  String get signInButtonSemantics => 'Botón de inicio de sesión';
+  String get signInButtonSemantics => 'Botón para iniciar sesión';
 
   @override
   String get useBiometrics => 'Usar biometría';
@@ -50,24 +50,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorNetwork =>
-      'No se pudo conectar con el servidor.\nPor favor, verifica tu conexión de red.';
+      'No se pudo conectar al servidor.\nPor favor, verifica tu conexión a Internet.';
 
   @override
   String get errorCredentials => 'Nombre de usuario o contraseña incorrectos.';
 
   @override
   String get errorTooManyAttempts =>
-      'Demasiados intentos de inicio de sesión. Inténtalo más tarde.';
+      'Demasiados intentos de inicio de sesión. Inténtalo de nuevo más tarde.';
 
   @override
   String get errorServerUnavailable =>
-      'El servidor no está disponible en este momento. Inténtalo más tarde.';
+      'El servidor no está disponible en este momento. Inténtalo de nuevo más tarde.';
 
   @override
-  String get errorGeneric => 'Algo salió mal. Inténtalo más tarde.';
+  String get errorGeneric => 'Algo salió mal. Inténtalo de nuevo más tarde.';
 
   @override
-  String get biometricOptIn => 'Activar inicio de sesión biométrico';
+  String get biometricOptIn => 'Habilitar inicio de sesión biométrico';
 
   @override
   String get biometricPromptReason =>
@@ -88,22 +88,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signOutTooltip => 'Cerrar sesión';
 
   @override
-  String get navConsole => 'Consola';
+  String get navConsole => 'Panel';
 
   @override
-  String get navHoldings => 'Participaciones';
+  String get navHoldings => 'Posiciones';
 
   @override
   String get navOrders => 'Órdenes';
 
   @override
-  String get navEducation => 'Formación';
+  String get navEducation => 'Educación';
 
   @override
-  String get navTaxFiscal => 'Fiscalidad';
+  String get navTaxFiscal => 'Impuestos y Fiscalidad';
 
   @override
-  String get navSettings => 'Ajustes';
+  String get navSettings => 'Configuración';
 
   @override
   String get profileMenuTooltip => 'Cuenta';
@@ -112,21 +112,21 @@ class AppLocalizationsEs extends AppLocalizations {
   String get profileMenuSemantics => 'Botón del menú de cuenta';
 
   @override
-  String get comingSoonBody => 'Esta pantalla todavía está en construcción.';
+  String get comingSoonBody => 'Esta pantalla aún está en desarrollo';
 
   @override
   String get biometricOptInDialogTitle =>
-      '¿Activar inicio de sesión biométrico?';
+      '¿Habilitar inicio de sesión biométrico?';
 
   @override
   String get biometricOptInDialogBody =>
-      '¿Te gustaría activar Face ID / Touch ID para iniciar sesión más rápido en tu próxima visita?';
+      '¿Te gustaría habilitar Face ID / Touch ID para iniciar sesión más rápido en tu próxima visita?';
 
   @override
   String get biometricOptInDialogSkip => 'Omitir por ahora';
 
   @override
-  String get biometricOptInDialogEnable => 'Activar biometría';
+  String get biometricOptInDialogEnable => 'Habilitar biometría';
 
   @override
   String get portfolioTotalValueLabel => 'Valor total de la cartera';
@@ -142,14 +142,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get quickLinkHoldingsSubtitle =>
-      'Ver asignación de activos y desglose de la cartera';
+      'Ver la asignación actual de activos y el desglose de la cartera';
 
   @override
   String get quickLinkPositionsTitle => 'Posiciones';
 
   @override
   String get quickLinkPositionsSubtitle =>
-      'Posiciones abiertas y acciones en tiempo real';
+      'Posiciones bursátiles en tiempo real y posiciones abiertas';
 
   @override
   String get quickLinkOrdersTitle => 'Órdenes';
@@ -180,14 +180,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get netWorthReturnCaption =>
-      'Rentabilidad realizada y no realizada a 1 año';
+      'Rentabilidad realizada y no realizada de 1 año';
 
   @override
-  String get performanceChartPending =>
-      'El gráfico de rentabilidad está en camino';
-
-  @override
-  String get fundsBreakdownTitle => 'Desglose de fondos y margen';
+  String get fundsBreakdownTitle => 'Desglose de fondos y márgenes';
 
   @override
   String get fundsBreakdownSettlement => 'Liquidación: T+1';
@@ -199,16 +195,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get fundsAvailableCashStatus => 'Listo para operar';
 
   @override
-  String get fundsUnsettledLabel => 'Sin liquidar';
+  String get fundsUnsettledLabel => 'Fondos pendientes de liquidación';
 
   @override
-  String get fundsUnsettledStatus => 'Compensando T+1';
+  String get fundsUnsettledStatus => 'Liquidación T+1';
 
   @override
   String get fundsCollateralLabel => 'Garantía';
 
   @override
-  String get fundsCollateralStatus => 'Capital pignorado';
+  String get fundsCollateralStatus => 'Acciones pignoradas';
 
   @override
   String quickLinkSelectedMessage(String title) {
@@ -231,17 +227,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get notificationBellTooltip => 'Notificaciones';
 
   @override
-  String get notificationBellSemantics => 'Botón para activar notificaciones';
+  String get notificationBellSemantics => 'Botón para habilitar notificaciones';
 
   @override
-  String get notificationDialogTitle => '¿Activar notificaciones push?';
+  String get notificationDialogTitle => '¿Habilitar notificaciones push?';
 
   @override
   String get notificationDialogBody =>
-      'Recibe alertas instantáneas sobre movimientos del mercado, ejecuciones de órdenes y avisos de seguridad de la cuenta.';
+      'Recibe alertas instantáneas sobre movimientos del mercado, ejecución de órdenes y avisos de seguridad de la cuenta.';
 
   @override
-  String get notificationDialogEnable => 'Activar notificaciones';
+  String get notificationDialogEnable => 'Habilitar notificaciones';
 
   @override
   String get notificationDialogSkip => 'Ahora no';
@@ -252,22 +248,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notificationDeniedMessage =>
-      'Las notificaciones siguen desactivadas. Puedes activarlas cuando quieras desde la campana.';
+      'Las notificaciones permanecerán desactivadas. Puedes activarlas en cualquier momento desde el icono de la campana.';
 
   @override
   String get notificationBlockedMessage =>
-      'Las notificaciones están bloqueadas en los ajustes del dispositivo.';
+      'Las notificaciones están bloqueadas en la configuración de tu dispositivo.';
 
   @override
   String get notificationBlockedWebMessage =>
-      'Las notificaciones están bloqueadas en el navegador. Usa el icono del candado en la barra de direcciones para permitirlas.';
+      'Las notificaciones están bloqueadas en tu navegador. Utiliza el icono del candado en la barra de direcciones para permitirlas.';
 
   @override
-  String get notificationOpenSettings => 'Abrir ajustes';
+  String get notificationOpenSettings => 'Abrir configuración';
 
   @override
   String get errorNotificationSettingsUnavailable =>
-      'Este dispositivo no puede abrir los ajustes de notificaciones. Actívalas manualmente para esta aplicación.';
+      'Este dispositivo no puede abrir la configuración de notificaciones. Activa las notificaciones manualmente para esta aplicación.';
 
   @override
   String get errorNotificationUnavailable =>
@@ -275,7 +271,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errorNotificationNoToken =>
-      'No se pudo obtener un token de notificación de este dispositivo.';
+      'No se pudo obtener un token de notificación para este dispositivo.';
 
   @override
   String get errorNotificationRegistrationFailed =>
@@ -294,4 +290,60 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get backSemantics => 'Atrás';
+
+  @override
+  String get performanceChartUnavailable =>
+      'El gráfico no se puede mostrar en este dispositivo.';
+
+  @override
+  String get performanceChartLoadError =>
+      'No se pudo cargar tu gráfico de rendimiento.';
+
+  @override
+  String performanceChartSemantics(String start, String end) {
+    return 'Valor de la cartera de $start a $end';
+  }
+
+  @override
+  String get performanceRangeOneDay => '1D';
+
+  @override
+  String get performanceRangeOneWeek => '1S';
+
+  @override
+  String get performanceRangeOneMonth => '1M';
+
+  @override
+  String get performanceRangeOneYear => '1A';
+
+  @override
+  String get performanceRangeOneDayLabel => '1 día';
+
+  @override
+  String get performanceRangeOneWeekLabel => '1 semana';
+
+  @override
+  String get performanceRangeOneMonthLabel => '1 mes';
+
+  @override
+  String get performanceRangeOneYearLabel => '1 año';
+
+  @override
+  String get performanceChangeCaptionOneDay => 'Cambio de hoy';
+
+  @override
+  String get performanceChangeCaptionOneWeek => 'Cambio en la última semana';
+
+  @override
+  String get performanceChangeCaptionOneMonth => 'Cambio en el último mes';
+
+  @override
+  String performanceHigh(String amount) {
+    return 'Máximo: $amount';
+  }
+
+  @override
+  String performanceChangeCaptionOnDate(String date) {
+    return 'Cambio del $date';
+  }
 }

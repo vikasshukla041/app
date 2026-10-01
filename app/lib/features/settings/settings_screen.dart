@@ -4,7 +4,6 @@ import '../../core/design_system/widgets/coming_soon.dart';
 import '../../core/navigation/app_section.dart';
 import '../../l10n/app_localizations.dart';
 
-/// A placeholder until the settings design is built. Already linked from the app frame.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 

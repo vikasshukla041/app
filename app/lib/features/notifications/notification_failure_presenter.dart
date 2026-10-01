@@ -4,10 +4,7 @@ import '../../core/design_system/widgets/app_snack_bar.dart';
 import '../../l10n/app_localizations.dart';
 import 'notification_state.dart';
 
-/// Maps [NotificationFailureReason] to localized text and snackbar severity.
-///
-/// A Cubit has no BuildContext, so it emits a reason and the UI localizes it —
-/// the same split as AuthFailurePresenter.
+/// map notification failures to localized msg in snackBar
 extension NotificationFailurePresenter on NotificationFailureReason {
   String message(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
@@ -25,12 +22,11 @@ extension NotificationFailurePresenter on NotificationFailureReason {
     };
   }
 
-  /// Retryable problems are warnings; a platform that cannot do push at all
-  /// is an error, because retrying changes nothing.
+  /// warning can retried
   AppSnackBarSeverity get severity => switch (this) {
     NotificationFailureReason.network ||
     NotificationFailureReason.registrationFailed => AppSnackBarSeverity.warning,
-    // A warning too: the user still has a way out, it is just manual.
+
     NotificationFailureReason.settingsUnavailable =>
       AppSnackBarSeverity.warning,
     NotificationFailureReason.unavailable ||
@@ -38,6 +34,7 @@ extension NotificationFailurePresenter on NotificationFailureReason {
     NotificationFailureReason.generic => AppSnackBarSeverity.error,
   };
 
+  /// show failure msg
   void show(BuildContext context) =>
       AppSnackBar.show(context, message(context), severity);
 }

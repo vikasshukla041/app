@@ -12,14 +12,14 @@ import 'widgets/bottom_tabs.dart';
 import 'widgets/profile_menu.dart';
 import 'widgets/side_menu.dart';
 
-/// Wraps every signed-in screen with a title row and navigation.
+/// after signin screen with title row and navigation
 class AppFrame extends StatelessWidget {
   const AppFrame({super.key, required this.shell, required this.actions});
 
-  /// The router's handle on each branch. Its index matches an [AppSection].
+  /// go_router handle on branches. index AppSection
   final StatefulNavigationShell shell;
 
-  /// Extra header buttons a feature wants shown, such as the bell.
+  /// app bar button
   final List<Widget> actions;
 
   @override
@@ -29,22 +29,21 @@ class AppFrame extends StatelessWidget {
     final AppSection current = AppSection.values[shell.currentIndex];
     final AppAuthState session = context.watch<AppAuthCubit>().state;
 
-    // On a phone, extras open as a sub-page with a back button.
+    /// phone extra opens
     final bool onSubPage = !sidebar && AppSection.extras.contains(current);
 
     void open(AppSection section) {
-      // Tapping the tab you are already on takes you back to its first page.
+      // tapping same tab back to first page
       shell.goBranch(section.index, initialLocation: section == current);
     }
 
-    // Fenced in, or the page's route hides the header and menu from screen readers.
     final Widget page = Semantics(container: true, child: shell);
 
-    // Android back button must act like the arrow, or it exits the app.
+    // back button
     final Widget phoneBody = onSubPage
         ? BackButtonListener(
             onBackButtonPressed: () async {
-              // Let the router close an open menu, dialog, or deeper page first.
+              // let router close open menu, dialog or deeper page first
               if (context.canPop()) return false;
               open(AppSection.console);
               return true;
@@ -53,11 +52,9 @@ class AppFrame extends StatelessWidget {
           )
         : page;
 
-    // Side menu already shows extras, so only phones need them here.
     final Widget profileMenu = ProfileMenu(
       extras: sidebar ? const <AppSection>[] : AppSection.extras,
       onSectionSelected: open,
-      // At the foot of the side menu there is no room below the avatar.
       overlapAvatar: sidebar,
     );
 
@@ -66,12 +63,11 @@ class AppFrame extends StatelessWidget {
       leading: onSubPage
           ? _BackToConsole(onPressed: () => open(AppSection.console))
           : null,
-      // On a sidebar layout the profile sits at the bottom of the side menu.
+      // on sidebar layouty, profile on left bottom
       actions: <Widget>[...actions, if (!sidebar) profileMenu],
     );
 
     return Scaffold(
-      // No app bar, so the frame clears the status bar and notch itself.
       body: SafeArea(
         child: sidebar
             ? Row(
@@ -105,7 +101,7 @@ class AppFrame extends StatelessWidget {
     );
   }
 
-  /// The console greets the user by name; every other section uses its label.
+  /// console greeting user by name
   String _title(
     AppSection current,
     AppAuthState session,

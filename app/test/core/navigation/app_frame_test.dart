@@ -233,6 +233,22 @@ void main() {
       semantics.dispose();
     });
 
+    testWidgets('a screen reader hears the open section once, not twice', (
+      WidgetTester tester,
+    ) async {
+      final SemanticsHandle semantics = tester.ensureSemantics();
+      await pumpFrame(tester, _smallTablet);
+
+      // The small label under the logo repeats what the selected row says.
+      expect(find.text('CONSOLE'), findsOneWidget);
+      expect(find.bySemanticsLabel('CONSOLE'), findsNothing);
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Console')),
+        isSemantics(label: 'Console', isSelected: true),
+      );
+      semantics.dispose();
+    });
+
     testWidgets('a screen reader can reach the header on a phone', (
       WidgetTester tester,
     ) async {

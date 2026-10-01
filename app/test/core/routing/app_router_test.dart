@@ -2,16 +2,21 @@ import 'package:activotrade_app/core/auth/app_auth_cubit.dart';
 import 'package:activotrade_app/core/auth/app_auth_state.dart';
 import 'package:activotrade_app/core/auth/domain/user.dart';
 import 'package:activotrade_app/core/design_system/theme.dart';
+import 'package:activotrade_app/core/di/service_locator.dart';
 import 'package:activotrade_app/core/routing/app_router.dart';
 import 'package:activotrade_app/core/routing/deep_link_controller.dart';
 import 'package:activotrade_app/core/storage/secure_storage_service.dart';
-import 'package:activotrade_app/features/alerts/alert_detail_screen.dart';
+import 'package:activotrade_app/features/alerts/alert_details_screen.dart';
 import 'package:activotrade_app/features/auth/auth_cubit.dart';
 import 'package:activotrade_app/features/auth/auth_screen.dart';
 import 'package:activotrade_app/features/auth/biometric_onboarding_screen.dart';
 import 'package:activotrade_app/features/auth/data/services/biometric_service.dart';
 import 'package:activotrade_app/features/auth/locked_screen.dart';
 import 'package:activotrade_app/features/dashboard/dashboard_screen.dart';
+import 'package:activotrade_app/features/dashboard/data/services/dashboard_service.dart';
+import 'package:activotrade_app/features/dashboard/domain/dashboard_failure.dart';
+import 'package:activotrade_app/features/dashboard/domain/performance_range.dart';
+import 'package:activotrade_app/features/dashboard/performance_cubit.dart';
 import 'package:activotrade_app/features/splash/splash_screen.dart';
 import 'package:activotrade_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +28,8 @@ class MockSecureStorageService extends Mock implements SecureStorageService {}
 
 class MockBiometricService extends Mock implements BiometricService {}
 
+class MockDashboardService extends Mock implements DashboardService {}
+
 /// Sets AppAuthCubit's state directly so tests skip storage and network.
 class _FakeAppAuthCubit extends AppAuthCubit {
   _FakeAppAuthCubit(SecureStorageService storage)
@@ -32,6 +39,8 @@ class _FakeAppAuthCubit extends AppAuthCubit {
 }
 
 void main() {
+  setUpAll(() => registerFallbackValue(PerformanceRange.oneYear));
+
   const User user = User(id: '1', username: 'demo', fullname: 'Demo User');
 
   late MockSecureStorageService storage;
@@ -48,6 +57,15 @@ void main() {
       () => biometrics.authenticate(reason: any(named: 'reason')),
     ).thenAnswer((_) async => BiometricResult.cancelled);
 
+    // DashboardScreen asks getIt for its chart Cubit; these tests only need it to exist.
+    final MockDashboardService dashboardService = MockDashboardService();
+    when(
+      () => dashboardService.performance(any()),
+    ).thenThrow(const DashboardException(DashboardFailureReason.network));
+    getIt.registerFactory<PerformanceCubit>(
+      () => PerformanceCubit(dashboardService: dashboardService),
+    );
+
     authCubit = _FakeAppAuthCubit(storage);
     deepLinks = DeepLinkController();
     router = AppRouter(authCubit: authCubit, deepLinks: deepLinks);
@@ -57,6 +75,7 @@ void main() {
     router.dispose();
     deepLinks.dispose();
     await authCubit.close();
+    await getIt.reset();
   });
 
   /// Mounts the router with AuthCubit provided, since some screens read it.
@@ -274,13 +293,13 @@ void main() {
       deepLinks.push('/alerts/alert_987?title=Order+filled');
       await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDetailScreen), findsOneWidget);
+      expect(find.byType(AlertDetailsScreen), findsOneWidget);
       expect(find.byType(DashboardScreen), findsNothing);
 
       // The id comes from the path, the title from the query — the split
       // DeepLinkParser produces.
-      final AlertDetailScreen screen = tester.widget<AlertDetailScreen>(
-        find.byType(AlertDetailScreen),
+      final AlertDetailsScreen screen = tester.widget<AlertDetailsScreen>(
+        find.byType(AlertDetailsScreen),
       );
       expect(screen.alertId, 'alert_987');
       expect(screen.title, 'Order filled');
@@ -297,14 +316,14 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(AuthScreen), findsOneWidget);
-      expect(find.byType(AlertDetailScreen), findsNothing);
+      expect(find.byType(AlertDetailsScreen), findsNothing);
       expect(deepLinks.hasPending, isFalse);
 
       // A signed-out device still gets push, so a held link would leak.
       authCubit.setState(const AppAuthenticated(user));
       await tester.pumpAndSettle();
 
-      expect(find.byType(AlertDetailScreen), findsNothing);
+      expect(find.byType(AlertDetailsScreen), findsNothing);
       expect(find.byType(DashboardScreen), findsOneWidget);
     });
   });

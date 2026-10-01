@@ -8,7 +8,7 @@ import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../core/design_system/widgets/app_snack_bar.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// A card with links to Holdings, Positions, Orders, Reports, and the P&L statement.
+/// The account menu: holdings, positions, orders, reports and the P&L statement.
 class QuickLinksCard extends StatelessWidget {
   const QuickLinksCard({super.key});
 
@@ -85,7 +85,7 @@ class QuickLinksCard extends StatelessWidget {
                   label: item.title,
                   hint: item.subtitle,
                   button: true,
-                  // No contentPadding: listTileTheme supplies it.
+                  // No contentPadding or text styles: listTileTheme supplies them.
                   child: ListTile(
                     leading: Container(
                       padding: const EdgeInsets.all(AppSpacing.sm),

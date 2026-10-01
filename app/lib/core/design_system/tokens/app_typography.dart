@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Font sizes and weights used across the app. No font family yet — that comes later.
+/// font size and weight
 abstract final class AppTypography {
   /// List rows emphasize their title without changing ordinary body text.
   static TextStyle get listTileTitle =>
       textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w600);
 
-  /// Only the roles the design defines; anything else keeps Material's default.
+  ///  roles design defines
   static const TextTheme textTheme = TextTheme(
     headlineMedium: TextStyle(
       fontSize: 24,
@@ -64,16 +64,15 @@ class AppFigureText extends ThemeExtension<AppFigureText> {
     required this.small,
   });
 
-  /// The one figure a screen is built around, such as a total.
+  /// total amount
   final TextStyle large;
 
-  /// A single row's own amount.
+  /// single own amount
   final TextStyle medium;
 
-  /// Account numbers, timestamps, and anything else secondary.
+  /// Account numbers, timestamps, and anything else secondary
   final TextStyle small;
 
-  // No font family yet either; these three get one once it's added to the app.
   static const AppFigureText standard = AppFigureText(
     large: TextStyle(
       fontSize: 32,
@@ -111,7 +110,7 @@ class AppFigureText extends ThemeExtension<AppFigureText> {
     if (other == null) {
       return this;
     }
-    // Each ?? keeps the style we already show if a blend ever comes back empty.
+
     return AppFigureText(
       large: TextStyle.lerp(large, other.large, t) ?? large,
       medium: TextStyle.lerp(medium, other.medium, t) ?? medium,

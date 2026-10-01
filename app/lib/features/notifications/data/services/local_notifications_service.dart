@@ -4,14 +4,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-/// Draw a notification while the app is in the foreground
+/// Draws a notification while the app is in the foreground.
 class LocalNotificationsService {
   LocalNotificationsService({FlutterLocalNotificationsPlugin? plugin})
     : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
   final FlutterLocalNotificationsPlugin _plugin;
 
-  /// Android 8+ refuses a heads-up banner unless channel registered important.
+  /// Android 8+ refuses a heads-up banner unless the channel is important.
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'activotrade_alerts',
     'ActivoTrade Alerts',
@@ -21,29 +21,26 @@ class LocalNotificationsService {
 
   Future<void>? _initialisation;
 
-  /// Notification ids need to be unique among other
+  /// Notification IDs need to be unique.
   int _nextId = 0;
 
-  /// Stream of taps on banners this class drew; broadcast so no taps get lost.
+  /// Emits payload data whenever one of our local notifications is tapped.
+  ///
+  /// Broadcast because FF owns the subscription and the
+  /// service itself may also be used by tests.
   final StreamController<Map<String, String>> _taps =
       StreamController<Map<String, String>>.broadcast();
 
+  /// Stream of local-notification taps.
   Stream<Map<String, String>> get onTap => _taps.stream;
 
-  /// one initialisation rather than re-registring
+  /// Initializes the plugin once.
   Future<void> init() => _initialisation ??= _initialise();
 
   Future<void> _initialise() async {
-    // flutter_local_notifications_web registers its own
-    // `notifications_service_worker.js`, a file this project does not ship, so
-    // the attempt fails and logs "An unknown error occurred when fetching the
-    // script". Nothing is lost by skipping it: on web a background push is
-    // drawn by firebase-messaging-sw.js, and a foreground one is already
-    // visible in the open tab.
     if (kIsWeb) {
       return;
     }
-
     const InitializationSettings settings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
       iOS: DarwinInitializationSettings(
@@ -65,41 +62,55 @@ class LocalNotificationsService {
         ?.createNotificationChannel(_channel);
   }
 
-  /// The plugin hands back the payload string [show] was given, so the FCM
-  /// data map makes the round trip as JSON.
+  /// Receives a tap from flutter_local_notifications.
+  ///
+  /// The payload was encoded as JSON by [show].
   void _onTap(NotificationResponse response) {
     final String? payload = response.payload;
+
     if (payload == null || payload.isEmpty || _taps.isClosed) {
       return;
     }
 
     try {
       final dynamic decoded = jsonDecode(payload);
+
       if (decoded is! Map) {
         return;
       }
-      _taps.add(<String, String>{
+
+      final Map<String, String> data = <String, String>{
         for (final MapEntry<dynamic, dynamic> entry in decoded.entries)
           if (entry.key is String && entry.value is String)
             entry.key as String: entry.value as String,
-      });
+      };
+
+      if (data.isEmpty) {
+        return;
+      }
+
+      _taps.add(data);
     } on FormatException catch (e) {
-      // Should never happen, but do not let a bad payload crash the app.
+      // Bad notification payload must never crash the application.
       _log('Tap payload was not valid JSON: $e');
+    } catch (e) {
+      _log('Could not process notification tap: $e');
     }
   }
 
+  /// Shows a foreground notification.
+  ///
+  /// [payload] is optional so all existing callers that only provide title
+  /// and body continue to work.
   Future<void> show({
     required String title,
     required String body,
     Map<String, String> payload = const <String, String>{},
   }) async {
-    // See _initialise(): the plugin is never started on web, so calling it
-    // here would only throw into the catch below on every push.
+    //----------
     if (kIsWeb) {
       return;
     }
-
     try {
       await _plugin.show(
         id: _nextId++,
@@ -122,8 +133,10 @@ class LocalNotificationsService {
     }
   }
 
-  /// Only reached in tests — this service lives for the whole process.
-  Future<void> dispose() => _taps.close();
+  /// Only used by tests / application shutdown.
+  Future<void> dispose() async {
+    await _taps.close();
+  }
 
   void _log(String message) {
     if (kDebugMode) {

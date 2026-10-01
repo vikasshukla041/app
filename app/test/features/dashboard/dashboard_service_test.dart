@@ -1,6 +1,8 @@
 import 'package:activotrade_app/core/network/api_service.dart';
 import 'package:activotrade_app/features/dashboard/data/services/dashboard_service.dart';
 import 'package:activotrade_app/features/dashboard/domain/dashboard_failure.dart';
+import 'package:activotrade_app/features/dashboard/domain/performance_range.dart';
+import 'package:activotrade_app/features/dashboard/models/performance_history.dart';
 import 'package:activotrade_app/features/dashboard/models/portfolio_summary.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -94,6 +96,105 @@ void main() {
         ),
       ),
     );
+  });
+
+  group('performance', () {
+    Map<String, dynamic> candle(String time, num close) => <String, dynamic>{
+      'time': time,
+      'open': close,
+      'high': close + 10,
+      'low': close - 10,
+      'close': close,
+    };
+
+    Map<String, dynamic> payload({
+      List<Map<String, dynamic>>? candles,
+      List<Map<String, dynamic>> cashFlows = const <Map<String, dynamic>>[],
+    }) => <String, dynamic>{
+      'data': <String, dynamic>{
+        'currency': 'EUR',
+        'range': '1W',
+        'asOf': '2026-09-28T16:40:00+02:00',
+        'baseline': 139736.34,
+        'candles':
+            candles ??
+            <Map<String, dynamic>>[
+              candle('2026-09-28T16:00:00+02:00', 142850.20),
+              candle('2026-09-22T09:00:00+02:00', 139800),
+            ],
+        'cashFlows': cashFlows,
+      },
+    };
+
+    test('asks for the chosen range', () async {
+      stubGet(responseWith(payload()));
+
+      await service.performance(PerformanceRange.oneWeek);
+
+      verify(() => apiService.get('/api/user/performance?range=1W')).called(1);
+    });
+
+    test('returns candles oldest first, at the market time', () async {
+      stubGet(responseWith(payload()));
+
+      final PerformanceHistory history = await service.performance(
+        PerformanceRange.oneWeek,
+      );
+
+      expect(history.range, PerformanceRange.oneWeek);
+      expect(history.baseline, 139736.34);
+      expect(history.candles.first.time, DateTime.utc(2026, 9, 22, 9));
+      expect(history.candles.last.time, DateTime.utc(2026, 9, 28, 16));
+      expect(history.lastClose, 142850.20);
+    });
+
+    test('rejects the whole history if one candle is bad', () async {
+      stubGet(
+        responseWith(
+          payload(
+            candles: <Map<String, dynamic>>[
+              candle('2026-09-22T09:00:00+02:00', 139800),
+              <String, dynamic>{'time': 'yesterday', 'close': 1},
+            ],
+          ),
+        ),
+      );
+
+      await expectLater(
+        service.performance(PerformanceRange.oneWeek),
+        throwsA(
+          isA<DashboardException>().having(
+            (DashboardException e) => e.reason,
+            'reason',
+            DashboardFailureReason.malformed,
+          ),
+        ),
+      );
+    });
+
+    test('rejects a response with no data instead of crashing', () async {
+      stubGet(responseWith(<String, dynamic>{'data': null}));
+
+      await expectLater(
+        service.performance(PerformanceRange.oneYear),
+        throwsA(isA<DashboardException>()),
+      );
+    });
+
+    test('maps a connection failure to network', () async {
+      stubGetThrows(dioError(DioExceptionType.connectionError));
+
+      await expectLater(
+        service.performance(PerformanceRange.oneDay),
+        throwsA(
+          isA<DashboardException>().having(
+            (DashboardException e) => e.reason,
+            'reason',
+            DashboardFailureReason.network,
+          ),
+        ),
+      );
+    });
   });
 
   test('maps a 401 to unauthorized, not to a generic failure', () async {

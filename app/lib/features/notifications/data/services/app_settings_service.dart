@@ -1,12 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
-/// Opens the OS page where the user can turn notifications back on.
-///
-/// A MethodChannel rather than a package: this is two platform calls, and the
-/// native side is shorter than the dependency it would replace.
+/// opens the OS page where user can turn notification enable
 class AppSettingsService {
-  /// Lets tests inject a channel; production uses the real one.
   AppSettingsService({MethodChannel? channel})
     : _channel = channel ?? const MethodChannel(_channelName);
 
@@ -14,10 +10,8 @@ class AppSettingsService {
 
   final MethodChannel _channel;
 
-  /// False when nothing opened, so the caller can say so rather than leave the
-  /// user looking at a button that did nothing.
   Future<bool> openNotificationSettings() async {
-    // No browser lets a page open its own settings, so do not even ask.
+    // no browser lets a page open its own settings
     if (kIsWeb) {
       return false;
     }
@@ -28,7 +22,6 @@ class AppSettingsService {
       );
       return opened ?? false;
     } on MissingPluginException {
-      // A host with no native side wired up — desktop, or a widget test.
       return false;
     } on PlatformException catch (e) {
       _log('Could not open settings: ${e.code}');

@@ -12,11 +12,10 @@ import '../notification_cubit.dart';
 import '../notification_failure_presenter.dart';
 import '../notification_state.dart';
 
-/// Asks the user to enable push notifications, then lets [NotificationCubit] do the work.
+/// ask user to enable push notification than notificationCubit
 class NotificationPermissionDialog extends StatelessWidget {
   const NotificationPermissionDialog({super.key});
 
-  /// .value, not create: create would close this cubit when the dialog closes.
   static Future<void> show(BuildContext context) {
     return showDialog<void>(
       context: context,
@@ -27,6 +26,10 @@ class NotificationPermissionDialog extends StatelessWidget {
           ),
     );
   }
+
+  // static const double _iconPadding = 16;
+  // static const double _iconSize = 36;
+  // static const double _spinnerSize = 20;
 
   @override
   Widget build(BuildContext context) {
@@ -46,16 +49,11 @@ class NotificationPermissionDialog extends StatelessWidget {
             AppSnackBar.warning(context, l10n.notificationDeniedMessage);
 
           case NotificationBlocked():
-            // Read the cubit before popping: the dialog's own context is gone
-            // by the time the action runs.
             final NotificationCubit cubit = context.read<NotificationCubit>();
             Navigator.of(context).pop();
-
             if (kIsWeb) {
-              // A web page can't open its own settings, so just tell the user where to look.
               AppSnackBar.warning(context, l10n.notificationBlockedWebMessage);
             } else {
-              // On mobile we can open settings directly, so add that as a button.
               AppSnackBar.show(
                 context,
                 l10n.notificationBlockedMessage,
@@ -64,7 +62,6 @@ class NotificationPermissionDialog extends StatelessWidget {
                 onAction: cubit.openSettings,
               );
             }
-
           case NotificationFailure(:final NotificationFailureReason reason):
             Navigator.of(context).pop();
             reason.show(context);
@@ -77,8 +74,10 @@ class NotificationPermissionDialog extends StatelessWidget {
       builder: (BuildContext context, NotificationState state) {
         final bool busy = state is NotificationRequesting;
 
-        // No shape: dialogTheme supplies it, so every dialog matches.
         return AlertDialog(
+          // shape: RoundedRectangleBorder(
+          //   borderRadius: BorderRadius.circular(20),
+          // ),
           icon: Container(
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(

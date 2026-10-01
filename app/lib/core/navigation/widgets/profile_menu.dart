@@ -8,7 +8,7 @@ import '../../design_system/tokens/app_sizing.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../app_section.dart';
 
-/// The avatar icon and the menu that opens from it.
+/// avatar top-right, menu that drop down from it
 class ProfileMenu extends StatelessWidget {
   const ProfileMenu({
     super.key,
@@ -17,13 +17,11 @@ class ProfileMenu extends StatelessWidget {
     this.overlapAvatar = false,
   });
 
-  /// Sections the navigation has no room for, so they live here instead.
+  /// extra navlink - which goes to profile
   final List<AppSection> extras;
   final ValueChanged<AppSection> onSectionSelected;
 
-  /// Set this where the avatar sits at the foot of the screen. There is no
-  /// "open upward" setting, so the menu opens over the avatar and Flutter
-  /// slides it up to keep it on screen.
+  /// true whn profile bottom bcoz popup open down
   final bool overlapAvatar;
 
   @override
@@ -38,14 +36,14 @@ class ProfileMenu extends StatelessWidget {
       label: l10n.profileMenuSemantics,
       button: true,
       child: PopupMenuButton<_ProfileChoice>(
-        // In the header, under keeps it clear of the bell beside it.
+        // in header popup open below and side open above
         position: overlapAvatar
             ? PopupMenuPosition.over
             : PopupMenuPosition.under,
         tooltip: l10n.profileMenuTooltip,
         onSelected: (_ProfileChoice choice) {
           switch (choice) {
-            case _OpenSection(:final AppSection section):
+            case _OpenDestination(:final AppSection section):
               onSectionSelected(section);
             case _SignOut():
               context.read<AppAuthCubit>().logOut();
@@ -54,7 +52,7 @@ class ProfileMenu extends StatelessWidget {
         itemBuilder: (BuildContext context) => <PopupMenuEntry<_ProfileChoice>>[
           for (final AppSection extra in extras)
             PopupMenuItem<_ProfileChoice>(
-              value: _OpenSection(extra),
+              value: _OpenDestination(extra),
               child: _MenuRow(icon: extra.icon, label: extra.label(l10n)),
             ),
           if (extras.isNotEmpty) const PopupMenuDivider(),
@@ -74,9 +72,9 @@ class ProfileMenu extends StatelessWidget {
     );
   }
 
-  /// "Alex Romero" becomes "AR"; a single name gives one letter.
-  static String _initials(String fullName) {
-    final List<String> words = fullName
+  /// give name single letter VS
+  static String _initials(String fullname) {
+    final List<String> words = fullname
         .split(' ')
         .where((String word) => word.isNotEmpty)
         .toList();
@@ -91,7 +89,7 @@ class ProfileMenu extends StatelessWidget {
   }
 }
 
-/// One line of the menu: an icon, a gap, a label.
+/// menu: icon, gap, label
 class _MenuRow extends StatelessWidget {
   const _MenuRow({required this.icon, required this.label});
 
@@ -104,20 +102,19 @@ class _MenuRow extends StatelessWidget {
       children: <Widget>[
         Icon(icon, size: AppSizing.iconXs),
         const SizedBox(width: AppSpacing.md),
-        // Text wraps here since the menu cannot grow wider.
         Flexible(child: Text(label)),
       ],
     );
   }
 }
 
-/// What the user picked from the menu.
+/// what user picked from menu
 sealed class _ProfileChoice {
   const _ProfileChoice();
 }
 
-class _OpenSection extends _ProfileChoice {
-  const _OpenSection(this.section);
+class _OpenDestination extends _ProfileChoice {
+  const _OpenDestination(this.section);
 
   final AppSection section;
 }

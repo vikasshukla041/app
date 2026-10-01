@@ -9,9 +9,7 @@ import '../../../core/design_system/widgets/spaced_flow.dart';
 import '../../../l10n/app_localizations.dart';
 import 'stat_card.dart';
 
-/// Cash, unsettled and collateral, with the settlement cycle noted above them.
 class FundsBreakdown extends StatelessWidget {
-  /// Every amount arrives formatted by the caller, in the caller's locale.
   const FundsBreakdown({
     super.key,
     required this.availableCash,
@@ -23,7 +21,7 @@ class FundsBreakdown extends StatelessWidget {
   final String unsettled;
   final String collateral;
 
-  /// The gap between the cards, in both the row and the stacked layout.
+  /// The gap between the cards
   static const double _gap = AppSpacing.md;
 
   @override

@@ -25,14 +25,15 @@ class NotificationTapHandler {
   StreamSubscription<PushMessage>? _openedAppSubscription;
   StreamSubscription<Map<String, String>>? _foregroundTapSubscription;
 
-  /// Stops two calls at once from both starting the same subscriptions.
+  /// stop two calls at once
   bool _starting = false;
 
-  /// Safe to call again; never throws, so at worst deep-linking is lost.
+  /// safe to call again
   Future<void> start() async {
     if (_openedAppSubscription != null || _starting) {
       return;
     }
+
     _starting = true;
 
     try {
@@ -41,7 +42,7 @@ class NotificationTapHandler {
       );
       _foregroundTapSubscription = _localNotifications.onTap.listen(_route);
 
-      // Check this last since it only ever fires once, on a cold boot.
+      // This only returns a message when a notification launched a killed app.
       final PushMessage? launch = await _pushService
           .initialMessage()
           .then<PushMessage?>((PushMessage? message) => message)
@@ -60,20 +61,23 @@ class NotificationTapHandler {
     }
   }
 
+  /// Converts untrusted notification data into a safe router location.
   void _route(Map<String, String> data) {
     final String? location = DeepLinkParser.parse(data);
 
     if (location == null) {
-      // No matching route, so just open the app normally.
+      // no matching route, just open app normally
       return;
     }
+
     _deepLinks.push(location);
   }
 
-  /// Only reached in tests — this handler lives for the whole process.
+  /// only for test
   Future<void> stop() async {
     await _openedAppSubscription?.cancel();
     await _foregroundTapSubscription?.cancel();
+
     _openedAppSubscription = null;
     _foregroundTapSubscription = null;
   }

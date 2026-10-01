@@ -38,7 +38,7 @@
   "navSettings": "Settings",
   "profileMenuTooltip": "Account",
   "profileMenuSemantics": "Account menu button",
-  "comingSoonBody": "This screen is still being built.",
+  "comingSoonBody": "This screen is still being built",
   "biometricOptInDialogTitle": "Enable Biometric Login?",
   "biometricOptInDialogBody": "Would you like to enable Face ID / Touch ID to sign in faster on your next visit?",
   "biometricOptInDialogSkip": "Skip for Now",
@@ -59,7 +59,6 @@
   "netWorthLabel": "Total net worth",
   "netWorthAggregated": "Aggregated",
   "netWorthReturnCaption": "1Y realized & unrealized return",
-  "performanceChartPending": "Performance chart is on the way",
   "fundsBreakdownTitle": "Funds & margin breakdown",
   "fundsBreakdownSettlement": "Settlement: T+1",
   "fundsAvailableCashLabel": "Available cash",
@@ -102,6 +101,46 @@
   "@alertDetailPlaceholder": {
     "placeholders": {
       "alertId": {
+        "type": "String"
+      }
+    }
+  },
+  "performanceChartUnavailable": "The chart can't be shown on this device.",
+  "performanceChartLoadError": "Couldn't load your performance chart.",
+  "performanceChartSemantics": "Portfolio value from {start} to {end}",
+  "@performanceChartSemantics": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "performanceRangeOneDay": "1D",
+  "performanceRangeOneWeek": "1W",
+  "performanceRangeOneMonth": "1M",
+  "performanceRangeOneYear": "1Y",
+  "performanceRangeOneDayLabel": "1 day",
+  "performanceRangeOneWeekLabel": "1 week",
+  "performanceRangeOneMonthLabel": "1 month",
+  "performanceRangeOneYearLabel": "1 year",
+  "performanceChangeCaptionOneDay": "Today's change",
+  "performanceChangeCaptionOneWeek": "Change over the past week",
+  "performanceChangeCaptionOneMonth": "Change over the past month",
+  "performanceHigh": "High: {amount}",
+  "@performanceHigh": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "performanceChangeCaptionOnDate": "Change on {date}",
+  "@performanceChangeCaptionOnDate": {
+    "placeholders": {
+      "date": {
         "type": "String"
       }
     }

@@ -8,11 +8,11 @@ import '../../l10n/app_localizations.dart';
 import 'auth_cubit.dart';
 import 'auth_failure_presenter.dart';
 import 'auth_state.dart';
+import 'widgets/biometric_opt_in_panel.dart';
 import 'widgets/login_form.dart';
 
-/// Assembly only: lays out the login form and surfaces failures.
-///
-/// Where a successful login goes is the router's decision, not this screen's.
+/// Assembly only: reacts to state changes (auto biometric trigger, errors)
+/// and lays out either the login form or the biometric opt-in panel.
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -21,6 +21,8 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  // static const double _maxContentWidth = 420;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +48,13 @@ class _AuthScreenState extends State<AuthScreen> {
                   final AppLocalizations l10n = AppLocalizations.of(context);
                   final TextTheme text = Theme.of(context).textTheme;
                   final ColorScheme colors = Theme.of(context).colorScheme;
+
+                  // Rendered inline rather than pushed as a dialog route: a
+                  // route pushed from a state listener can be dropped mid-build,
+                  // whereas the builder always reflects the current state.
+                  if (state is AuthRequireBiometricPrompt) {
+                    return BiometricOptInPanel(user: state.user);
+                  }
 
                   return Column(
                     mainAxisSize: MainAxisSize.min,
@@ -76,12 +85,11 @@ class _AuthScreenState extends State<AuthScreen> {
 
   void _onStateChanged(BuildContext context, AuthState state) {
     switch (state) {
-      // Unlocking a saved session is LockedScreen's job; this screen only
-      // ever appears when there is nothing to unlock.
+      // unlocking a saved session belongs to LockedScreen this screen is only
+      // ever shown when there is nothing to unlock
       case AuthInitial():
         break;
 
-      // The router redirects this state to its own screen.
       case AuthRequireBiometricPrompt():
         break;
 
@@ -96,3 +104,97 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 }
+
+// /// Post-login prompt offering to unlock future sessions with biometrics.
+// ///
+// /// Owns its own busy flag rather than reading AuthLoading, so the panel stays
+// /// on screen while the OS biometric sheet is open instead of flicking back to
+// /// the login form.
+// class _BiometricOptInPanel extends StatefulWidget {
+//   const _BiometricOptInPanel({required this.user});
+
+//   final User user;
+
+//   @override
+//   State<_BiometricOptInPanel> createState() => _BiometricOptInPanelState();
+// }
+
+// class _BiometricOptInPanelState extends State<_BiometricOptInPanel> {
+//   static const double _spinnerSize = 20;
+
+//   bool _busy = false;
+
+//   Future<void> _enable() async {
+//     if (_busy) {
+//       return;
+//     }
+//     setState(() => _busy = true);
+//     await context.read<AuthCubit>().setupBiometricsPostLogin(widget.user);
+//     if (mounted) {
+//       setState(() => _busy = false);
+//     }
+//   }
+
+//   void _skip() {
+//     if (_busy) {
+//       return;
+//     }
+//     context.read<AuthCubit>().skipBiometricsPostLogin(widget.user);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final AppLocalizations l10n = AppLocalizations.of(context);
+//     final TextTheme text = Theme.of(context).textTheme;
+//     final ColorScheme colors = Theme.of(context).colorScheme;
+
+//     return Column(
+//       mainAxisSize: MainAxisSize.min,
+//       children: <Widget>[
+//         Icon(Icons.fingerprint, size: 72, color: colors.primary),
+//         const SizedBox(height: 24),
+//         Text(
+//           l10n.biometricOptInDialogTitle,
+//           style: text.headlineSmall,
+//           textAlign: TextAlign.center,
+//         ),
+//         const SizedBox(height: 12),
+//         Text(
+//           l10n.biometricOptInDialogBody,
+//           style: text.bodyMedium?.copyWith(color: colors.onSurfaceVariant),
+//           textAlign: TextAlign.center,
+//         ),
+//         const SizedBox(height: 32),
+//         Semantics(
+//           label: l10n.biometricOptInDialogEnable,
+//           button: true,
+//           child: SizedBox(
+//             width: double.infinity,
+//             child: ElevatedButton(
+//               onPressed: _busy ? null : _enable,
+//               child: _busy
+//                   ? const SizedBox(
+//                       width: _spinnerSize,
+//                       height: _spinnerSize,
+//                       child: CircularProgressIndicator(strokeWidth: 2),
+//                     )
+//                   : Text(l10n.biometricOptInDialogEnable),
+//             ),
+//           ),
+//         ),
+//         const SizedBox(height: 12),
+//         Semantics(
+//           label: l10n.biometricOptInDialogSkip,
+//           button: true,
+//           child: SizedBox(
+//             width: double.infinity,
+//             child: TextButton(
+//               onPressed: _busy ? null : _skip,
+//               child: Text(l10n.biometricOptInDialogSkip),
+//             ),
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }

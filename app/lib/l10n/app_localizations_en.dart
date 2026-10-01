@@ -109,7 +109,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileMenuSemantics => 'Account menu button';
 
   @override
-  String get comingSoonBody => 'This screen is still being built.';
+  String get comingSoonBody => 'This screen is still being built';
 
   @override
   String get biometricOptInDialogTitle => 'Enable Biometric Login?';
@@ -176,9 +176,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get netWorthReturnCaption => '1Y realized & unrealized return';
-
-  @override
-  String get performanceChartPending => 'Performance chart is on the way';
 
   @override
   String get fundsBreakdownTitle => 'Funds & margin breakdown';
@@ -287,4 +284,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backSemantics => 'Back';
+
+  @override
+  String get performanceChartUnavailable =>
+      'The chart can\'t be shown on this device.';
+
+  @override
+  String get performanceChartLoadError =>
+      'Couldn\'t load your performance chart.';
+
+  @override
+  String performanceChartSemantics(String start, String end) {
+    return 'Portfolio value from $start to $end';
+  }
+
+  @override
+  String get performanceRangeOneDay => '1D';
+
+  @override
+  String get performanceRangeOneWeek => '1W';
+
+  @override
+  String get performanceRangeOneMonth => '1M';
+
+  @override
+  String get performanceRangeOneYear => '1Y';
+
+  @override
+  String get performanceRangeOneDayLabel => '1 day';
+
+  @override
+  String get performanceRangeOneWeekLabel => '1 week';
+
+  @override
+  String get performanceRangeOneMonthLabel => '1 month';
+
+  @override
+  String get performanceRangeOneYearLabel => '1 year';
+
+  @override
+  String get performanceChangeCaptionOneDay => 'Today\'s change';
+
+  @override
+  String get performanceChangeCaptionOneWeek => 'Change over the past week';
+
+  @override
+  String get performanceChangeCaptionOneMonth => 'Change over the past month';
+
+  @override
+  String performanceHigh(String amount) {
+    return 'High: $amount';
+  }
+
+  @override
+  String performanceChangeCaptionOnDate(String date) {
+    return 'Change on $date';
+  }
 }

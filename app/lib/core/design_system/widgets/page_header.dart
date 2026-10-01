@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import '../responsive/screen_size.dart';
 import '../tokens/app_spacing.dart';
 
-/// The title row at the top of a page, with its buttons on the right.
-///
-/// Replaces the app bar: it scrolls with the page and lines up with the
-/// content below it instead of sitting in a separate band.
 class PageHeader extends StatelessWidget {
   const PageHeader({
     super.key,
@@ -17,10 +13,10 @@ class PageHeader extends StatelessWidget {
 
   final String title;
 
-  /// Buttons on the right, such as the bell and the profile menu.
+  /// buttons on right, bell and profile
   final List<Widget> actions;
 
-  /// A back button, on the screens that need one.
+  /// back button
   final Widget? leading;
 
   @override
@@ -41,7 +37,7 @@ class PageHeader extends StatelessWidget {
             leading,
             const SizedBox(width: AppSpacing.sm),
           ],
-          // A long name must shrink rather than push the buttons off the edge.
+          // long name shrink
           Expanded(
             child: Text(
               title,

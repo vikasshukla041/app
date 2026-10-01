@@ -7,11 +7,7 @@ import '../../../core/design_system/tokens/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
 import '../auth_cubit.dart';
 
-/// Post-login prompt offering to unlock future sessions with biometrics.
-///
-/// Owns its own busy flag rather than reading AuthLoading, so the panel stays
-/// on screen while the OS biometric sheet is open instead of flicking back to
-/// the login form.
+/// After login prompt to unlock future session with biometrics
 class BiometricOptInPanel extends StatefulWidget {
   const BiometricOptInPanel({super.key, required this.user});
 
@@ -22,6 +18,8 @@ class BiometricOptInPanel extends StatefulWidget {
 }
 
 class _BiometricOptInPanelState extends State<BiometricOptInPanel> {
+  // static const double _spinnerSize = 20;
+
   bool _busy = false;
 
   Future<void> _enable() async {

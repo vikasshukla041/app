@@ -11,22 +11,9 @@ import 'data/services/notification_service.dart';
 import 'data/services/push_notification_service.dart';
 import 'notification_state.dart';
 
-/// What a resume-time permission re-check found.
-///
-/// Returned rather than emitted, because a resume happens with no dialog on
-/// screen and therefore with nothing listening to the cubit.
-enum NotificationResumeOutcome {
-  /// The permission is the same as it was; the user is not waiting on anything.
-  unchanged,
+enum NotificationResumeOutcome { unchanged, enabled, failed }
 
-  /// Newly granted in the OS settings, and the device is registered.
-  enabled,
-
-  /// Newly granted, but registering the device did not work.
-  failed,
-}
-
-/// Owns the push-notification subscription logic; never fakes a token on failure.
+/// Owns the push-notification subscription logic.
 class NotificationCubit extends Cubit<NotificationState> {
   NotificationCubit({
     PushNotificationService? pushService,
@@ -51,7 +38,6 @@ class NotificationCubit extends Cubit<NotificationState> {
 
   /// Asks for permission, then registers the token with the backend.
   Future<void> subscribe() async {
-    // Guard against double taps and a dialog that closed before this ran.
     if (isClosed || state is NotificationRequesting) {
       return;
     }
@@ -60,13 +46,13 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     final String? platform = _pushService.platform;
     if (platform == null) {
-      // A desktop host: the backend knows android, ios and web, nothing else.
       _log('No platform value; this host cannot register for push');
+      // A Desktop host: the backend knows android, ios n web.
       _emitFailure(NotificationFailureReason.unavailable);
       return;
     }
 
-    // Read before asking, so the two answers can be compared below.
+    // read before asking so the two  answer can be compared.
     final PushPermissionResult before = await _pushService.currentPermission();
 
     final PushPermissionResult permission = await _pushService
@@ -76,11 +62,6 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     switch (permission) {
       case PushPermissionResult.denied:
-        // Denied before and after means the OS never showed its dialog: it
-        // stops asking once the user has refused. Neither Android nor iOS
-        // reports that state directly, so the pair of reads is the only
-        // signal — and the difference matters, because the bell can still
-        // help in one case and cannot in the other.
         _emitTransient(
           before == PushPermissionResult.denied
               ? const NotificationBlocked()
@@ -88,7 +69,6 @@ class NotificationCubit extends Cubit<NotificationState> {
         );
         return;
       case PushPermissionResult.unavailable:
-        // Firebase never started, or the permission API threw.
         _log('Permission unavailable; see PushNotificationService above');
         _emitFailure(NotificationFailureReason.unavailable);
         return;
@@ -98,8 +78,8 @@ class NotificationCubit extends Cubit<NotificationState> {
 
     final String? token = await _pushService.getToken();
     if (token == null || token.isEmpty) {
-      // Granted but no token: Play Services missing, or FCM unreachable.
       _log('Permission granted but no token came back');
+      // Granted but no token: Play Services missing, or FCM unreachable.
       _emitFailure(NotificationFailureReason.noToken);
       return;
     }
@@ -107,31 +87,15 @@ class NotificationCubit extends Cubit<NotificationState> {
     await _register(token: token, platform: platform);
   }
 
-  /// Takes the user to the OS page where notifications can be turned back on.
-  ///
-  /// The app can never grant the permission itself; this only opens the place
-  /// where the user can. Fails to a message rather than a dead button.
   Future<void> openSettings() async {
     final bool opened = await _appSettingsService.openNotificationSettings();
     if (!opened && !isClosed) {
-      // Web, or a device with no settings screen for this intent.
       _emitFailure(NotificationFailureReason.settingsUnavailable);
     }
   }
 
-  /// The last permission this cubit saw, so a resume can tell a change from a
-  /// repeat. Null until something has asked.
   PushPermissionResult? _lastKnownPermission;
 
-  /// Re-reads the permission after the user has been to the OS settings.
-  ///
-  /// Only acts on a change into [PushPermissionResult.granted]. Without that
-  /// check this would re-register on every single app foreground — and on web,
-  /// on every tab focus.
-  ///
-  /// Returns its outcome rather than emitting one. A resume happens with no
-  /// dialog on screen, so nothing is listening to this cubit at that moment —
-  /// an emitted state would simply be lost. The caller shows the message.
   Future<NotificationResumeOutcome> refreshAfterResume() async {
     final String? platform = _pushService.platform;
     if (platform == null || isClosed) {
@@ -143,7 +107,6 @@ class NotificationCubit extends Cubit<NotificationState> {
     final PushPermissionResult? previous = _lastKnownPermission;
     _lastKnownPermission = permission;
 
-    // A null previous is a cold start's first resume: nothing to compare with.
     if (permission != PushPermissionResult.granted ||
         previous == null ||
         previous == PushPermissionResult.granted) {
@@ -159,28 +122,30 @@ class NotificationCubit extends Cubit<NotificationState> {
       await _sendRegistration(token: token, platform: platform);
       return NotificationResumeOutcome.enabled;
     } catch (e, stackTrace) {
-      // The user enabled this in settings, so a failure here is worth showing.
       _log('Registration after resume failed: $e', stackTrace);
       return NotificationResumeOutcome.failed;
     }
   }
 
-  /// Re-attaches this device's token to whoever just signed in; silent, and never prompts.
+  /// re-attaches this device token to whoever just signed in.
+  /// Silent and never prompt
   Future<void> claimForCurrentUser() async {
     final String? platform = _pushService.platform;
+
     if (platform == null) {
       return;
     }
 
     final PushPermissionResult permission = await _pushService
         .currentPermission();
-    // Recorded even if the claim stops below, so a later resume can compare.
+
     _lastKnownPermission = permission;
     if (permission != PushPermissionResult.granted) {
       return;
     }
 
     final String? token = await _pushService.getToken();
+
     if (token == null || token.isEmpty) {
       return;
     }
@@ -193,8 +158,6 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
-  /// Posts the registration and starts watching for rotations; shared by
-  /// [subscribe] and [claimForCurrentUser].
   Future<void> _sendRegistration({
     required String token,
     required String platform,
@@ -207,6 +170,7 @@ class NotificationCubit extends Cubit<NotificationState> {
         deviceName: await _deviceInfoService.deviceName(),
       ),
     );
+
     _listenForTokenRotation();
   }
 
@@ -226,7 +190,8 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
-  /// Re-registers when FCM rotates the token, so the backend never holds a dead one.
+  /// FCM rotates tokens on reinstall and restore. Re-registering keeps the
+  /// backend from holding one that silently stopped delivering.
   void _listenForTokenRotation() {
     _tokenRefreshSubscription ??= _pushService.onTokenRefresh.listen((
       String token,
@@ -249,7 +214,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     emit(const NotificationInitial());
   }
 
-  /// Logs only the error reason; the token itself must never be logged.
+  /// Logs the reason only — never the token, which is a credential.
   void _log(String message, [StackTrace? stackTrace]) {
     if (kDebugMode) {
       debugPrint('[NotificationCubit] $message');
@@ -259,7 +224,7 @@ class NotificationCubit extends Cubit<NotificationState> {
     }
   }
 
-  /// Only used in tests; waits for the subscription to cancel so tests do not leak it.
+  /// only used in test
   @override
   Future<void> close() async {
     await _tokenRefreshSubscription?.cancel();

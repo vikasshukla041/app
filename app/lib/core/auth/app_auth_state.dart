@@ -35,7 +35,7 @@ class AppAuthLocked extends AppAuthState {
   List<Object?> get props => <Object?>[user];
 }
 
-/// Login is done and saved, but the biometric opt-in is still unanswered.
+/// login done now biometric
 class AppAuthPendingBiometricOptIn extends AppAuthState {
   const AppAuthPendingBiometricOptIn(this.user);
 

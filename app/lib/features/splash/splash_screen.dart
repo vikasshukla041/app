@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Holding screen shown while the saved session is being restored.
+/// Neutral holding screen shown while teh saved session is beigh restored
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 

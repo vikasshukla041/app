@@ -8,7 +8,6 @@ import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/widgets/brand_header.dart';
 import '../app_section.dart';
 
-/// The side menu for tablets — shows every section.
 class SideMenu extends StatelessWidget {
   const SideMenu({
     super.key,
@@ -19,8 +18,6 @@ class SideMenu extends StatelessWidget {
 
   final AppSection selected;
   final ValueChanged<AppSection> onSelected;
-
-  /// Pinned to the bottom of the menu, below every section.
   final Widget profileMenu;
 
   @override
@@ -47,16 +44,19 @@ class SideMenu extends StatelessWidget {
                 children: <Widget>[
                   const BrandHeader(),
                   const SizedBox(height: AppSpacing.sm),
-                  // Lines up under the name, not the logo, so it reads as one block.
+
                   Padding(
                     padding: const EdgeInsets.only(
                       left: AppSizing.logo + AppSpacing.md,
                     ),
-                    child: Text(
-                      selected.label(l10n).toUpperCase(),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        letterSpacing: 1,
+                    // The selected row already says where you are, so this is not read out.
+                    child: ExcludeSemantics(
+                      child: Text(
+                        selected.label(l10n).toUpperCase(),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          letterSpacing: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -68,7 +68,6 @@ class SideMenu extends StatelessWidget {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
                 child: Column(
-                  // Every row fills the menu, so the highlight is the same width on each.
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     for (final AppSection section in all)
@@ -94,7 +93,7 @@ class SideMenu extends StatelessWidget {
   }
 }
 
-/// One row: icon and label side by side, so both light up together when open.
+/// icon + label on sidebar
 class _NavRow extends StatelessWidget {
   const _NavRow({
     required this.section,
@@ -125,12 +124,9 @@ class _NavRow extends StatelessWidget {
         button: true,
         selected: selected,
         label: label,
-        // Hiding the children hides the InkWell's tap too, so it is added back.
         onTap: onTap,
-        // Without this the label is announced twice — once here, once by Text.
         excludeSemantics: true,
         child: Material(
-          // Unselected rows paint nothing, but still carry the hover and ripple.
           type: selected ? MaterialType.canvas : MaterialType.transparency,
           color: colors.primaryContainer,
           borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -151,7 +147,6 @@ class _NavRow extends StatelessWidget {
                     color: foreground,
                   ),
                   const SizedBox(width: AppSpacing.md),
-                  // Wraps instead of spilling out when the text size is turned up.
                   Expanded(
                     child: Text(
                       label,

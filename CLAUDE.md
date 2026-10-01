@@ -514,6 +514,7 @@ the next refactor will quietly undo.
 | POST | `/api/auth/login` | `{username, password}` → `{success, accessToken, refreshToken, user}`; 401 on bad credentials |
 | POST | `/api/auth/refresh` | `{refreshToken}` → a **new pair**; carries no `user` field |
 | GET | `/api/user/balance` | Bearer required |
+| GET | `/api/user/performance?range=1D\|1W\|1M\|1Y` | Bearer required; default `1Y`, anything else 400. `{currency, range, asOf, baseline, candles: [{time, open, high, low, close}]}`. 1D = 5-minute, 1W = hourly, 1M/1Y = daily (weekdays). `baseline` is the value just before the first candle; change = last close − baseline. Cash flows were dropped as not needed, so a deposit would show as gain. The mock slices `mock_api/data/portfolio_chart.json`, a small ChatGPT-made sample (30 daily, 24 hourly, 25 five-minute candles, values ~10,000). Restart the server after replacing it. Running `scripts/build_portfolio_chart.js` would overwrite it with the older generated set |
 | POST | `/api/user/register-device` | `{fcmToken, deviceId, platform, deviceName}`. Replaced `/api/user/register-token`, which now 404s |
 | POST | `/api/notify/send` | `{username, title, body}` — push trigger |
 
@@ -553,10 +554,24 @@ into every session and is trusted before the code is read.
   `theme.dart` (explicit light and dark `ColorScheme`s), and the shared widgets
   `AppBadge`, `StatusDot`, `SectionHeader`, `SpacedColumn`/`EqualWidthRow`,
   `AppSnackBar`. A test asserts WCAG AA contrast on every pair and every tone.
-- **Dashboard console** — `NetWorthCard`, chart placeholder, `FundsBreakdown`
+- **Dashboard console** — `NetWorthCard`, performance panel, `FundsBreakdown`
   (three `StatCard`s that reflow from their own measured width), `QuickLinksCard`.
-  **The figures are hardcoded placeholders**, though `DashboardCubit` and
-  `DashboardService.balance()` exist and work.
+  **The card figures are hardcoded placeholders**, though `DashboardCubit` and
+  `DashboardService.balance()` exist and work. The chart uses the mock API.
+- **Performance chart** — TradingView Lightweight Charts v5.2.1 (Apache 2.0,
+  bundled in `app/assets/chart/`; keep the TradingView logo on) in a WebView
+  (`webview_flutter` + `webview_flutter_web`). `PerformanceCubit` loads a
+  `PerformanceRange` (1D/1W/1M/1Y, starts on 1Y) and drops a slow answer for a
+  range the user already left. `PerformancePanel` = `PerformanceRangeSelector`
+  (a `SegmentedButton`) + `PerformanceSummary` (change €/% and High, computed in
+  `PerformanceHistory`) + `PerformanceChart`, or a spinner / error with Retry.
+  Candle times are the market's wall clock stored as UTC, so the phone's
+  timezone never shifts 09:00. `PerformanceChartPage` builds one HTML string
+  (nothing is sent after load, because on web Dart cannot call into the iframe),
+  escapes every `<` in the data, and waits for a real size before drawing, or
+  the chart comes out blank. Checked on the web release build; **not yet on
+  Android or iOS**. The range buttons sit under the total, not in the header
+  row as in the design.
 - **App frame** — `core/navigation/`. `AppFrame` wraps every signed-in screen:
   a `NavigationBar` below 768px, a hand-built `SideMenu` above it,
   and a profile menu (avatar initials, sign out). On a phone the profile menu
@@ -617,7 +632,7 @@ into every session and is trusted before the code is read.
 - EN/ES localization throughout, unit + widget tests.
 
 **Not built:** real content behind Holdings, Orders, Education, Tax & Fiscal and
-Settings; real data in the console cards; the performance chart; release
+Settings; real data in the console cards; a real performance API; release
 signing and minification. No Apple Developer account yet, so no device install,
 no TestFlight, no real iOS push.
 
@@ -631,8 +646,9 @@ Build in this order — each step unblocks the next.
 1. **Real console data.** Replace the placeholder figures with `DashboardCubit`
    state, and add an error state the user can act on. The cards already take
    pre-formatted strings, so this is a wiring change, not a layout one.
-2. **Performance chart** in place of `PerformanceChartPlaceholder`. Decide
-   `fl_chart` versus a `CustomPainter` first — rule 15 applies.
+2. **Performance chart** — built on the mock API (Lightweight Charts in a
+   WebView). Its two packages still need the senior's sign-off (rule 15), and
+   it needs a device check on Android and iOS.
 3. **Data layer.** Introduce repositories between Cubits and services once a
    second data source or caching appears — Flutter's guidance recommends
    abstract repository classes so environments can swap implementations. Today

@@ -4,7 +4,6 @@ import '../../../l10n/app_localizations.dart';
 import '../tokens/app_sizing.dart';
 import '../tokens/app_spacing.dart';
 
-/// Shown while a screen's real content is still being built.
 class ComingSoon extends StatelessWidget {
   const ComingSoon({super.key, required this.title, required this.icon});
 

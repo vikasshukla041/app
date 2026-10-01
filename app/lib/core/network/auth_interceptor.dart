@@ -30,8 +30,6 @@ class AuthInterceptor extends Interceptor {
   /// construction cycle.
   final TokenRefresher Function()? tokenRefresherProvider;
 
-  /// Set by `ApiService.post(skipAuth: true)` on the refresh call, the one
-  /// request that must not carry a Bearer token or trigger a refresh.
   static const String skipAuthFlag = 'skip_auth';
 
   /// Injectable so tests can assert the replay without a live server.

@@ -19,8 +19,6 @@ class NotificationSessionListener extends StatelessWidget {
 
   final Widget child;
 
-  /// Injected by tests. Production leaves this null and the singleton is
-  /// resolved at the point of use, not on every rebuild.
   final NotificationCubit? notifications;
 
   @override

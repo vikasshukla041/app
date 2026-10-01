@@ -1,22 +1,14 @@
 import 'app_routes.dart';
 
-/// Turns a push notification's data into a safe route, or null if invalid.
+/// turns notification data safe route
 abstract final class DeepLinkParser {
-  /// 'route' is the destination; every other key travels with it.
+  /// route is destination main
   static const String _routeKey = 'route';
   static const String _idKey = 'id';
 
-  /// Returns null for bad data instead of throwing, since this is untrusted
-  /// input. A payload with no route is the normal case, not an error.
-  ///
-  /// `{'route': '/dashboard', 'id': '1'}` becomes `/dashboard?id=1`, while
-  /// `{'route': '/alerts', 'id': '1'}` becomes `/alerts/1` — the difference is
-  /// [AppRoutes.idInPath], which lists the routes declared as `<path>/:id`.
-  ///
-  /// A path segment is pasted into the URL, so it is validated first. A query
-  /// parameter is escaped by [Uri] and needs no such check.
   static String? parse(Map<String, String> data) {
     final String? route = data[_routeKey];
+
     if (route == null || !AppRoutes.deepLinkable.contains(route)) {
       return null;
     }
@@ -25,14 +17,12 @@ abstract final class DeepLinkParser {
     final bool needsId = AppRoutes.idInPath.contains(route);
     final bool idBelongsInPath = needsId && id != null && id.isNotEmpty;
 
+    // A `<path>/:id` route with no id names nothing, so the tap would open nothing.
     if (needsId && !idBelongsInPath) {
-      // The route is declared `<path>/:id`, so without an id it names nothing.
-      // Returning the bare path would resolve to no route at all.
       return null;
     }
 
     if (idBelongsInPath && !_isSafeSegment(id)) {
-      // A payload that tried to reshape the route it named.
       return null;
     }
 
@@ -50,7 +40,7 @@ abstract final class DeepLinkParser {
     ).toString();
   }
 
-  /// Rejects anything that would climb out of, or add to, the named route.
+  /// reject anything that comes out of, add to named routes
   static bool _isSafeSegment(String value) =>
       !value.contains('/') &&
       !value.contains('?') &&

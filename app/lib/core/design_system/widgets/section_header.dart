@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../tokens/app_spacing.dart';
 
-/// The title above a group of cards, with an optional link on the right.
 class SectionHeader extends StatelessWidget {
-  /// An action needs both halves, so a label can never appear without its tap.
   const SectionHeader({
     super.key,
     required this.title,
@@ -24,7 +22,7 @@ class SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
-    // Copy to a local so Dart knows it stays non-null inside the `if` below.
+
     final String? subtitle = this.subtitle;
     final String? actionLabel = this.actionLabel;
 

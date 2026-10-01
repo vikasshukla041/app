@@ -69,6 +69,10 @@ dependencies:
 
   # Human-readable device model sent with the device registration payload
   device_info_plus: ^12.1.0
+  # Hosts TradingView Lightweight Charts (JS) for the performance chart.
+  webview_flutter: ^4.14.1
+  # webview_flutter has no web support of its own; this adds it as an iframe.
+  webview_flutter_web: ^0.2.3+4
 
 dev_dependencies:
   flutter_test:
@@ -97,6 +101,10 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # TradingView Lightweight Charts v5.2.1, bundled so the chart works offline.
+  assets:
+    - assets/chart/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

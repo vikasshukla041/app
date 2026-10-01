@@ -3,15 +3,17 @@ import 'package:local_auth/local_auth.dart';
 
 enum BiometricResult { success, cancelled, lockedOut, unavailable }
 
-// Wraps local_auth so the rest of the app does not depend on the plugin directly.
+// wraps 'local_auth' so cubits depend on this narrow contract instead of
+// plugin. Can test without device
 class BiometricService {
   BiometricService({LocalAuthentication? localAuth})
     : _localAuth = localAuth ?? LocalAuthentication();
 
   final LocalAuthentication _localAuth;
 
+  // ------------------------------my-------
   Future<bool> isAvailable() async {
-    // local_auth has no web support, so skip it on web.
+    // local_auth has no web support, so skip it on web
     if (kIsWeb) {
       return false;
     }
@@ -35,7 +37,7 @@ class BiometricService {
   }
 
   Future<BiometricResult> authenticate({required String reason}) async {
-    // local_auth has no web support, so skip it on web.
+    // web support
     if (kIsWeb) {
       return BiometricResult.unavailable;
     }

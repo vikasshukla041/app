@@ -7,10 +7,11 @@ import '../../../../core/auth/app_auth_state.dart';
 import 'local_notifications_service.dart';
 import 'push_notification_service.dart';
 
-/// Connects an incoming foreground push to a local banner.
+/// Connects incoming foreground push notifications to local notifications.
 ///
-/// A push is addressed to an account, but the device stays subscribed after
-/// sign-out, so every message is gated on there being a live session.
+/// This handler is responsible only for foreground messages.
+/// Background and cold-boot notification taps are handled separately by
+/// NotificationTapHandler.
 class ForegroundPushHandler {
   ForegroundPushHandler({
     required this._pushService,
@@ -18,68 +19,92 @@ class ForegroundPushHandler {
     required this._appAuthCubit,
   });
 
+  /// Service that receives messages from Firebase Cloud Messaging.
   final PushNotificationService _pushService;
+
+  /// Service used to display a local notification while the app is
+  /// in the foreground.
   final LocalNotificationsService _localNotifications;
+
+  /// Current app-level authentication state.
+  ///
+  /// We use this to prevent notifications belonging to a previous session
+  /// from being shown after the user has logged out.
   final AppAuthCubit _appAuthCubit;
 
+  /// Subscription to the foreground FCM message stream.
   StreamSubscription<PushMessage>? _subscription;
 
-  /// Raised before the first await, so two concurrent calls cannot both reach
-  /// the subscription. Checking `_subscription` alone would not do it: that
-  /// field is assigned after an await, so both callers would still see null
-  /// and every banner would be drawn twice.
+  /// Prevents start() from running twice at the same time.
   bool _starting = false;
 
-  /// Safe to call more than once; every call after the first is a no-op.
+  /// Starts listening for foreground push notifications.
   ///
-  /// Never throws. It is launched unawaited from main(), so an escaping error
-  /// would surface as an unhandled zone error. Push failing must not break
-  /// start-up.
+  /// Calling this method more than once is safe. Only one subscription
+  /// will be created.
   Future<void> start() async {
     if (_subscription != null || _starting) {
       return;
     }
+
     _starting = true;
 
     try {
+      // Local notifications must be initialized before we try to show
+      // any foreground notification.
       await _localNotifications.init();
 
+      // Listen for Firebase messages received while the app is open.
       _subscription = _pushService.onForegroundMessage.listen(_onMessage);
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[ForegroundPushHandler] Could not start: $e');
+        debugPrint('[ForegroundPushHandler] could not start: $e');
       }
     } finally {
       _starting = false;
     }
   }
 
-  /// Drops anything that arrives without a live session.
+  /// Handles a single foreground push message.
   ///
-  /// Locked counts as no session: the app is on screen behind the unlock
-  /// prompt, so a banner there would defeat the lock it is sitting on.
+  /// A notification is shown only when there is currently an authenticated
+  /// user. This prevents a logged-out user from seeing notifications that
+  /// belong to the previous session.
   void _onMessage(PushMessage message) {
+    // Do not show foreground notifications when there is no active session.
+    //
+    // This check is important because the device can still receive FCM
+    // messages even after the user has logged out.
     if (_appAuthCubit.state is! AppAuthenticated) {
       _log('Dropped a foreground push: no signed-in user');
       return;
     }
+
+    // Show the notification without blocking the FCM stream.
+    //
+    // The message data is passed as the notification payload so the local
+    // notification tap handler can use the same deep-link information.
     unawaited(
       _localNotifications.show(
         title: message.title,
         body: message.body,
-        // Carried through so a tap on this banner can deep-link the same way
-        // a tap on a system notification does.
         payload: message.data,
       ),
     );
   }
 
+  /// Stops listening for foreground push notifications.
+  ///
+  /// Normally this handler lives for the whole application lifetime,
+  /// but this method is useful for tests and controlled shutdown.
   Future<void> stop() async {
     await _subscription?.cancel();
     _subscription = null;
   }
 
-  /// Logs the reason only — a push body may carry account information.
+  /// Writes debug-only logs.
+  ///
+  /// No notification credentials or FCM tokens are logged here.
   void _log(String message) {
     if (kDebugMode) {
       debugPrint('[ForegroundPushHandler] $message');

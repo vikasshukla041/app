@@ -1,11 +1,11 @@
 import 'package:activotrade_app/core/design_system/theme.dart';
+import 'package:activotrade_app/core/design_system/tokens/app_sizing.dart';
 import 'package:activotrade_app/features/dashboard/widgets/net_worth_card.dart';
 import 'package:activotrade_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const String _total = '€142,850.20';
-const String _return = '+€18,420.50';
 
 /// A 390 phone once the screen's own padding is taken off either side.
 const double _phoneColumn = 350;
@@ -26,7 +26,10 @@ void main() {
               child: const SingleChildScrollView(
                 child: SizedBox(
                   width: _phoneColumn,
-                  child: NetWorthCard(totalValue: _total, yearReturn: _return),
+                  child: NetWorthCard(
+                    totalValue: _total,
+                    chart: SizedBox(height: AppSizing.chartHeight),
+                  ),
                 ),
               ),
             ),
@@ -64,6 +67,6 @@ void main() {
     await pumpCard(tester, textScale: 1.6);
 
     expect(tester.takeException(), isNull);
-    expectInsideCard(tester, _return);
+    expectInsideCard(tester, 'Aggregated');
   });
 }

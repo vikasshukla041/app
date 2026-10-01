@@ -8,8 +8,11 @@ import '../../core/design_system/responsive/adaptive_two_column.dart';
 import '../../core/design_system/responsive/screen_size.dart';
 import '../../core/design_system/tokens/app_sizing.dart';
 import '../../core/design_system/tokens/app_spacing.dart';
+import '../../core/di/service_locator.dart';
+import 'performance_cubit.dart';
 import 'widgets/funds_breakdown.dart';
 import 'widgets/net_worth_card.dart';
+import 'widgets/performance_panel.dart';
 import 'widgets/quick_links_card.dart';
 
 /// The console body — just the cards. The app frame owns the title row.
@@ -18,28 +21,31 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AppAuthCubit, AppAuthState>(
-      builder: (BuildContext context, AppAuthState state) {
-        if (state is! AppAuthenticated) {
-          return const Center(child: CircularProgressIndicator());
-        }
+    return BlocProvider<PerformanceCubit>(
+      create: (_) => getIt<PerformanceCubit>()..load(),
+      child: BlocBuilder<AppAuthCubit, AppAuthState>(
+        builder: (BuildContext context, AppAuthState state) {
+          if (state is! AppAuthenticated) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-        return SingleChildScrollView(
-          padding: EdgeInsets.symmetric(
-            horizontal: ScreenSize.of(context).pageGap,
-            vertical: AppSpacing.xl,
-          ),
-          // Centered with a max width, so cards do not stretch on a big screen.
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: AppSizing.maxConsoleWidth,
-              ),
-              child: const _PlaceholderConsoleBody(),
+          return SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: ScreenSize.of(context).pageGap,
+              vertical: AppSpacing.xl,
             ),
-          ),
-        );
-      },
+            // Centered with a max width, so cards do not stretch on a big screen.
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: AppSizing.maxConsoleWidth,
+                ),
+                child: const _PlaceholderConsoleBody(),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -52,7 +58,6 @@ class _PlaceholderConsoleBody extends StatelessWidget {
   static const String _accountCurrency = 'EUR';
 
   static const double _netWorth = 142850.20;
-  static const double _yearReturn = 18420.50;
   static const double _availableCash = 24320.00;
   static const double _unsettled = 1850.00;
   static const double _collateral = 116680.00;
@@ -69,7 +74,7 @@ class _PlaceholderConsoleBody extends StatelessWidget {
       primary: <Widget>[
         NetWorthCard(
           totalValue: currency.format(_netWorth),
-          yearReturn: '+${currency.format(_yearReturn)}',
+          chart: const PerformancePanel(),
         ),
       ],
       secondary: <Widget>[

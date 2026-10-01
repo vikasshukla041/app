@@ -6,14 +6,10 @@ import '../../core/design_system/tokens/app_spacing.dart';
 import '../../core/routing/app_routes.dart';
 import '../../l10n/app_localizations.dart';
 
-/// Shows an alert opened from a push notification; a placeholder until the
-/// alerts API exists.
-class AlertDetailScreen extends StatelessWidget {
-  const AlertDetailScreen({super.key, required this.alertId, this.title});
+class AlertDetailsScreen extends StatelessWidget {
+  const AlertDetailsScreen({super.key, required this.alertId, this.title});
 
   final String alertId;
-
-  /// Optional title from the notification payload, shown instead of a generic one.
   final String? title;
 
   @override
@@ -24,15 +20,12 @@ class AlertDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        // Opened from a notification there is no page to pop back to, so fall
-        // through to the dashboard rather than leaving a dead back button.
         leading: Semantics(
           label: l10n.backSemantics,
           button: true,
           child: IconButton(
             icon: const Icon(Icons.arrow_back),
             tooltip: l10n.backSemantics,
-            // VIKAS — copy this whole onPressed.
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -51,7 +44,7 @@ class AlertDetailScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Icon(
-                Icons.notifications_active_outlined,
+                Icons.notifications_outlined,
                 size: AppSizing.iconMd,
                 color: colors.primary,
               ),

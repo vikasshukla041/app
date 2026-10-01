@@ -1,26 +1,13 @@
+import 'package:activotrade_app/core/design_system/widgets/app_snack_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/auth/app_auth_cubit.dart';
 import '../../../core/auth/app_auth_state.dart';
-import '../../../core/design_system/widgets/app_snack_bar.dart';
 import '../../../core/di/service_locator.dart';
 import '../../../l10n/app_localizations.dart';
 import '../notification_cubit.dart';
 
-/// Re-reads the notification permission each time the app comes forward.
-///
-/// The one case this exists for: the user was told notifications are blocked,
-/// tapped Open settings, turned them on, and came back. Nothing else would
-/// notice, so the bell would stay red until the next manual tap.
-///
-/// It shows the message itself rather than letting the cubit emit one. On a
-/// resume there is no dialog on screen, so nothing is listening to that cubit
-/// and an emitted state would be lost — which is exactly what happened the
-/// first time this was built.
-///
-/// Separate from NotificationSessionListener because that one watches auth and
-/// this one watches the OS — two jobs, two widgets.
 class NotificationResumeListener extends StatefulWidget {
   const NotificationResumeListener({
     super.key,
@@ -30,8 +17,6 @@ class NotificationResumeListener extends StatefulWidget {
 
   final Widget child;
 
-  /// Injected by tests. Production leaves this null and resolves the singleton
-  /// when the callback fires, not on every rebuild.
   final NotificationCubit? notifications;
 
   @override
@@ -41,8 +26,6 @@ class NotificationResumeListener extends StatefulWidget {
 
 class _NotificationResumeListenerState
     extends State<NotificationResumeListener> {
-  // Stateful only to own this: an unremoved listener outlives the widget and
-  // keeps firing.
   late final AppLifecycleListener _listener;
 
   @override
@@ -52,7 +35,7 @@ class _NotificationResumeListenerState
   }
 
   Future<void> _onResume() async {
-    // With nobody signed in there is no token to register with; sign-in claims it.
+    // nody sign in there is no token to register
     if (context.read<AppAuthCubit>().state is! AppAuthenticated) {
       return;
     }
@@ -60,11 +43,10 @@ class _NotificationResumeListenerState
     final NotificationCubit cubit =
         widget.notifications ?? getIt<NotificationCubit>();
 
-    // The cubit decides whether anything actually changed; this only reports
-    // that the app came forward.
+    // the cubit deceide anything actually changed
     final NotificationResumeOutcome outcome = await cubit.refreshAfterResume();
 
-    // An await inside a lifecycle callback: the widget may be gone by now.
+    // an await inside lifecycle callback: widget may be gone by now
     if (!mounted) {
       return;
     }
@@ -77,7 +59,6 @@ class _NotificationResumeListenerState
       case NotificationResumeOutcome.failed:
         AppSnackBar.warning(context, l10n.errorNotificationRegistrationFailed);
       case NotificationResumeOutcome.unchanged:
-        // The ordinary case — the user came back without changing anything.
         break;
     }
   }

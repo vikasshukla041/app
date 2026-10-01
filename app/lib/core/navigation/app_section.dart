@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../routing/app_routes.dart';
 
-/// Every place the main nav can take the user, in order.
 enum AppSection {
   console(
     route: AppRoutes.dashboard,
@@ -46,7 +45,6 @@ enum AppSection {
   final IconData icon;
   final IconData selectedIcon;
 
-  /// A phone's bottom bar fits four. The rest go in the profile menu.
   static const List<AppSection> tabs = <AppSection>[
     console,
     holdings,
@@ -54,7 +52,6 @@ enum AppSection {
     education,
   ];
 
-  /// The two that do not fit the bar — the side menu has room.
   static const List<AppSection> extras = <AppSection>[taxFiscal, settings];
 
   String label(AppLocalizations l10n) {

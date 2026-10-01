@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import 'notification_permission_dialog.dart';
 
-/// Bell icon in the app bar — tap to open the notification permission dialog.
 class NotificationBell extends StatelessWidget {
   const NotificationBell({super.key});
 

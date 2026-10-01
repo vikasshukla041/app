@@ -7,12 +7,9 @@ import '../../domain/auth_failure.dart';
 import '../models/auth_response_dto.dart';
 import '../models/login_request_dto.dart';
 
-/// The auth feature's only network entry point.
+/// Feature-isolated API client responsible for authentication network calls.
 ///
-/// The only class allowed to call the auth endpoints, and the only one that
-/// names Dio: every failure leaves here as an [AuthException]. Implements
-/// [TokenRefresher] so core's AuthInterceptor can refresh a token without
-/// depending on this feature.
+/// Implement [TokenRefresher] so 'core/' AuthInterceptor can refresh an expired access token.
 class AuthService implements TokenRefresher {
   AuthService({ApiService? apiService})
     : _apiService = apiService ?? ApiService();
@@ -42,8 +39,6 @@ class AuthService implements TokenRefresher {
     required String refreshToken,
   }) async {
     try {
-      // skipAuth: this call authenticates from its body, and a 401 here means
-      // the session is over rather than that a token needs refreshing.
       final Response<dynamic> response = await _apiService.post(
         ApiConstants.refresh,
         data: <String, dynamic>{'refreshToken': refreshToken},
@@ -55,8 +50,7 @@ class AuthService implements TokenRefresher {
         final String access = data['accessToken'] as String? ?? '';
         final String rotated = data['refreshToken'] as String? ?? '';
 
-        // The backend rotates the pair on every exchange, so a response
-        // without a new refresh token is malformed rather than incomplete.
+        // The backend rotates teh pair on every exchange so, a response without a new refresh token is malformed
         if (access.isNotEmpty && rotated.isNotEmpty) {
           return (accessToken: access, refreshToken: rotated);
         }

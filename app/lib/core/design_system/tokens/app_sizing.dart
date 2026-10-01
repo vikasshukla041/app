@@ -1,31 +1,30 @@
-/// Sizes that are not spacing or radius — icons, spinners, limits.
+/// Fixed sizes that are neither spacing nor radius: icons, spinners, limits.
 abstract final class AppSizing {
-  // Icon sizes. iconXs does not fit the scale below.
+  /// Icon sizes
   static const double iconXxs = 16;
   static const double iconXs = 22;
   static const double iconSm = 36;
   static const double iconMd = 64;
   static const double iconLg = 72;
 
-  /// Loading spinners — the big one fills a button, the small one does not.
+  /// progress indicator
   static const double spinnerSm = 20;
   static const double spinnerMd = 24;
 
-  /// The brand logo tile on the auth screens.
+  /// brand logo
   static const double logo = 40;
 
-  /// Fixed so the menu does not grow or shrink with the label that is showing.
+  /// fixed menu
   static const double sideMenuWidth = 256;
 
-  /// The avatar size in the app bar.
+  /// avatar is app bar
   static const double avatar = 32;
 
-  /// Height for the performance chart, so the card stays the same size either way.
+  /// chart card height
   static const double chartHeight = 160;
 
-  /// Stops the login form from stretching too wide on a tablet.
+  ///  auth screen so a tablet does not stretch
   static const double maxContentWidth = 420;
 
-  /// Same idea, but for a data screen with bigger cards.
   static const double maxConsoleWidth = 1152;
 }

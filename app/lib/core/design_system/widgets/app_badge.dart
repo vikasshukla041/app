@@ -5,7 +5,7 @@ import '../tokens/app_sizing.dart';
 import '../tokens/app_spacing.dart';
 import 'app_tone.dart';
 
-/// A short, non-interactive label: an account tier, a settlement state, a count.
+/// A short label - an account tier, a settlement state, a count.
 class AppBadge extends StatelessWidget {
   const AppBadge({
     super.key,
@@ -38,7 +38,7 @@ class AppBadge extends StatelessWidget {
             Icon(icon, size: AppSizing.iconXxs, color: foreground),
             const SizedBox(width: AppSpacing.xs),
           ],
-          // Flexes so a long label wraps inside the pill rather than overflowing it.
+          // Flexes so a long label wraps inside
           Flexible(
             child: Text(
               label,

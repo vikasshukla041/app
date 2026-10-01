@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/design_system/tokens/app_sizing.dart';
 import '../../../l10n/app_localizations.dart';
 
-/// Sign-in button. Disables itself and shows a spinner while logging in.
+/// Submit button that disables itself and shows spinner while loading preventing duplicate login req
 class LoginButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
@@ -13,13 +13,15 @@ class LoginButton extends StatelessWidget {
     required this.isLoading,
   });
 
+  // static const double _height = 48;
+  // static const double _spinnerSize = 24;
+
   @override
   Widget build(BuildContext context) {
     final AppLocalizations l10n = AppLocalizations.of(context);
     return Semantics(
       label: l10n.signInButtonSemantics,
       button: true,
-      // No height: the button theme sets the minimum, and it is taller than this was.
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(

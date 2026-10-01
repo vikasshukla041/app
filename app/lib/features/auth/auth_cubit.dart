@@ -11,6 +11,7 @@ import 'data/services/auth_service.dart';
 import 'data/services/biometric_service.dart';
 
 /// Owns the login business logic for the Auth feature.
+/// class declaration & constructor
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit({
     AuthService? authService,
@@ -29,10 +30,6 @@ class AuthCubit extends Cubit<AuthState> {
 
   void reset() => emit(const AuthInitial());
 
-  /// The single exit from every successful sign-in path.
-  ///
-  /// Notifications react to the session change themselves, in
-  /// NotificationSessionListener — this method must not know they exist.
   void _completeLogin(User user) {
     appAuthCubit?.logIn(user);
     emit(AuthSuccess(user));
@@ -58,27 +55,29 @@ class AuthCubit extends Cubit<AuthState> {
       final AuthResponseDto responseDto = await _authService.login(requestDto);
       final User user = responseDto.toDomain();
 
-      // Save the access token to secure storage.
+      // Local Storage Saving
+      // Access Token to Secure Storage
       await _storageService.saveAccessToken(responseDto.accessToken);
 
       final bool refreshSaved = responseDto.refreshToken.isNotEmpty;
       if (refreshSaved) {
         await _storageService.saveRefreshToken(responseDto.refreshToken);
       }
+
       await _storageService.saveUser(user);
 
-      // Check if we should show the biometric setup prompt.
+      // Check if biometric hardware is available and not yet enabled for post-login prompt
       final bool hardwareAvailable = await _biometricService.isAvailable();
       final bool biometricAlreadyEnabled = await _storageService
           .isBiometricEnabled();
 
       if (hardwareAvailable && !biometricAlreadyEnabled && refreshSaved) {
-        // Both cubits are told: this one drives the panel, the app-level one
-        // moves the router onto the opt-in route.
+        // this dribves the panel
         appAuthCubit?.requireBiometricOptIn(user);
         emit(AuthRequireBiometricPrompt(user));
       } else {
         _completeLogin(user);
+        // dashboard entry
       }
     } on AuthException catch (e, stackTrace) {
       _log('Login failed: ${e.reason}', stackTrace);
@@ -92,11 +91,12 @@ class AuthCubit extends Cubit<AuthState> {
   /// Double-tap guard.
   bool _biometricSetupInFlight = false;
 
-  /// Runs after login to set up biometrics if the user agrees.
+  // Biometric Setup, setupBiometricsPostLogin() - when fingerprint
   Future<void> setupBiometricsPostLogin(User user) async {
     if (state is! AuthRequireBiometricPrompt || _biometricSetupInFlight) {
       return;
     }
+
     _biometricSetupInFlight = true;
 
     try {
@@ -114,6 +114,8 @@ class AuthCubit extends Cubit<AuthState> {
         _log('Biometric enrolment did not complete: $result');
       }
 
+      // appAuthCubit?.logIn(user);
+      // emit(AuthSuccess(user));
       _completeLogin(user);
     } finally {
       _biometricSetupInFlight = false;
@@ -125,7 +127,10 @@ class AuthCubit extends Cubit<AuthState> {
     if (state is! AuthRequireBiometricPrompt) {
       return;
     }
+
     _completeLogin(user);
+    // appAuthCubit?.logIn(user);
+    // emit(AuthSuccess(user));
   }
 
   /// Subsequent launch: unlocks secure storage refresh token and exchanges it with backend.
@@ -144,23 +149,26 @@ class AuthCubit extends Cubit<AuthState> {
       case BiometricResult.cancelled:
         emit(const AuthInitial());
         return;
+
       case BiometricResult.lockedOut:
         emit(const AuthFailure(AuthFailureReason.biometricLockedOut));
         emit(const AuthInitial());
         return;
+
       case BiometricResult.unavailable:
         emit(const AuthFailure(AuthFailureReason.generic));
         emit(const AuthInitial());
         return;
+
       case BiometricResult.success:
         break;
     }
 
-    // Load the saved refresh token and user from secure storage.
+    //session check: rt & user-details fetch Secure Storage .
     final String? refreshToken = await _storageService.getRefreshToken();
     final User? user = await _storageService.getUser();
 
-    if (refreshToken == null || user == null) {
+    if (refreshToken == null || refreshToken.isEmpty || user == null) {
       _log('Biometric unlock failed: no saved refresh token.');
       await _abandonSession();
       emit(const AuthFailure(AuthFailureReason.biometricSessionExpired));
@@ -169,24 +177,28 @@ class AuthCubit extends Cubit<AuthState> {
     }
 
     try {
-      // Trade the refresh token for a new access token; we already have the user.
+      // Exchange refresh token with backend using local storage for fresh access token
+      // The response carries no user - we already have one
+
       final ({String accessToken, String refreshToken}) exchanged =
           await _authService.refreshTokenExchange(refreshToken: refreshToken);
 
       await _storageService.saveAccessToken(exchanged.accessToken);
       await _storageService.saveRefreshToken(exchanged.refreshToken);
+
       _completeLogin(user);
     } on AuthException catch (e, stackTrace) {
       _log('Token exchange failed during biometric login', stackTrace);
 
-      // A rejected refresh token means the session is over, not merely delayed.
       if (e.reason == AuthFailureReason.credentials) {
+        // final AuthFailureReason reason = _mapDioError(e);
         await _abandonSession();
       }
       _emitFailure(e.reason);
     } catch (e, stackTrace) {
       _log('Biometric login error', stackTrace);
-      // Unknown error, so treat it as a generic failure.
+      // await _abandonSession();
+      //An unrecognised failure leaves the session in an unknown state.
       _emitFailure(AuthFailureReason.generic);
     }
   }
@@ -196,7 +208,7 @@ class AuthCubit extends Cubit<AuthState> {
     await appAuthCubit?.logOut();
   }
 
-  // Show the error, then reset to the initial state.
+  // snackBar show
   void _emitFailure(AuthFailureReason reason) {
     emit(AuthFailure(reason));
     emit(const AuthInitial());
@@ -205,6 +217,7 @@ class AuthCubit extends Cubit<AuthState> {
   void _log(String message, [StackTrace? stackTrace]) {
     if (kDebugMode) {
       debugPrint(message);
+
       if (stackTrace != null) {
         debugPrintStack(stackTrace: stackTrace);
       }

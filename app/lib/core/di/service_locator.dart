@@ -5,6 +5,7 @@ import '../../features/auth/data/services/auth_service.dart';
 import '../../features/auth/data/services/biometric_service.dart';
 import '../../features/dashboard/dashboard_cubit.dart';
 import '../../features/dashboard/data/services/dashboard_service.dart';
+import '../../features/dashboard/performance_cubit.dart';
 import '../../features/notifications/data/services/device_info_service.dart';
 import '../../features/notifications/data/services/foreground_push_handler.dart';
 import '../../features/notifications/data/services/local_notifications_service.dart';
@@ -33,6 +34,7 @@ void setupServiceLocator() {
   getIt.registerLazySingleton<LocalNotificationsService>(
     () => LocalNotificationsService(),
   );
+
   getIt.registerLazySingleton<DeviceInfoService>(() => DeviceInfoService());
 
   // Global Auth State
@@ -40,8 +42,6 @@ void setupServiceLocator() {
     () => AppAuthCubit(storageService: getIt<SecureStorageService>()),
   );
 
-  // Registered after AppAuthCubit: it drops any push that arrives with no
-  // signed-in user, since the device stays subscribed after sign-out.
   getIt.registerLazySingleton<ForegroundPushHandler>(
     () => ForegroundPushHandler(
       pushService: getIt<PushNotificationService>(),
@@ -50,8 +50,6 @@ void setupServiceLocator() {
     ),
   );
 
-  // Routing: controller first, then the router that listens to it, then the
-  // tap handler that feeds it.
   getIt.registerLazySingleton<DeepLinkController>(() => DeepLinkController());
   getIt.registerLazySingleton<AppRouter>(
     () => AppRouter(
@@ -59,6 +57,7 @@ void setupServiceLocator() {
       deepLinks: getIt<DeepLinkController>(),
     ),
   );
+
   getIt.registerLazySingleton<NotificationTapHandler>(
     () => NotificationTapHandler(
       pushService: getIt<PushNotificationService>(),
@@ -71,12 +70,13 @@ void setupServiceLocator() {
     () => ApiService(
       storageService: getIt<SecureStorageService>(),
       appAuthCubit: getIt<AppAuthCubit>(),
-      // Pass a provider function here to avoid a circular dependency.
+      // Provider, not instance: AuthService needs ApiService, which is what
+      // is being registered here. Resolving lazily breaks the cycle.
       tokenRefresherProvider: () => getIt<AuthService>(),
     ),
   );
 
-  // Feature Data Services — each is the only caller of its own endpoints.
+  // Feature Data Services
   getIt.registerLazySingleton<AuthService>(
     () => AuthService(apiService: getIt<ApiService>()),
   );
@@ -101,7 +101,12 @@ void setupServiceLocator() {
     () => DashboardCubit(dashboardService: getIt<DashboardService>()),
   );
 
-  // Kept as a singleton because it owns a long-living FCM subscription.
+  getIt.registerFactory<PerformanceCubit>(
+    () => PerformanceCubit(dashboardService: getIt<DashboardService>()),
+  );
+
+  // Singleton, unlike the other feature cubits: it owns the FCM token-rotation
+  // subscription, which must outlive the dialog that opened it.
   getIt.registerLazySingleton<NotificationCubit>(
     () => NotificationCubit(
       pushService: getIt<PushNotificationService>(),

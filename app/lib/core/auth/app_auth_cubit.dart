@@ -21,8 +21,6 @@ class AppAuthCubit extends Cubit<AppAuthState> {
       final String? token = await _storageService.getAccessToken();
       final User? user = await _storageService.getUser();
 
-      // Without a refresh token the access token dies within the hour, so the
-      // user would be dropped mid-session rather than asked to sign in here.
       if (token == null ||
           token.isEmpty ||
           refreshToken == null ||
@@ -32,23 +30,24 @@ class AppAuthCubit extends Cubit<AppAuthState> {
         return;
       }
 
-      // Biometrics on: the credentials are still good, so ask for an unlock
-      // rather than a fresh sign-in.
+      // Biometrics on: the credentials are still good,
+      // so ask for an unlock rather than a fresh sign-in.
       if (biometricEnabled) {
         emit(AppAuthLocked(user));
         return;
       }
 
-      // Biometrics off but the session is intact: signing out here would
-      // discard valid tokens and force a password on every launch.
+      // biometric off but session intact. signing out here would discard valid token
+      // force a password on very launch
       emit(AppAuthenticated(user));
       return;
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Error restoring session: $e');
       }
+
+      emit(const AppUnauthenticated());
     }
-    emit(const AppUnauthenticated());
   }
 
   /// Sets state to authenticated after a successful login.
@@ -56,10 +55,6 @@ class AppAuthCubit extends Cubit<AppAuthState> {
     emit(AppAuthenticated(user));
   }
 
-  /// Parks the session on the biometric opt-in screen.
-  ///
-  /// The tokens are already saved; this only tells the router that one more
-  /// question stands between the user and the dashboard.
   void requireBiometricOptIn(User user) {
     emit(AppAuthPendingBiometricOptIn(user));
   }

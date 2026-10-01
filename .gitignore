@@ -36,6 +36,8 @@ lerna-debug.log*
 .prod.env
 .dev.env
 .stage.env
+firebase-service-account.json
+*service-account*.json
 
 # Firebase service account — a real private key. Needed locally to send real
 # push from mock_api; must never reach the repo.

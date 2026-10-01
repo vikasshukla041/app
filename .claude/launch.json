@@ -14,6 +14,20 @@
       "runtimeArgs": ["run", "-d", "web-server", "--web-port", "8080", "--dart-define=BASE_URL=http://localhost:3000", "--dart-define=ENVIRONMENT=development"],
       "cwd": "app",
       "port": 8080
+    },
+    {
+      "name": "flutter-web-release",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8081", "--directory", "build/web"],
+      "cwd": "app",
+      "port": 8081
+    },
+    {
+      "name": "flutter-web-5000",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "5000", "--directory", "build/web"],
+      "cwd": "app",
+      "port": 5000
     }
   ]
 }

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Every literal colour in the app. A new palette changes this file, only this file.
+/// Every literal colour in the app
 abstract final class AppColors {
   static const Color white = Color(0xFFFFFFFF);
 
-  // The neutral ramp carries every background, border and text colour.
+  // neutral every background, border and text colour.
   static const Color slate50 = Color(0xFFF8FAFC);
   static const Color slate100 = Color(0xFFF1F5F9);
   static const Color slate200 = Color(0xFFE2E8F0);
@@ -19,7 +19,7 @@ abstract final class AppColors {
   /// The page sits one step below a card so the two never blend together.
   static const Color canvas = Color(0xFFFAFBFD);
 
-  // Dark enough that white text stays readable on it; brandBright is not.
+  /// Holds white text at 6.5:1, which the brighter [brandBright] cannot.
   static const Color brand = Color(0xFF006491);
 
   /// The design's cyan: safe behind dark text, so it leads the dark theme.
@@ -28,19 +28,19 @@ abstract final class AppColors {
   static const Color brandContainer = Color(0xFFE0F4FF);
   static const Color brandDark = Color(0xFF00405E);
 
-  // Gains, settled trades, and anything else that went right.
+  // Gains, settled trades
   static const Color emerald50 = Color(0xFFECFDF5);
   static const Color emerald400 = Color(0xFF34D399);
   static const Color emerald700 = Color(0xFF047857);
   static const Color emerald900 = Color(0xFF064E3B);
 
-  // Pending and clearing states: worth noticing, not worth worrying about.
+  // Pending and clearing states
   static const Color amber100 = Color(0xFFFFEFC9);
   static const Color amber400 = Color(0xFFFBBF24);
   static const Color amber700 = Color(0xFFB45309);
   static const Color amber900 = Color(0xFF564500);
 
-  // The design names no error colour, so these stay Material's own reds.
+  // error
   static const Color errorLight = Color(0xFFBA1A1A);
   static const Color errorLightContainer = Color(0xFFFFDAD6);
   static const Color onErrorLightContainer = Color(0xFF93000A);

@@ -287,7 +287,7 @@ abstract class AppLocalizations {
   /// No description provided for @comingSoonBody.
   ///
   /// In en, this message translates to:
-  /// **'This screen is still being built.'**
+  /// **'This screen is still being built'**
   String get comingSoonBody;
 
   /// No description provided for @biometricOptInDialogTitle.
@@ -409,12 +409,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'1Y realized & unrealized return'**
   String get netWorthReturnCaption;
-
-  /// No description provided for @performanceChartPending.
-  ///
-  /// In en, this message translates to:
-  /// **'Performance chart is on the way'**
-  String get performanceChartPending;
 
   /// No description provided for @fundsBreakdownTitle.
   ///
@@ -607,6 +601,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back'**
   String get backSemantics;
+
+  /// No description provided for @performanceChartUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The chart can\'t be shown on this device.'**
+  String get performanceChartUnavailable;
+
+  /// No description provided for @performanceChartLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your performance chart.'**
+  String get performanceChartLoadError;
+
+  /// No description provided for @performanceChartSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Portfolio value from {start} to {end}'**
+  String performanceChartSemantics(String start, String end);
+
+  /// No description provided for @performanceRangeOneDay.
+  ///
+  /// In en, this message translates to:
+  /// **'1D'**
+  String get performanceRangeOneDay;
+
+  /// No description provided for @performanceRangeOneWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'1W'**
+  String get performanceRangeOneWeek;
+
+  /// No description provided for @performanceRangeOneMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'1M'**
+  String get performanceRangeOneMonth;
+
+  /// No description provided for @performanceRangeOneYear.
+  ///
+  /// In en, this message translates to:
+  /// **'1Y'**
+  String get performanceRangeOneYear;
+
+  /// No description provided for @performanceRangeOneDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'1 day'**
+  String get performanceRangeOneDayLabel;
+
+  /// No description provided for @performanceRangeOneWeekLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'1 week'**
+  String get performanceRangeOneWeekLabel;
+
+  /// No description provided for @performanceRangeOneMonthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'1 month'**
+  String get performanceRangeOneMonthLabel;
+
+  /// No description provided for @performanceRangeOneYearLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'1 year'**
+  String get performanceRangeOneYearLabel;
+
+  /// No description provided for @performanceChangeCaptionOneDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s change'**
+  String get performanceChangeCaptionOneDay;
+
+  /// No description provided for @performanceChangeCaptionOneWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Change over the past week'**
+  String get performanceChangeCaptionOneWeek;
+
+  /// No description provided for @performanceChangeCaptionOneMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Change over the past month'**
+  String get performanceChangeCaptionOneMonth;
+
+  /// No description provided for @performanceHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High: {amount}'**
+  String performanceHigh(String amount);
+
+  /// No description provided for @performanceChangeCaptionOnDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Change on {date}'**
+  String performanceChangeCaptionOnDate(String date);
 }
 
 class _AppLocalizationsDelegate

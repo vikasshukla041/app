@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
@@ -49,6 +50,29 @@ const BalanceResponseSchema = z.object({
   }),
 });
 
+const PerformanceQuerySchema = z.object({
+  range: z.enum(['1D', '1W', '1M', '1Y']).default('1Y').openapi({ example: '1Y' }),
+});
+
+const CandleSchema = z.object({
+  time: z.string().openapi({ example: '2026-09-28T16:35:00+02:00' }),
+  open: z.number().openapi({ example: 142830.10 }),
+  high: z.number().openapi({ example: 142861.40 }),
+  low: z.number().openapi({ example: 142812.75 }),
+  close: z.number().openapi({ example: 142850.20 }),
+});
+
+const PerformanceResponseSchema = z.object({
+  success: z.boolean().openapi({ example: true }),
+  data: z.object({
+    currency: z.string().openapi({ example: 'EUR' }),
+    range: z.enum(['1D', '1W', '1M', '1Y']).openapi({ example: '1Y' }),
+    asOf: z.string().openapi({ example: '2026-09-28T16:40:00+02:00' }),
+    baseline: z.number().openapi({ example: 124429.70 }),
+    candles: z.array(CandleSchema),
+  }),
+});
+
 // Routes Specifications
 const registerDeviceRoute = createRoute({
   method: 'post',
@@ -94,6 +118,59 @@ const balanceRoute = createRoute({
     },
   },
 });
+
+const performanceRoute = createRoute({
+  method: 'get',
+  path: '/performance', // Mounted under /api/user in server.js
+  security: [{ BearerAuth: [] }],
+  request: {
+    query: PerformanceQuerySchema,
+  },
+  responses: {
+    200: {
+      content: { 'application/json': { schema: PerformanceResponseSchema } },
+      description: 'Portfolio candles for one chart range (1D 5-minute, 1W hourly, 1M and 1Y daily), oldest first. '
+        + 'baseline is the value just before the first candle; change = last close - baseline.',
+    },
+    401: {
+      content: { 'application/json': { schema: CommonErrorSchema } },
+      description: 'Unauthorized access',
+    },
+    404: {
+      content: { 'application/json': { schema: CommonErrorSchema } },
+      description: 'Portfolio database entry not found',
+    },
+  },
+});
+
+// Built by scripts/build_portfolio_chart.js; read once at startup, so restart after rebuilding it.
+const portfolioChart = JSON.parse(
+  readFileSync(new URL('../data/portfolio_chart.json', import.meta.url), 'utf-8'),
+);
+
+// Each range gets the candles to draw and the value just before them, so the app can work out the change.
+function chartForRange(range) {
+  const { daily, hourly, intraday } = portfolioChart;
+  const last = daily.length - 1;
+  const dayOf = (time) => time.slice(0, 10);
+  const pick = {
+    '1D': () => ({ candles: intraday, baseline: portfolioChart.previousClose, after: daily[last - 1].time }),
+    '1W': () => {
+      const firstDay = dayOf(hourly[0].time);
+      const before = daily[daily.findIndex((d) => d.time === firstDay) - 1];
+      return { candles: hourly, baseline: before.close, after: before.time };
+    },
+    '1M': () => ({ candles: daily.slice(last - 20), baseline: daily[last - 21].close, after: daily[last - 21].time }),
+    '1Y': () => ({ candles: daily.slice(1), baseline: daily[0].close, after: daily[0].time }),
+  }[range]();
+  return {
+    currency: portfolioChart.currency,
+    range,
+    asOf: portfolioChart.asOf,
+    baseline: pick.baseline,
+    candles: pick.candles,
+  };
+}
 
 // Handlers
 userRouter.openapi(registerDeviceRoute, async (c) => {
@@ -166,6 +243,27 @@ userRouter.openapi(balanceRoute, async (c) => {
         dailyChange: p.dailyChange
       }))
     }
+  }, 200);
+});
+
+userRouter.openapi(performanceRoute, async (c) => {
+  const userId = extractUserId(c.req.header('Authorization'));
+  if (!userId) {
+    return c.json({ success: false, message: 'Unauthorized access' }, 401);
+  }
+
+  const portfolio = await db.query.portfolios.findFirst({
+    where: eq(schema.portfolios.userId, userId),
+  });
+
+  if (!portfolio) {
+    return c.json({ success: false, message: 'Portfolio metadata not found' }, 404);
+  }
+
+  const { range } = c.req.valid('query');
+  return c.json({
+    success: true,
+    data: chartForRange(range),
   }, 200);
 });
 

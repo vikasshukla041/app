@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../app_section.dart';
 
-/// The phone's bottom bar: one tab per entry in [AppSection.tabs].
 class BottomTabs extends StatelessWidget {
-  /// Shown only when a tab is open — extras have no tab to light up.
   BottomTabs({super.key, required this.selected, required this.onSelected})
     : assert(
         AppSection.tabs.contains(selected),

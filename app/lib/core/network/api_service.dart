@@ -6,10 +6,8 @@ import '../config/app_config.dart';
 import '../storage/secure_storage_service.dart';
 import 'auth_interceptor.dart';
 
-/// The app's only HTTP client: base URL, timeouts and the auth interceptor.
-///
-/// Deliberately knows no endpoint paths. Each feature's data service owns its
-/// own, so adding a feature never edits anything in core/.
+/// Handles HTTP requests to the backend API using Dio.
+
 class ApiService {
   ApiService({
     Dio? dio,
@@ -46,8 +44,6 @@ class ApiService {
 
   Future<Response<dynamic>> get(String path) => _dio.get<dynamic>(path);
 
-  /// [skipAuth] keeps a request outside the auth loop entirely: no Bearer
-  /// header on the way out, no refresh-and-replay on a 401 coming back.
   Future<Response<dynamic>> post(
     String path, {
     Object? data,

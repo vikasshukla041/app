@@ -5,21 +5,21 @@ import '../../../core/design_system/tokens/app_typography.dart';
 import '../../../core/design_system/widgets/app_badge.dart';
 import '../../../core/design_system/widgets/app_tone.dart';
 import '../../../l10n/app_localizations.dart';
-import 'performance_chart_placeholder.dart';
 
-/// Shows the account's total value, this year's return, and a performance chart.
+/// Shows the account total and, below it, the performance panel.
 class NetWorthCard extends StatelessWidget {
-  /// No default values, since a default would hardcode one currency format.
   const NetWorthCard({
     super.key,
     required this.totalValue,
-    required this.yearReturn,
+    required this.chart,
   });
 
   final String totalValue;
-  final String yearReturn;
 
-  // Label takes 3 parts, badge takes 2 — label is wider.
+  /// Passed in, so the card can be tested without a WebView or a Cubit.
+  final Widget chart;
+
+  /// The label gets 3 parts and the badge gets 2.
   static const int _labelFlex = 3;
   static const int _badgeFlex = 2;
 
@@ -46,7 +46,7 @@ class NetWorthCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                // Badge can shrink here so it never overflows.
+                // The flexible badge can shrink without overflowing.
                 Flexible(
                   flex: _badgeFlex,
                   child: Align(
@@ -60,7 +60,7 @@ class NetWorthCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            // Shrink the text if it does not fit — better small than cut off.
+            // Shrinks the text if it does not fit.
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
@@ -71,28 +71,8 @@ class NetWorthCard extends StatelessWidget {
                 style: theme.extension<AppFigureText>()!.large,
               ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            // Wrap instead of cutting off — these two rarely fit side by side on a phone.
-            Wrap(
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.xs,
-              children: <Widget>[
-                AppBadge(
-                  label: yearReturn,
-                  tone: AppTone.positive,
-                  icon: Icons.trending_up,
-                ),
-                Text(
-                  l10n.netWorthReturnCaption,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            const PerformanceChartPlaceholder(),
+            const SizedBox(height: AppSpacing.lg),
+            chart,
           ],
         ),
       ),

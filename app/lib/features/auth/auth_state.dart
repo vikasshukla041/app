@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../core/auth/domain/user.dart';
 import 'domain/auth_failure.dart';
 
-// Re-exported so importing this file still brings the reason into scope.
+// re-exporting so, existing import keep working
 export 'domain/auth_failure.dart';
 
 // All possible states of the authentication flow.

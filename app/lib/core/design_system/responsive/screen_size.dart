@@ -3,18 +3,11 @@ import 'package:flutter/widgets.dart';
 import '../tokens/app_spacing.dart';
 import 'app_breakpoints.dart';
 
-/// How much room the screen has.
 enum ScreenSize {
-  /// Phone size — nav bar at the bottom, one column.
   compact,
-
-  /// Small tablet — nav moves to the side, still one column.
   medium,
-
-  /// Big tablet or desktop — side nav, more room.
   expanded;
 
-  /// Separate from [of] so tests do not need a widget tree.
   static ScreenSize forWidth(double width) {
     if (width >= AppBreakpoints.expanded) {
       return ScreenSize.expanded;
@@ -25,21 +18,21 @@ enum ScreenSize {
     return ScreenSize.compact;
   }
 
-  // Uses sizeOf, so this only rebuilds when the screen size changes.
+  /// `sizeOf` build whn window resizes
   static ScreenSize of(BuildContext context) =>
       forWidth(MediaQuery.sizeOf(context).width);
 
-  /// True once nav has moved from the bottom to the side.
+  /// true whn navbar moved bottom to side
   bool get hasSidebar => this != ScreenSize.compact;
 
-  /// Side gap for a page's header and its body, so the two line up.
+  /// side gap for page
   double get pageGap => pick(
     compact: AppSpacing.xl,
     medium: AppSpacing.xl3,
     expanded: AppSpacing.xl3,
   );
 
-  /// Picks the right value, so a widget never reads pixels itself.
+  /// one value per card, no pixel
   T pick<T>({required T compact, required T medium, required T expanded}) {
     return switch (this) {
       ScreenSize.compact => compact,

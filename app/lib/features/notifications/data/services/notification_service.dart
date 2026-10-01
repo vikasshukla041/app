@@ -5,10 +5,7 @@ import '../../../../core/network/api_service.dart';
 import '../../domain/notification_failure.dart';
 import '../models/register_device_dto.dart';
 
-/// The notifications feature's only network entry point.
-///
-/// Turns every transport failure into a [NotificationException], so the Cubit
-/// above never sees Dio.
+/// notification features only network entry
 class NotificationService {
   NotificationService({ApiService? apiService})
     : _apiService = apiService ?? ApiService();
@@ -22,10 +19,10 @@ class NotificationService {
         data: dto.toJson(),
       );
 
-      // An unacknowledged write is a failure, not a success with no body.
       if (response.data case {'success': true}) {
         return;
       }
+
       throw const NotificationException(
         NotificationFailureReason.registrationFailed,
       );

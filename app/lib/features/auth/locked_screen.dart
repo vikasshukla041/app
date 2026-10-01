@@ -24,6 +24,8 @@ class LockedScreen extends StatefulWidget {
 }
 
 class _LockedScreenState extends State<LockedScreen> {
+  // static const double _maxContentWidth = 420;
+
   @override
   void initState() {
     super.initState();
@@ -46,9 +48,8 @@ class _LockedScreenState extends State<LockedScreen> {
     final AppLocalizations l10n = AppLocalizations.of(context);
     final TextTheme text = Theme.of(context).textTheme;
     final ColorScheme colors = Theme.of(context).colorScheme;
-
     final AppAuthState session = context.watch<AppAuthCubit>().state;
-    // Holds the frame between a successful unlock and the router moving on.
+
     if (session is! AppAuthLocked) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
