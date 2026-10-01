@@ -107,24 +107,21 @@ void main() {
       'close': close,
     };
 
-    Map<String, dynamic> payload({
-      List<Map<String, dynamic>>? candles,
-      List<Map<String, dynamic>> cashFlows = const <Map<String, dynamic>>[],
-    }) => <String, dynamic>{
-      'data': <String, dynamic>{
-        'currency': 'EUR',
-        'range': '1W',
-        'asOf': '2026-09-28T16:40:00+02:00',
-        'baseline': 139736.34,
-        'candles':
-            candles ??
-            <Map<String, dynamic>>[
-              candle('2026-09-28T16:00:00+02:00', 142850.20),
-              candle('2026-09-22T09:00:00+02:00', 139800),
-            ],
-        'cashFlows': cashFlows,
-      },
-    };
+    Map<String, dynamic> payload({List<Map<String, dynamic>>? candles}) =>
+        <String, dynamic>{
+          'data': <String, dynamic>{
+            'currency': 'EUR',
+            'range': '1W',
+            'asOf': '2026-09-28T16:40:00+02:00',
+            'baseline': 139736.34,
+            'candles':
+                candles ??
+                <Map<String, dynamic>>[
+                  candle('2026-09-28T16:00:00+02:00', 142850.20),
+                  candle('2026-09-22T09:00:00+02:00', 139800),
+                ],
+          },
+        };
 
     test('asks for the chosen range', () async {
       stubGet(responseWith(payload()));

@@ -59,19 +59,22 @@ class PerformanceSummary extends StatelessWidget {
     );
   }
 
-  String _caption(
-    AppLocalizations l10n,
-    String locale,
-  ) => switch (history.range) {
-    // On a weekend or holiday the last trading day is not today, so name its date.
-    PerformanceRange.oneDay =>
-      history.isFromDay(today ?? DateTime.now())
-          ? l10n.performanceChangeCaptionOneDay
-          : l10n.performanceChangeCaptionOnDate(
-              DateFormat.yMMMd(locale).format(history.asOf!),
-            ),
-    PerformanceRange.oneWeek => l10n.performanceChangeCaptionOneWeek,
-    PerformanceRange.oneMonth => l10n.performanceChangeCaptionOneMonth,
-    PerformanceRange.oneYear => l10n.netWorthReturnCaption,
-  };
+  String _caption(AppLocalizations l10n, String locale) =>
+      switch (history.range) {
+        PerformanceRange.oneDay => _dayCaption(l10n, locale),
+        PerformanceRange.oneWeek => l10n.performanceChangeCaptionOneWeek,
+        PerformanceRange.oneMonth => l10n.performanceChangeCaptionOneMonth,
+        PerformanceRange.oneYear => l10n.netWorthReturnCaption,
+      };
+
+  // On a weekend or holiday the last trading day is not today, so name its date.
+  String _dayCaption(AppLocalizations l10n, String locale) {
+    final DateTime? asOf = history.asOf;
+    if (asOf == null || history.isFromDay(today ?? DateTime.now())) {
+      return l10n.performanceChangeCaptionOneDay;
+    }
+    return l10n.performanceChangeCaptionOnDate(
+      DateFormat.yMMMd(locale).format(asOf),
+    );
+  }
 }

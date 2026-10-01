@@ -15,7 +15,6 @@ Map<String, Object?> _history({
   String range = '1Y',
   num baseline = 124429.70,
   List<Object?>? candles,
-  List<Object?> cashFlows = const <Object?>[],
   Object? asOf,
 }) => <String, Object?>{
   'currency': 'EUR',
@@ -28,7 +27,6 @@ Map<String, Object?> _history({
         _candle('2026-09-08', 143650, high: 144120),
         _candle('2026-09-28', 142850.20),
       ],
-  'cashFlows': cashFlows,
 };
 
 void main() {
@@ -40,21 +38,6 @@ void main() {
     expect(history.change, closeTo(18420.50, 0.001));
     expect(history.changeRatio, closeTo(0.148, 0.0005));
     expect(history.high, 144120);
-  });
-
-  // A deposit makes the value jump, but it is the user's own money, not profit.
-  test('leaves deposits and withdrawals out of the change', () {
-    final PerformanceHistory history = PerformanceHistory.fromJson(
-      _history(
-        cashFlows: <Object?>[
-          <String, Object?>{'date': '2025-12-15', 'amount': 5000},
-          <String, Object?>{'date': '2026-06-15', 'amount': -2000},
-        ],
-      ),
-    )!;
-
-    expect(history.netCashFlow, 3000);
-    expect(history.change, closeTo(15420.50, 0.001));
   });
 
   // The phone's own timezone must not move a 09:00 market candle to 07:00.

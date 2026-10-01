@@ -143,7 +143,7 @@ const performanceRoute = createRoute({
   },
 });
 
-// Built by scripts/build_portfolio_chart.js; read once at startup, so restart after rebuilding it.
+// Sample data; read once at startup, so restart the server after changing the file.
 const portfolioChart = JSON.parse(
   readFileSync(new URL('../data/portfolio_chart.json', import.meta.url), 'utf-8'),
 );
@@ -154,14 +154,14 @@ function chartForRange(range) {
   const last = daily.length - 1;
   const dayOf = (time) => time.slice(0, 10);
   const pick = {
-    '1D': () => ({ candles: intraday, baseline: portfolioChart.previousClose, after: daily[last - 1].time }),
+    '1D': () => ({ candles: intraday, baseline: portfolioChart.previousClose }),
     '1W': () => {
       const firstDay = dayOf(hourly[0].time);
       const before = daily[daily.findIndex((d) => d.time === firstDay) - 1];
-      return { candles: hourly, baseline: before.close, after: before.time };
+      return { candles: hourly, baseline: before.close };
     },
-    '1M': () => ({ candles: daily.slice(last - 20), baseline: daily[last - 21].close, after: daily[last - 21].time }),
-    '1Y': () => ({ candles: daily.slice(1), baseline: daily[0].close, after: daily[0].time }),
+    '1M': () => ({ candles: daily.slice(last - 20), baseline: daily[last - 21].close }),
+    '1Y': () => ({ candles: daily.slice(1), baseline: daily[0].close }),
   }[range]();
   return {
     currency: portfolioChart.currency,

@@ -73,7 +73,6 @@ class PerformanceHistory extends Equatable {
     required this.range,
     required this.baseline,
     required this.candles,
-    this.netCashFlow = 0,
     this.asOf,
   });
 
@@ -87,9 +86,6 @@ class PerformanceHistory extends Equatable {
   final double baseline;
   final List<PerformanceCandle> candles;
 
-  /// Money deposited minus money withdrawn inside the range.
-  final double netCashFlow;
-
   double get lastClose => candles.isEmpty ? baseline : candles.last.close;
 
   double get high => candles.isEmpty
@@ -100,8 +96,8 @@ class PerformanceHistory extends Equatable {
       ? baseline
       : candles.map((PerformanceCandle c) => c.low).reduce(math.min);
 
-  /// Market gain only: a deposit makes the value jump, but it is not profit.
-  double get change => lastClose - baseline - netCashFlow;
+  /// How much the value moved over the range.
+  double get change => lastClose - baseline;
 
   double get changeRatio => baseline == 0 ? 0 : change / baseline;
 
@@ -151,23 +147,11 @@ class PerformanceHistory extends Equatable {
         }
       }
 
-      double netCashFlow = 0;
-      if (json['cashFlows'] case final List<Object?> flows) {
-        for (final Object? flow in flows) {
-          if (flow case {'amount': final num amount} when amount.isFinite) {
-            netCashFlow += amount;
-          } else {
-            return null;
-          }
-        }
-      }
-
       return PerformanceHistory(
         currency: currency,
         range: range,
         baseline: baseline.toDouble(),
         candles: List<PerformanceCandle>.unmodifiable(candles),
-        netCashFlow: netCashFlow,
         asOf: asOf,
       );
     }
@@ -180,7 +164,6 @@ class PerformanceHistory extends Equatable {
     range,
     baseline,
     candles,
-    netCashFlow,
     asOf,
   ];
 }
